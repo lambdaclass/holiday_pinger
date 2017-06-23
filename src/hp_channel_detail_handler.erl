@@ -1,0 +1,1 @@
+-module(hp_channel_detail_handler).

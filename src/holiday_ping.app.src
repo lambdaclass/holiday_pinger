@@ -5,7 +5,10 @@
   {mod, { holiday_ping_app, []}},
   {applications,
    [kernel,
-    stdlib
+    stdlib,
+    cowboy,
+    sasl,
+    jiffy
    ]},
   {env,[]},
   {modules, []},
