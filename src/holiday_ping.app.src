@@ -1,0 +1,19 @@
+{application, holiday_ping,
+ [{description, "An OTP application that sends holiday reminders."},
+  {vsn, "0.1.0"},
+  {registered, []},
+  {mod, { holiday_ping_app, []}},
+  {applications,
+   [kernel,
+    stdlib,
+    cowboy,
+    sasl,
+    jiffy
+   ]},
+  {env,[]},
+  {modules, []},
+
+  {maintainers, []},
+  {licenses, ["Apache 2.0"]},
+  {links, []}
+ ]}.
