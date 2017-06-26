@@ -4,7 +4,7 @@
 
 -export([start_link/0,
 
-         check_holidays/0,
+         force_holidays/0,
 
          init/1,
          handle_call/3,
@@ -17,14 +17,9 @@
 %% TODO make configurable
 -define(INTERVAL, 1000 * 60 * 60).
 
-%% triggered by the interval, export for manual tests
-check_holidays() ->
-    io:format("Running holiday checker.~n"),
-    Countries = hp_holiday_db:countries_with_holiday(),
-    Users = hp_user_db:get_from_countries(Countries),
-    %% for now remind when we're already in the holiday
-    HolidayDate = erlang:date(),
-    lists:foreach(fun (User) -> hp_reminder:send(User, HolidayDate) end, Users),
+%% for testing, foce the checker to send reminders
+force_holidays() ->
+    check_holidays({2017, 1, 1}),
     ok.
 
 start_link() ->
@@ -41,7 +36,9 @@ handle_cast(_Request, State) ->
     {noreply, State}.
 
 handle_info({check_holidays}, State) ->
-    check_holidays(),
+    %% for now remind when we're already in the holiday
+    HolidayDate = erlang:date(),
+    check_holidays(HolidayDate),
     {noreply, State};
 
 handle_info(_Msg, State) ->
@@ -52,3 +49,11 @@ terminate(_Reason, _State) ->
 
 code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
+
+%%% internal
+check_holidays(HolidayDate) ->
+    io:format("Running holiday checker.~n"),
+    Countries = hp_holiday_db:countries_with_holiday(HolidayDate),
+    Users = hp_user_db:get_from_countries(Countries),
+    lists:foreach(fun (User) -> hp_reminder:send(User, HolidayDate) end, Users),
+    ok.
