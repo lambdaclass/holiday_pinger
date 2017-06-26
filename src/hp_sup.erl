@@ -11,4 +11,21 @@ start_link() ->
     supervisor:start_link({local, ?SERVER}, ?MODULE, []).
 
 init([]) ->
-    {ok, { {one_for_one, 0, 1}, []} }.
+    {ok, { #{ strategy => one_for_one, intensity => 5, period => 1 },
+           [#{
+               id => hp_checker,
+               start => {hp_checker, start_link, []},
+               restart => permanent,
+               shutdown => 5000,
+               type => worker,
+               modules => [hp_checker]
+             },
+            #{
+               id => hp_reminder_sup,
+               start => {hp_reminder_sup, start_link, []},
+               restart => permanent,
+               shutdown => 5000,
+               type => supervisor,
+               modules => [hp_reminder_sup]
+             }]
+         }}.
