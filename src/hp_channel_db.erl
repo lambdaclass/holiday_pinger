@@ -1,4 +1,4 @@
--module(hp_channel_storage).
+-module(hp_channel_db).
 
 -export([get_user_channels/1]).
 

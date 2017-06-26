@@ -1,4 +1,4 @@
--module(hp_reminder_storage).
+-module(hp_reminder_db).
 
 -export([is_already_sent/4,
          is_already_sent/3,

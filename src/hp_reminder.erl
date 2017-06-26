@@ -36,9 +36,9 @@ handle_cast({send_reminders, User, HolidayDate}, State) ->
     %% TODO build a more meaningful message,
     Message = "dont forget!",
 
-    Channels = hp_channel_storage:get_user_channels(User),
+    Channels = hp_channel_db:get_user_channels(User),
     AlreadySent = fun (Channel) ->
-                          not hp_reminder_storage:is_already_sent(User, Channel, HolidayDate)
+                          not hp_reminder_db:is_already_sent(User, Channel, HolidayDate)
                   end,
     Pending = lists:filter(AlreadySent, Channels),
     SendFn = fun (Channel) ->
@@ -68,5 +68,5 @@ code_change(_OldVsn, State, _Extra) ->
 get_channel_handler(Channel) ->
     fun (User, HolidayDate, Message) ->
             io:format("This is a holiday reminder: ~p~n", [Message]),
-            hp_reminder_storage:set_sent(User, Channel, HolidayDate)
+            hp_reminder_db:set_sent(User, Channel, HolidayDate)
     end.

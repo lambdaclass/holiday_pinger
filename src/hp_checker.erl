@@ -20,8 +20,8 @@
 %% triggered by the interval, export for manual tests
 check_holidays() ->
     io:format("Running holiday checker.~n"),
-    Countries = hp_holiday_storage:countries_with_holiday(),
-    Users = hp_user_storage:get_from_countries(Countries),
+    Countries = hp_holiday_db:countries_with_holiday(),
+    Users = hp_user_db:get_from_countries(Countries),
     %% for now remind when we're already in the holiday
     HolidayDate = erlang:date(),
     lists:foreach(fun (User) -> hp_reminder:send(User, HolidayDate) end, Users),

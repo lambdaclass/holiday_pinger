@@ -1,4 +1,4 @@
--module(hp_user_storage).
+-module(hp_user_db).
 
 -export([create/3,
          authenticate/2,

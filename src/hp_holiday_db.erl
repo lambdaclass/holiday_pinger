@@ -1,4 +1,4 @@
--module(hp_holiday_storage).
+-module(hp_holiday_db).
 
 %% will be hardcoded to argentinian holidays for now
 
