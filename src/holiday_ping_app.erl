@@ -6,6 +6,12 @@
          stop/1]).
 
 start(_StartType, _StartArgs) ->
+    %% FIXME make configurable
+    pgapp:connect([{size, 10},
+                   {database, "holiday_ping"},
+                   {username, "postgres"},
+                   {password, "example"}]),
+
     Dispatch = cowboy_router:compile([
                                       {'_', [{"/", cowboy_static, {priv_file, holiday_ping, "index.html"}},
                                              {"/assets/[...]", cowboy_static, {priv_dir, holiday_ping, ""}},

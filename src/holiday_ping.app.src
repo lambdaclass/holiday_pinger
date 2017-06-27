@@ -8,6 +8,8 @@
     stdlib,
     cowboy,
     sasl,
+    pgapp,
+    erlpass,
     jiffy
    ]},
   {env,[]},
