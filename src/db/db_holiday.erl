@@ -1,4 +1,4 @@
--module(hp_holiday_db).
+-module(db_holiday).
 
 -export([countries_with_holiday/0,
          countries_with_holiday/1]).

@@ -32,7 +32,7 @@ handle_cast({send_reminders, User, HolidayDate}, State) ->
     %% TODO build a more meaningful message,
     Message = "dont forget!",
 
-    Channels = hp_channel_db:get_user_channels(User),
+    Channels = db_channel:get_user_channels(User),
     SendFn = fun (Channel) ->
                      Handler = get_channel_handler(Channel),
                      Handler(User, HolidayDate, Message)

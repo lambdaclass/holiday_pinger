@@ -1,4 +1,4 @@
--module(hp_token_handler).
+-module(token_handler).
 
 -export([init/3,
          allowed_methods/2,
@@ -20,7 +20,7 @@ from_json(Req, State) ->
     #{<<"email">> := Email, <<"password">> := Password} = hp_json:decode(Body),
 
     %% FIXME properly handle unauthorized requests
-    {ok, User} = hp_user_db:authenticate(Email, Password),
+    {ok, User} = db_user:authenticate(Email, Password),
     {ok, Token} = hp_auth_tokens:encode(User),
 
     %% TODO make sure setting response actually works for POST requests

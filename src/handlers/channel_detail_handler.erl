@@ -1,0 +1,1 @@
+-module(channel_detail_handler).

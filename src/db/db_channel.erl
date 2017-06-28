@@ -1,4 +1,4 @@
--module(hp_channel_db).
+-module(db_channel).
 
 -export([get_user_channels/1]).
 

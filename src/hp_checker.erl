@@ -51,7 +51,7 @@ code_change(_OldVsn, State, _Extra) ->
 %%% internal
 check_holidays(HolidayDate) ->
     io:format("Running holiday checker.~n"),
-    Countries = hp_holiday_db:countries_with_holiday(HolidayDate),
-    Users = hp_user_db:get_from_countries(Countries),
+    Countries = db_holiday:countries_with_holiday(HolidayDate),
+    Users = db_user:get_from_countries(Countries),
     lists:foreach(fun (User) -> hp_reminder:send(User, HolidayDate) end, Users),
     ok.
