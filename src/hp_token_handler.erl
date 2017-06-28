@@ -20,7 +20,7 @@ from_json(Req, State) ->
     #{<<"email">> := Email, <<"password">> := Password} = hp_json:decode(Body),
 
     %% FIXME properly handle unauthorized requests
-    {ok, User} = hp_user_storage:authenticate(Email, Password),
+    {ok, User} = hp_user_db:authenticate(Email, Password),
     {ok, Token} = hp_auth_tokens:encode(User),
 
     %% TODO make sure setting response actually works for POST requests
