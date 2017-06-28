@@ -16,7 +16,7 @@ start(_StartType, _StartArgs) ->
                                       {'_', [{"/", cowboy_static, {priv_file, holiday_ping, "index.html"}},
                                              {"/assets/[...]", cowboy_static, {priv_dir, holiday_ping, ""}},
                                              {"/api/users", user_handler, []},
-                                             {"/api/auth/tokens", token_handler, []},
+                                             {"/api/auth/token", token_handler, []},
                                              {"/api/channels", channel_list_handler, []},
                                              {"/api/channels/:id", [{id, int}], channel_detail_handler, []}]}
                                      ]),
