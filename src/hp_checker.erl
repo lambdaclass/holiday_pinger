@@ -13,7 +13,7 @@
          code_change/3]).
 
 %% TODO make configurable
--define(INTERVAL, 1000 * 60 * 60).
+-define(INTERVAL, 1000 * 60 * 60 * 24).
 
 %% for testing, foce the checker to send reminders
 force_holidays() ->

@@ -5,6 +5,6 @@
 get_user_channels(User) ->
     [#{
         id => 1,
-        name => <<"My console channel">>,
-        type => console
+        name => <<"My slack channel">>,
+        type => slack
       }].

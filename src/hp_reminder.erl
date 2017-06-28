@@ -26,25 +26,18 @@ handle_call(_Request, _From, State) ->
     {noreply, State}.
 
 %% Send the message to each channel the user has configured, dont send the same reminder twice
-%% FIXME may be better to use a different process per each channel
-%% TODO instead of tracking already sent by saving in the db, maybe add another server
-%% that just knows how to send individual messages (and retries on failure)
-%% that could later become a pool of workers, use a table instead of a mailbox, etc
+%% TODO add another simple_one_for_one supervisor whose children send the actual message to each channel
 handle_cast({send_reminders, User, HolidayDate}, State) ->
     io:format("Sending reminders for user ~p~n", [User]),
     %% TODO build a more meaningful message,
     Message = "dont forget!",
 
     Channels = hp_channel_db:get_user_channels(User),
-    AlreadySent = fun (Channel) ->
-                          not hp_reminder_db:is_already_sent(User, Channel, HolidayDate)
-                  end,
-    Pending = lists:filter(AlreadySent, Channels),
     SendFn = fun (Channel) ->
                      Handler = get_channel_handler(Channel),
                      Handler(User, HolidayDate, Message)
              end,
-    lists:foreach(SendFn, Pending),
+    lists:foreach(SendFn, Channels),
     {noreply, State};
 
 handle_cast(Request, State) ->
@@ -64,8 +57,12 @@ code_change(_OldVsn, State, _Extra) ->
 
 %% Take the channel config and return a function that sends reminder
 %% through that channel
-get_channel_handler(Channel) ->
-    fun (User, HolidayDate, Message) ->
-            io:format("This is a holiday reminder: ~p~n", [Message]),
-            hp_reminder_db:set_sent(User, Channel, HolidayDate)
+%% TODO move each handler to a specific file
+get_channel_handler(#{type := slack}) ->
+    fun (_User, _HolidayDate, Message) ->
+            io:format("This is a SLACK holiday reminder: ~p~n", [Message])
+    end;
+get_channel_handler((#{type := slack})) ->
+    fun (_User, _HolidayDate, Message) ->
+            io:format("This is a MAIL holiday reminder: ~p~n", [Message])
     end.
