@@ -16,7 +16,8 @@ content_types_accepted(Req, State) ->
 
 from_json(Req, State) ->
     {ok, Body, Req2} = cowboy_req:body(Req),
-    %% TODO validate required fields, password strong enough
-    #{<<"email">> := Email, <<"password">> := Password} = hp_json:decode(Body),
-    {ok, _User} = db_user:create(Email, Password, argentina),
+    %% FIXME validate required fields, password strong enough
+    UserData = hp_json:decode(Body),
+    %% FIXME validate if email already registered
+    {ok, _User} = db_user:create(UserData),
     {true, Req2, State}.

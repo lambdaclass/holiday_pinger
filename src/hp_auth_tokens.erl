@@ -8,7 +8,7 @@
 -define(EXPIRATION, 60 * 60 * 24).
 
 encode(Data) ->
-    jwt:encode(<<"HS256">>, Data, ?EXPIRATION, ?SECRET).
+    jwt:encode(<<"HS256">>, maps:to_list(Data), ?EXPIRATION, ?SECRET).
 
 decode(Token) ->
-    jwt:decode(Token, ?SECRET).
+    maps:from_list(jwt:decode(Token, ?SECRET)).

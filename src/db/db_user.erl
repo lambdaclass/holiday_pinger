@@ -11,7 +11,7 @@ create(#{<<"email">> := Email,
     Q = <<"INSERT INTO users(email, name, password, country)"
           "VALUES($1, $2, $3, $4) RETURNING *">>,
     [Result | []] = db:query(Q, [Email, Name, erlpass:hash(Password), Country]),
-    maps:remove(<<"password">>, Result).
+    {ok, maps:remove(<<"password">>, Result)}.
 
 authenticate(Email, Password) ->
     Q = <<"SELECT * FROM users WHERE email = $1">>,
