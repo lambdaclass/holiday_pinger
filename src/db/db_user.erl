@@ -25,15 +25,8 @@ authenticate(Email, Password) ->
             end
     end.
 
-%% TODO implement
 get_from_countries(Countries) ->
-    [#{
-        id => 1,
-        email => "jesus@example.com",
-        country => argentina
-      },
-     #{
-        id => 2,
-        email => "contoso@example.com",
-        country => argentina
-      }].
+    %% TODO maybe better to not select all the table
+    Q = <<"SELECT * FROM users WHERE country IN ($1)">>,
+    Joined = lists:join(<<",">>, Countries),
+    db:query(Q, [Joined]).

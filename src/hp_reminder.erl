@@ -59,10 +59,10 @@ code_change(_OldVsn, State, _Extra) ->
 %% through that channel
 %% TODO move each handler to a specific file
 get_channel_handler(#{type := slack}) ->
-    fun (_User, _HolidayDate, Message) ->
-            io:format("This is a SLACK holiday reminder: ~p~n", [Message])
+    fun (#{<<"name">> := User}, _HolidayDate, Message) ->
+            io:format("This is a SLACK holiday reminder from ~s: ~s~n", [User, Message])
     end;
-get_channel_handler((#{type := slack})) ->
-    fun (_User, _HolidayDate, Message) ->
-            io:format("This is a MAIL holiday reminder: ~p~n", [Message])
+get_channel_handler((#{type := mail})) ->
+    fun (#{<<"name">> := User}, _HolidayDate, Message) ->
+            io:format("This is a MAIL holiday reminder from ~s: ~s~n", [User, Message])
     end.
