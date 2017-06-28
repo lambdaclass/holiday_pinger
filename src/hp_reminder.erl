@@ -1,5 +1,4 @@
 -module(hp_reminder).
-
 -behaviour(gen_server).
 
 -export([start_link/0,
@@ -21,7 +20,7 @@ start_link() ->
     gen_server:start_link(?MODULE, [], []).
 
 init([]) ->
-    {ok, no_state}.
+    {ok, []}.
 
 handle_call(_Request, _From, State) ->
     {noreply, State}.

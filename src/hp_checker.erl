@@ -1,5 +1,4 @@
 -module(hp_checker).
-
 -behaviour(gen_server).
 
 -export([start_link/0,
@@ -13,7 +12,6 @@
          terminate/2,
          code_change/3]).
 
--define(SERVER, ?MODULE).
 %% TODO make configurable
 -define(INTERVAL, 1000 * 60 * 60).
 
@@ -23,11 +21,11 @@ force_holidays() ->
     ok.
 
 start_link() ->
-    gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
+    gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 
 init([]) ->
-    {ok, _} = timer:send_interval(?INTERVAL, {check_holidays}),
-    {ok, no_state}.
+    {ok, _} = timer:send_interval(?INTERVAL, check_holidays),
+    {ok, []}.
 
 handle_call(_Request, _From, State) ->
     {noreply, State}.
@@ -35,7 +33,7 @@ handle_call(_Request, _From, State) ->
 handle_cast(_Request, State) ->
     {noreply, State}.
 
-handle_info({check_holidays}, State) ->
+handle_info(check_holidays, State) ->
     %% for now remind when we're already in the holiday
     HolidayDate = erlang:date(),
     check_holidays(HolidayDate),
