@@ -1,17 +1,19 @@
 -module(db_user).
 
--export([create/1,
+-export([create/4,
          authenticate/2,
-         get_from_countries/1]).
+         get_from_countries/1,
+         user_keys/0]).
 
-create(#{<<"email">> := Email,
-         <<"name">> := Name,
-         <<"password">> := Password,
-         <<"country">> := Country}) ->
+%% needed so atoms exist. TODO maybe put somewhere else
+user_keys () -> [email, password, name, country].
+
+%% FIXME move password stuff to the controller
+create(Email, Name, Password, Country) ->
     Q = <<"INSERT INTO users(email, name, password, country)"
-          "VALUES($1, $2, $3, $4) RETURNING *">>,
-    [Result | []] = db:query(Q, [Email, Name, erlpass:hash(Password), Country]),
-    {ok, maps:remove(<<"password">>, Result)}.
+          "VALUES($1, $2, $3, $4) RETURNING email, name, country ">>,
+    {ok, [Result | []]} = db:query(Q, [Email, Name, erlpass:hash(Password), Country]),
+    {ok, Result}.
 
 authenticate(Email, Password) ->
     Q = <<"SELECT * FROM users WHERE email = $1">>,
@@ -26,7 +28,7 @@ authenticate(Email, Password) ->
     end.
 
 get_from_countries(Countries) ->
-    %% TODO maybe better to not select all the table
-    Q = <<"SELECT * FROM users WHERE country IN ($1)">>,
+    %% TODO paginate this call
+    Q = <<"SELECT (email, name, country) FROM users WHERE country IN ($1)">>,
     Joined = lists:join(<<",">>, Countries),
     db:query(Q, [Joined]).
