@@ -29,8 +29,9 @@ from_json(Req, _State) ->
            <<"password">> := Password,
            <<"country">> := Country
          } ->
+            PasswordHash = hp_auth:password_hash(Password),
             %% FIXME validate if email already registered
-            {ok, User} = db_user:create(Email, Name, Password, Country),
+            {ok, User} = db_user:create(Email, Name, PasswordHash, Country),
             req_utils:success_response(User, Req2);
         _ -> req_utils:error_response(<<"Missing required fields">>, Req2)
     end.
