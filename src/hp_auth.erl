@@ -6,15 +6,14 @@
          password_match/2,
          authenticate/2]).
 
-%% FIXME take from configuration/environment
--define(SECRET, <<"secret">>).
--define(EXPIRATION, 60 * 60 * 24).
-
 token_encode(Data) ->
-    jwt:encode(<<"HS256">>, maps:to_list(Data), ?EXPIRATION, ?SECRET).
+    Secret = hp_config:get(token_secret),
+    Expiration = hp_config:get(token_expiration),
+    jwt:encode(<<"HS256">>, maps:to_list(Data), Expiration, Secret).
 
 token_decode(Token) ->
-    maps:from_list(jwt:decode(Token, ?SECRET)).
+    Secret = hp_config:get(token_secret),
+    maps:from_list(jwt:decode(Token, Secret)).
 
 password_hash(Value) ->
     erlpass:hash(Value).
