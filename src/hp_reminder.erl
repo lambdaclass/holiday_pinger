@@ -28,7 +28,7 @@ handle_call(_Request, _From, State) ->
 %% Send the message to each channel the user has configured, dont send the same reminder twice
 %% TODO add another simple_one_for_one supervisor whose children send the actual message to each channel
 handle_cast({send_reminders, User, HolidayDate}, State) ->
-    io:format("Sending reminders for user ~p~n", [User]),
+    lager:debug("Sending reminders for user ~p", [User]),
     %% TODO build a more meaningful message,
     Message = "dont forget!",
 
@@ -41,7 +41,7 @@ handle_cast({send_reminders, User, HolidayDate}, State) ->
     {noreply, State};
 
 handle_cast(Request, State) ->
-    io:format("Unknown message ~p~n", [Request]),
+    lager:warning("Unknown message: ~p", [Request]),
     {noreply, State}.
 
 handle_info(_Msg, State) ->
@@ -60,9 +60,9 @@ code_change(_OldVsn, State, _Extra) ->
 %% TODO move each handler to a specific file
 get_channel_handler(#{type := slack}) ->
     fun (#{<<"name">> := User}, _HolidayDate, Message) ->
-            io:format("This is a SLACK holiday reminder from ~s: ~s~n", [User, Message])
+            lager:info("This is a SLACK holiday reminder from ~s: ~s", [User, Message])
     end;
 get_channel_handler((#{type := mail})) ->
     fun (#{<<"name">> := User}, _HolidayDate, Message) ->
-            io:format("This is a MAIL holiday reminder from ~s: ~s~n", [User, Message])
+            lager:info("This is a MAIL holiday reminder from ~s: ~s", [User, Message])
     end.
