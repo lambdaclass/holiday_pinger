@@ -12,9 +12,6 @@
          terminate/2,
          code_change/3]).
 
-%% TODO make configurable
--define(INTERVAL, 1000 * 60 * 60 * 24).
-
 %% for testing, foce the checker to send reminders
 force_holidays() ->
     check_holidays({2017, 1, 1}),
@@ -24,7 +21,8 @@ start_link() ->
     gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 
 init([]) ->
-    {ok, _} = timer:send_interval(?INTERVAL, check_holidays),
+    Interval = hp_config:get(checker_interval),
+    {ok, _} = timer:send_interval(Interval, check_holidays),
     {ok, []}.
 
 handle_call(_Request, _From, State) ->
@@ -50,8 +48,8 @@ code_change(_OldVsn, State, _Extra) ->
 
 %%% internal
 check_holidays(HolidayDate) ->
-    io:format("Running holiday checker.~n"),
-    Countries = hp_holiday_db:countries_with_holiday(HolidayDate),
-    Users = hp_user_db:get_from_countries(Countries),
+    lager:info("Running holiday checker."),
+    Countries = db_holiday:countries_with_holiday(HolidayDate),
+    Users = db_user:get_from_countries(Countries),
     lists:foreach(fun (User) -> hp_reminder:send(User, HolidayDate) end, Users),
     ok.
