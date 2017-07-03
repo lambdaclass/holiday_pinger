@@ -4,6 +4,7 @@
   {git,"https://github.com/smarkets/erlang-bcrypt.git",
        {ref,"a63df34d4957dbb70a703c67c75ed9fee2c78971"}},
   1},
+ {<<"certifi">>,{pkg,<<"certifi">>,<<"1.2.1">>},1},
  {<<"cowboy">>,{pkg,<<"cowboy">>,<<"1.1.2">>},0},
  {<<"cowlib">>,{pkg,<<"cowlib">>,<<"1.0.2">>},1},
  {<<"epgsql">>,
@@ -15,10 +16,14 @@
        {ref,"1a39e415d2d0d6f53616ea84e1148230ff54cc89"}},
   0},
  {<<"goldrush">>,{pkg,<<"goldrush">>,<<"0.1.9">>},1},
+ {<<"hackney">>,{pkg,<<"hackney">>,<<"1.8.6">>},0},
+ {<<"idna">>,{pkg,<<"idna">>,<<"5.0.2">>},1},
  {<<"jiffy">>,{pkg,<<"jiffy">>,<<"0.14.11">>},0},
  {<<"jsx">>,{pkg,<<"jsx">>,<<"2.8.0">>},1},
  {<<"jwt">>,{pkg,<<"jwt">>,<<"0.1.3">>},0},
  {<<"lager">>,{pkg,<<"lager">>,<<"3.5.1">>},0},
+ {<<"metrics">>,{pkg,<<"metrics">>,<<"1.0.1">>},1},
+ {<<"mimerl">>,{pkg,<<"mimerl">>,<<"1.0.2">>},1},
  {<<"pgapp">>,
   {git,"https://github.com/epgsql/pgapp.git",
        {ref,"90c309a97c506d0bc1ccaa0541728f2636ef4b3e"}},
@@ -28,17 +33,26 @@
   {git,"git://github.com/devinus/poolboy.git",
        {ref,"fa87a6e51534d02c04a118a2f037d0ff296f2309"}},
   1},
- {<<"ranch">>,{pkg,<<"ranch">>,<<"1.3.2">>},1}]}.
+ {<<"ranch">>,{pkg,<<"ranch">>,<<"1.3.2">>},1},
+ {<<"ssl_verify_fun">>,{pkg,<<"ssl_verify_fun">>,<<"1.1.1">>},1},
+ {<<"unicode_util_compat">>,{pkg,<<"unicode_util_compat">>,<<"0.2.0">>},2}]}.
 [
 {pkg_hash,[
  {<<"base64url">>, <<"36A90125F5948E3AFD7BE97662A1504B934DD5DAC78451CA6E9ABF85A10286BE">>},
+ {<<"certifi">>, <<"C3904F192BD5284E5B13F20DB3CEAC9626E14EEACFBB492E19583CF0E37B22BE">>},
  {<<"cowboy">>, <<"61AC29EA970389A88ECA5A65601460162D370A70018AFE6F949A29DCA91F3BB0">>},
  {<<"cowlib">>, <<"9D769A1D062C9C3AC753096F868CA121E2730B9A377DE23DEC0F7E08B1DF84EE">>},
  {<<"goldrush">>, <<"F06E5D5F1277DA5C413E84D5A2924174182FB108DABB39D5EC548B27424CD106">>},
+ {<<"hackney">>, <<"21A725DB3569B3FB11A6AF17D5C5F654052CE9624219F1317E8639183DE4A423">>},
+ {<<"idna">>, <<"AC203208ADA855D95DC591A764B6E87259CB0E2A364218F215AD662DAA8CD6B4">>},
  {<<"jiffy">>, <<"919A87D491C5A6B5E3BBC27FAFEDC3A0761CA0B4C405394F121F582FD4E3F0E5">>},
  {<<"jsx">>, <<"749BEC6D205C694AE1786D62CEA6CC45A390437E24835FD16D12D74F07097727">>},
  {<<"jwt">>, <<"FDA326D06A88C75CDFC58EE64516EDDD100138082E99E26ED38BFFB600422A9E">>},
  {<<"lager">>, <<"63897A61AF646C59BB928FEE9756CE8BDD02D5A1A2F3551D4A5E38386C2CC071">>},
+ {<<"metrics">>, <<"25F094DEA2CDA98213CECC3AEFF09E940299D950904393B2A29D191C346A8486">>},
+ {<<"mimerl">>, <<"993F9B0E084083405ED8252B99460C4F0563E41729AB42D9074FD5E52439BE88">>},
  {<<"pgsql">>, <<"4A5F1A3800BF00795E4ABA6B4C7E14B56443091166362A0E607EAD30CF184DC3">>},
- {<<"ranch">>, <<"E4965A144DC9FBE70E5C077C65E73C57165416A901BD02EA899CFD95AA890986">>}]}
+ {<<"ranch">>, <<"E4965A144DC9FBE70E5C077C65E73C57165416A901BD02EA899CFD95AA890986">>},
+ {<<"ssl_verify_fun">>, <<"28A4D65B7F59893BC2C7DE786DEC1E1555BD742D336043FE644AE956C3497FBE">>},
+ {<<"unicode_util_compat">>, <<"DBBCCF6781821B1C0701845EAF966C9B6D83D7C3BFC65CA2B78B88B8678BFA35">>}]}
 ].

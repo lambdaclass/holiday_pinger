@@ -59,6 +59,6 @@ code_change(_OldVsn, State, _Extra) ->
 
 %%% internal
 build_message(#{name := UserName}, {Y, M, D}) ->
-    io_lib:format(
-      <<"This is a holiday reminder: ~s will be out on ~2..0B/~2..0B/~B.">>,
-      [UserName, D, M, Y]).
+    list_to_binary(
+      io_lib:format(<<"This is a holiday reminder: ~s will be out on ~2..0B/~2..0B/~B.">>,
+                    [UserName, D, M, Y])).
