@@ -12,6 +12,11 @@
          terminate/2,
          code_change/3]).
 
+-define(HANDLERS, #{
+          slack => fun slack_channel:handle/2,
+          console => fun console_channel:handle/2
+         }).
+
 send(User, HolidayDate) ->
     {ok, Pid} = supervisor:start_child(hp_reminder_sup, []),
     gen_server:cast(Pid, {send_reminders, User, HolidayDate}).
@@ -29,13 +34,12 @@ handle_call(_Request, _From, State) ->
 %% TODO add another simple_one_for_one supervisor whose children send the actual message to each channel
 handle_cast({send_reminders, User, HolidayDate}, State) ->
     lager:debug("Sending reminders for user ~p", [User]),
-    %% TODO build a more meaningful message,
-    Message = "dont forget!",
 
+    Message = build_message(User, HolidayDate),
     Channels = db_channel:get_user_channels(User),
-    SendFn = fun (Channel) ->
-                     Handler = get_channel_handler(Channel),
-                     Handler(User, HolidayDate, Message)
+    SendFn = fun (Channel = #{type := Type}) ->
+                     Handler = maps:get(Type, ?HANDLERS),
+                     Handler(Channel, Message)
              end,
     lists:foreach(SendFn, Channels),
     {noreply, State};
@@ -53,16 +57,8 @@ terminate(_Reason, _State) ->
 code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
 
-%%%% internal
-
-%% Take the channel config and return a function that sends reminder
-%% through that channel
-%% TODO move each handler to a specific file
-get_channel_handler(#{type := slack}) ->
-    fun (#{<<"name">> := User}, _HolidayDate, Message) ->
-            lager:info("This is a SLACK holiday reminder from ~s: ~s", [User, Message])
-    end;
-get_channel_handler((#{type := mail})) ->
-    fun (#{<<"name">> := User}, _HolidayDate, Message) ->
-            lager:info("This is a MAIL holiday reminder from ~s: ~s", [User, Message])
-    end.
+%%% internal
+build_message(#{name := UserName}, {Y, M, D}) ->
+    io_lib:format(
+      <<"This is a holiday reminder: ~s will be out on ~2..0B/~2..0B/~B.">>,
+      [UserName, D, M, Y]).
