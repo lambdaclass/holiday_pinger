@@ -2,6 +2,7 @@
 
 -export([create/4,
          get/2,
+         update/3,
          delete/2,
          list/1,
          channel_keys/0]).
@@ -25,7 +26,12 @@ get(User, ChannelName) ->
         {ok, [Channel | []]} -> {ok, decode_config(Channel)}
     end.
 
-%% TODO add update
+update(User, ChannelName, Config) ->
+    EncodedConfig = hp_json:encode(Config),
+    Q = <<"UPDATE channels SET configuration = $1 "
+          "WHERE \"user\" = (SELECT id FROM users WHERE email = $2) "
+          "AND name = $3">>,
+    db:query(Q, [EncodedConfig, User, ChannelName]).
 
 delete(User, ChannelName) ->
     Q = <<"DELETE FROM channels WHERE \"user\" = (SELECT id FROM users WHERE email = $1) "
