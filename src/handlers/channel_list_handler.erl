@@ -8,21 +8,11 @@
          to_json/2,
          from_json/2]).
 
-%% TODO move to req_utils along with basic auth
-is_authorized(Req, State) ->
-    Fail = {false, <<"Bearer realm=\"holidayping\"">>},
-    case cowboy_req:parse_header(<<"authorization">>, Req) of
-        {ok, {<<"bearer">>, Token}, Req2} ->
-            case hp_auth:token_decode(Token) of
-                {ok, #{<<"email">> := User}} ->
-                    {true, Req2, #{user => User}};
-               _ -> {Fail, Req2, State}
-            end;
-        _ -> {Fail, Req, State}
-    end.
-
 init(_Transport, _Req, []) ->
     {upgrade, protocol, cowboy_rest}.
+
+is_authorized(Req, _State) ->
+    req_utils:is_authorized(bearer, Req, #{}).
 
 allowed_methods(Req, State) ->
     {[<<"GET">>, <<"HEAD">>, <<"OPTIONS">>, <<"POST">>], Req, State}.
