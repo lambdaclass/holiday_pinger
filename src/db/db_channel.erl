@@ -1,15 +1,43 @@
 -module(db_channel).
 
--export([get_user_channels/1]).
+-export([create/4,
+         get/2,
+         delete/2,
+         list/1,
+         channel_keys/0]).
 
-get_user_channels(_User) ->
-    [#{
-        id => 1,
-        name => <<"My slack channel">>,
-        type => slack
-      },
-     #{
-        id => 2,
-        name => <<"My console channel">>,
-        type => console
-      }].
+channel_keys () -> [user, name, type, configuration].
+
+create(User, Name, Type, Config) ->
+    EncodedConfig = hp_json:encode(Config),
+    Q = <<"INSERT INTO channels(\"user\", name, type, configuration) "
+          "VALUES((SELECT id FROM users WHERE email = $1), $2, $3, $4) "
+          "RETURNING name, type, configuration">>,
+    {ok, [Result | []]} = db:query(Q, [User, Name, Type, EncodedConfig]),
+    {ok, decode_config(Result)}.
+
+get(User, ChannelName) ->
+    Q = <<"SELECT name, type, configuration FROM channels "
+          "WHERE \"user\" = (SELECT id FROM users WHERE email = $1) "
+          "AND name = $2">>,
+    case db:query(Q, [User, ChannelName]) of
+        {ok, []} -> {error, not_found};
+        {ok, [Channel | []]} -> {ok, decode_config(Channel)}
+    end.
+
+%% TODO add update
+
+delete(User, ChannelName) ->
+    Q = <<"DELETE FROM channels WHERE \"user\" = (SELECT id FROM users WHERE email = $1) "
+          "AND name = $2">>,
+    db:query(Q, [User, ChannelName]).
+
+list(User) ->
+    Q = <<"SELECT name, type, configuration FROM channels "
+          "WHERE \"user\" = (SELECT id FROM users WHERE email = $1)">>,
+    {ok, Results} = db:query(Q, [User]),
+    {ok, lists:map(fun decode_config/1, Results)}.
+
+%%% internal
+decode_config(Data = #{configuration := Config}) ->
+    Data#{configuration := hp_json:decode(Config)}.

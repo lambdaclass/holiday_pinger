@@ -6,6 +6,7 @@ query(Q, Params) ->
     case pgapp:equery(Q, Params) of
         {ok, _, Columns, Values} -> {ok, results_to_map(Columns, Values)};
         {ok, Columns, Values} -> {ok, results_to_map(Columns, Values)};
+        {ok, _} -> ok;
         E -> {error, E}
     end.
 

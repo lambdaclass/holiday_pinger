@@ -36,7 +36,7 @@ handle_cast({send_reminders, User, HolidayDate}, State) ->
     lager:debug("Sending reminders for user ~p", [User]),
 
     Message = build_message(User, HolidayDate),
-    Channels = db_channel:get_user_channels(User),
+    Channels = db_channel:list(User),
     SendFn = fun (Channel = #{type := Type}) ->
                      Handler = maps:get(Type, ?HANDLERS),
                      Handler(Channel, Message)
