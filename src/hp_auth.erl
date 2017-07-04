@@ -13,7 +13,7 @@ token_encode(Data) ->
 
 token_decode(Token) ->
     Secret = hp_config:get(token_secret),
-    maps:from_list(jwt:decode(Token, Secret)).
+    jwt:decode(Token, Secret).
 
 password_hash(Value) ->
     erlpass:hash(Value).

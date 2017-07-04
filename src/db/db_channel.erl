@@ -39,5 +39,6 @@ list(User) ->
     {ok, lists:map(fun decode_config/1, Results)}.
 
 %%% internal
+%% TODO db:results_to_map could be smart enough to figure this decoding based on the column type
 decode_config(Data = #{configuration := Config}) ->
     Data#{configuration := hp_json:decode(Config)}.
