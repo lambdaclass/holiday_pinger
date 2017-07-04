@@ -2,5 +2,5 @@
 
 -export([handle/2]).
 
-handle(#{type := console}, Message) ->
+handle(_Config, Message) ->
     lager:info(Message).

@@ -13,8 +13,8 @@
          code_change/3]).
 
 -define(HANDLERS, #{
-          slack => fun slack_channel:handle/2,
-          console => fun console_channel:handle/2
+          <<"slack">> => fun slack_channel:handle/2,
+          <<"console">> => fun console_channel:handle/2
          }).
 
 send(User, HolidayDate) ->
@@ -36,10 +36,11 @@ handle_cast({send_reminders, User, HolidayDate}, State) ->
     lager:debug("Sending reminders for user ~p", [User]),
 
     Message = build_message(User, HolidayDate),
-    Channels = db_channel:list(User),
-    SendFn = fun (Channel = #{type := Type}) ->
+    Email = maps:get(email, User),
+    {ok, Channels} = db_channel:list(Email),
+    SendFn = fun (#{type := Type, configuration := Config}) ->
                      Handler = maps:get(Type, ?HANDLERS),
-                     Handler(Channel, Message)
+                     Handler(Config, Message)
              end,
     lists:foreach(SendFn, Channels),
     {noreply, State};
