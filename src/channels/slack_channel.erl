@@ -13,4 +13,4 @@ handle(Config, Message) ->
 
     HookUrl = maps:get(<<"url">>, Config),
     lager:debug("Sending request to slack: ~p", [Payload]),
-    hp_request:post_json(HookUrl, Payload).
+    {ok, 200, _, _} = hp_request:post_json(HookUrl, Payload).

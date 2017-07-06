@@ -10,7 +10,7 @@ CREATE TABLE "public"."users" (
 
 CREATE TABLE channels (
   "id" serial PRIMARY KEY,
-  "user" serial REFERENCES users,
+  "user" serial REFERENCES users ON DELETE CASCADE,
   "name" character varying(50) NOT NULL,
   "type" character varying(20) NOT NULL,
   "configuration" jsonb NOT NULL,

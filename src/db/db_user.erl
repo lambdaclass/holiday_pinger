@@ -2,6 +2,7 @@
 
 -export([create/4,
          get/1,
+         delete/1,
          get_with_password/1,
          get_from_countries/1,
          user_keys/0]).
@@ -31,3 +32,7 @@ get_from_countries(Countries) ->
     Q = <<"SELECT email, name, country FROM users WHERE country IN ($1)">>,
     Joined = lists:join(<<",">>, Countries),
     db:query(Q, [Joined]).
+
+delete(Email) ->
+    Q = <<"DELETE FROM channels WHERE email = $1">>,
+    db:query(Q, [Email]).
