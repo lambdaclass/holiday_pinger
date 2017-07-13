@@ -34,8 +34,10 @@ from_json(Req, _State) ->
            <<"country">> := Country
          } ->
             PasswordHash = hp_auth:password_hash(Password),
-            %% FIXME validate if email already registered
-            {ok, _User} = db_user:create(Email, Name, PasswordHash, Country),
-            {{true, "/api/channels"}, Req2, []};
+            try db_user:create(Email, Name, PasswordHash, Country) of
+                {ok, _User} -> {{true, "/api/channels"}, Req2, []}
+            catch
+                throw:unique_violation -> req_utils:error_response(409, <<"User already exists">>, Req2)
+            end;
         _ -> req_utils:error_response(<<"Missing required fields">>, Req2)
     end.

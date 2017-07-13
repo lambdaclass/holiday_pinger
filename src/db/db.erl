@@ -7,7 +7,9 @@ query(Q, Params) ->
         {ok, _, Columns, Values} -> {ok, results_to_map(Columns, Values)};
         {ok, Columns, Values} -> {ok, results_to_map(Columns, Values)};
         {ok, _} -> ok;
-        E -> {error, E}
+        {error, {error, error, _, unique_violation, _, _}} -> throw(unique_violation);
+        E -> lager:error("Unexpected DB error ~p", [E]),
+             throw(db_error)
     end.
 
 results_to_map(ColumnNames, RowList) ->
