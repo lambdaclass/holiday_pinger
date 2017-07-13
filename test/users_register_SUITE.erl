@@ -33,13 +33,13 @@ register_valid_user(_Config) ->
     ok = db_user:delete(Email),
     ok.
 
-fail_register_on_missing_fields() ->
+fail_register_on_missing_fields(_Config) ->
     ok.
 
-fail_register_on_invalid_fields() ->
+fail_register_on_invalid_fields(_Config) ->
     ok.
 
-fail_register_on_email_already_registered() ->
+fail_register_on_email_already_registered(_Config) ->
     ok.
 
 %% TODO move to some test utils

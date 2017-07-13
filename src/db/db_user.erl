@@ -34,5 +34,5 @@ get_from_countries(Countries) ->
     db:query(Q, [Joined]).
 
 delete(Email) ->
-    Q = <<"DELETE FROM channels WHERE email = $1">>,
+    Q = <<"DELETE FROM users WHERE email = $1">>,
     db:query(Q, [Email]).
