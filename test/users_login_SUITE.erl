@@ -11,15 +11,7 @@ all() ->
 init_per_suite(Config) ->
     {ok, _Apps} = application:ensure_all_started(holiday_ping),
 
-    Email = test_utils:unique_email(),
-    Password = <<"S3cr3t!!">>,
-    Body = #{
-      email => Email,
-      name => <<"John Doe">>,
-      password => Password,
-      country => <<"argentina">>
-     },
-    {ok, 201, _, _} = test_utils:api_request(post, public, "/api/users", Body),
+    #{email := Email, password := Password} = test_utils:create_user(),
 
     [{user, Email}, {password, Password} | Config].
 

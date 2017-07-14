@@ -14,7 +14,8 @@
 
 -define(HANDLERS, #{
           <<"slack">> => fun slack_channel:handle/2,
-          <<"console">> => fun console_channel:handle/2
+          <<"console">> => fun console_channel:handle/2,
+          <<"ets">> => fun ets_channel:handle/2
          }).
 
 send(User, HolidayDate) ->
