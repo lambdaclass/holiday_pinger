@@ -13,8 +13,8 @@ allowed_methods(Req, State) ->
     {[<<"GET">>], Req, State}.
 
 %% Get user/password from basic auth and save the user to state if auth succeeds
-is_authorized(Req, State) ->
-    req_utils:is_authorized(basic, Req, State).
+is_authorized(Req, _State) ->
+    req_utils:is_authorized(basic, Req, #{}).
 
 content_types_provided(Req, State) ->
     {[{<<"application/json">>, to_json}], Req, State}.

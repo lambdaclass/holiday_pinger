@@ -27,7 +27,7 @@ register_valid_user(_Config) ->
       country => <<"argentina">>
      },
 
-    {ok, 201, _, _} = test_utils:api_request(post, "/api/users", Body),
+    {ok, 201, _, _} = test_utils:api_request(post, public, "/api/users", Body),
 
     %% FIXME delete user via API, not db
     ok = db_user:delete(Email),
@@ -43,13 +43,13 @@ fail_register_on_missing_fields(_Config) ->
      },
 
     {ok, 400, _, #{<<"message">> := <<"Missing required fields">>}} =
-        test_utils:api_request(post, "/api/users", maps:remove(email, Body)),
+        test_utils:api_request(post, public, "/api/users", maps:remove(email, Body)),
     {ok, 400, _, #{<<"message">> := <<"Missing required fields">>}} =
-        test_utils:api_request(post, "/api/users", maps:remove(name, Body)),
+        test_utils:api_request(post, public, "/api/users", maps:remove(name, Body)),
     {ok, 400, _, #{<<"message">> := <<"Missing required fields">>}} =
-        test_utils:api_request(post, "/api/users", maps:remove(password, Body)),
+        test_utils:api_request(post, public, "/api/users", maps:remove(password, Body)),
     {ok, 400, _, #{<<"message">> := <<"Missing required fields">>}} =
-        test_utils:api_request(post, "/api/users", maps:remove(country, Body)),
+        test_utils:api_request(post, public, "/api/users", maps:remove(country, Body)),
     ok.
 
 fail_register_on_invalid_fields(_Config) ->
@@ -65,9 +65,9 @@ fail_register_on_email_already_registered(_Config) ->
       country => <<"argentina">>
      },
 
-    {ok, 201, _, _} = test_utils:api_request(post, "/api/users", Body),
+    {ok, 201, _, _} = test_utils:api_request(post, public, "/api/users", Body),
     {ok, 409, _, #{<<"message">> := <<"User already exists">>}} =
-        test_utils:api_request(post, "/api/users", Body),
+        test_utils:api_request(post, public, "/api/users", Body),
 
     %% FIXME delete user via API, not db
     ok = db_user:delete(Email),
