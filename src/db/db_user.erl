@@ -13,8 +13,10 @@ user_keys () -> [email, password, name, country].
 create(Email, Name, Password, Country) ->
     Q = <<"INSERT INTO users(email, name, password, country)"
           "VALUES($1, $2, $3, $4) RETURNING email, name, country ">>,
-    {ok, [Result | []]} = db:query(Q, [Email, Name, Password, Country]),
-    {ok, Result}.
+    case db:query(Q, [Email, Name, Password, Country]) of
+        {ok, [Result | []]} -> {ok, Result};
+        {error, unique_violation} -> {error, user_already_exists}
+    end.
 
 get(Email) ->
     {ok, Result} = get_with_password(Email),
