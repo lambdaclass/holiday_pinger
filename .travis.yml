@@ -6,6 +6,9 @@ otp_release:
 services:
   - postgresql
 
+addons:
+  postgresql: "9.4"
+
 before_script:
   - psql -c 'create database holiday_ping;' -U postgres
   - psql -U postgres -d holiday_ping -a -f ./priv/sql/tables.sql
