@@ -3,7 +3,8 @@
 -export([unique_email/0,
          api_request/3,
          api_request/4,
-         api_request/5]).
+         api_request/5,
+         delete_user/1]).
 
 unique_email() ->
     "test_user" ++ ktn_random:string(5) ++ "@example.com".
@@ -30,3 +31,8 @@ api_request_internal(Method, Headers, Path, Data, Options) ->
         {ok, _, _, <<"">>} = Res -> Res;
         {ok, Status, ResHeaders, ResBody} -> {ok, Status, ResHeaders, hp_json:decode(ResBody)}
     end.
+
+
+delete_user(Email) ->
+    %% FIXME delete user via API, not db
+    db_user:delete(Email).

@@ -29,9 +29,7 @@ register_valid_user(_Config) ->
 
     {ok, 201, _, _} = test_utils:api_request(post, public, "/api/users", Body),
 
-    %% FIXME delete user via API, not db
-    ok = db_user:delete(Email),
-    ok.
+    ok = test_utils:delete_user(Email).
 
 fail_register_on_missing_fields(_Config) ->
     Email = test_utils:unique_email(),
@@ -69,6 +67,4 @@ fail_register_on_email_already_registered(_Config) ->
     {ok, 409, _, #{<<"message">> := <<"User already exists">>}} =
         test_utils:api_request(post, public, "/api/users", Body),
 
-    %% FIXME delete user via API, not db
-    ok = db_user:delete(Email),
-    ok.
+    ok = test_utils:delete_user(Email).

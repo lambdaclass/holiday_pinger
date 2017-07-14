@@ -26,9 +26,7 @@ init_per_suite(Config) ->
 end_per_suite(Config) ->
     ok = application:stop(holiday_ping),
     ok = application:unload(holiday_ping),
-
-    %% FIXME delete user via API, not db
-    ok = db_user:delete(?config(user, Config)).
+    ok = test_utils:delete_user(?config(user, Config)).
 
 login_with_valid_user(Config) ->
     Options = [{basic_auth, {?config(user, Config), ?config(password, Config)}}],
