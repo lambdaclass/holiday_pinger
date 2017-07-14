@@ -4,6 +4,7 @@
          allowed_methods/2,
          content_types_accepted/2,
          content_types_provided/2,
+         resource_exists/2,
          from_json/2]).
 
 init(_Transport, _Req, []) ->
@@ -11,6 +12,9 @@ init(_Transport, _Req, []) ->
 
 allowed_methods(Req, State) ->
     {[<<"POST">>], Req, State}.
+
+resource_exists(Req, State) ->
+    {false, Req, State}.
 
 content_types_accepted(Req, State) ->
     {[{<<"application/json">>, from_json}], Req, State}.
@@ -30,8 +34,10 @@ from_json(Req, _State) ->
            <<"country">> := Country
          } ->
             PasswordHash = hp_auth:password_hash(Password),
-            %% FIXME validate if email already registered
-            {ok, User} = db_user:create(Email, Name, PasswordHash, Country),
-            req_utils:success_response(User, Req2);
+            case db_user:create(Email, Name, PasswordHash, Country) of
+                {ok, _User} -> {{true, "/api/channels"}, Req2, []};
+                {error, user_already_exists} ->
+                    req_utils:error_response(409, <<"User already exists">>, Req2)
+            end;
         _ -> req_utils:error_response(<<"Missing required fields">>, Req2)
     end.

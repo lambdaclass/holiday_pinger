@@ -6,7 +6,11 @@ query(Q, Params) ->
     case pgapp:equery(Q, Params) of
         {ok, _, Columns, Values} -> {ok, results_to_map(Columns, Values)};
         {ok, Columns, Values} -> {ok, results_to_map(Columns, Values)};
-        E -> {error, E}
+        {ok, _} -> ok;
+        {error, {error, error, _, unique_violation, _, _}} -> {error, unique_violation};
+        E ->
+            lager:error("Unexpected DB error ~p", [E]),
+            throw({db_error, E})
     end.
 
 results_to_map(ColumnNames, RowList) ->

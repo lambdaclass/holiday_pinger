@@ -2,6 +2,7 @@
 
 -export([create/4,
          get/1,
+         delete/1,
          get_with_password/1,
          get_from_countries/1,
          user_keys/0]).
@@ -12,8 +13,10 @@ user_keys () -> [email, password, name, country].
 create(Email, Name, Password, Country) ->
     Q = <<"INSERT INTO users(email, name, password, country)"
           "VALUES($1, $2, $3, $4) RETURNING email, name, country ">>,
-    {ok, [Result | []]} = db:query(Q, [Email, Name, Password, Country]),
-    {ok, Result}.
+    case db:query(Q, [Email, Name, Password, Country]) of
+        {ok, [Result | []]} -> {ok, Result};
+        {error, unique_violation} -> {error, user_already_exists}
+    end.
 
 get(Email) ->
     {ok, Result} = get_with_password(Email),
@@ -31,3 +34,7 @@ get_from_countries(Countries) ->
     Q = <<"SELECT email, name, country FROM users WHERE country IN ($1)">>,
     Joined = lists:join(<<",">>, Countries),
     db:query(Q, [Joined]).
+
+delete(Email) ->
+    Q = <<"DELETE FROM users WHERE email = $1">>,
+    db:query(Q, [Email]).

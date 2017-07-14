@@ -13,17 +13,8 @@ allowed_methods(Req, State) ->
     {[<<"GET">>], Req, State}.
 
 %% Get user/password from basic auth and save the user to state if auth succeeds
-is_authorized(Req, State) ->
-    Fail = {false, <<"Basic realm=\"holidayping\"">>},
-    case cowboy_req:parse_header(<<"authorization">>, Req) of
-        {ok, {<<"basic">>, {Email, Password}}, Req2} ->
-            case hp_auth:authenticate(Email, Password) of
-                {ok, User} ->
-                    {true, Req2, #{user => User}};
-                _ -> {Fail, Req2, State}
-            end;
-        _ -> {Fail, Req, State}
-    end.
+is_authorized(Req, _State) ->
+    req_utils:is_authorized(basic, Req, #{}).
 
 content_types_provided(Req, State) ->
     {[{<<"application/json">>, to_json}], Req, State}.

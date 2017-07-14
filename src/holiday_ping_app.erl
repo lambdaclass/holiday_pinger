@@ -14,9 +14,9 @@ start(_StartType, _StartArgs) ->
                                              {"/api/users", user_handler, []},
                                              {"/api/auth/token", token_handler, []},
                                              {"/api/channels", channel_list_handler, []},
-                                             {"/api/channels/:id", [{id, int}], channel_detail_handler, []}]}
+                                             {"/api/channels/:name", channel_detail_handler, []}]}
                                      ]),
-    cowboy:start_http(my_http_listener, 100, [{port, 8001}],
+    cowboy:start_http(my_http_listener, 100, [{port, hp_config:get(port)}],
                       [{env, [{dispatch, Dispatch}]}]
                      ),
     hp_sup:start_link().
