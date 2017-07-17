@@ -14,8 +14,10 @@ create(User, Name, Type, Config) ->
     Q = <<"INSERT INTO channels(\"user\", name, type, configuration) "
           "VALUES((SELECT id FROM users WHERE email = $1), $2, $3, $4) "
           "RETURNING name, type, configuration">>,
-    {ok, [Result | []]} = db:query(Q, [User, Name, Type, EncodedConfig]),
-    {ok, decode_config(Result)}.
+    case db:query(Q, [User, Name, Type, EncodedConfig]) of
+        {ok, [Result | []]} -> {ok, decode_config(Result)};
+        {error, unique_violation} -> {error, channel_already_exists}
+    end.
 
 get(User, ChannelName) ->
     Q = <<"SELECT name, type, configuration FROM channels "
