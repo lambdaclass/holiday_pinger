@@ -13,7 +13,7 @@ get_reminders(TableId, Email) ->
     ets:lookup(TableId, Email).
 
 handle(Config, Message) ->
-    #{<<"email">> := Email,
-      <<"table_id">> := TableId} = Config,
+    #{email := Email,
+      table_id := TableId} = Config,
     ets:insert(erlang:binary_to_existing_atom(TableId, latin1), {Email, Message}),
     ok.

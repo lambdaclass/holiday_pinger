@@ -50,8 +50,8 @@ from_json(Req, State = #{is_new := true,
 
     %% TODO validate input fields
     #{
-       <<"type">> := Type,
-       <<"configuration">> := Config
+       type := Type,
+       configuration := Config
      } = hp_json:decode(Body),
 
     {ok, _} = db_channel:create(User, Name, Type, Config),
@@ -68,7 +68,7 @@ from_json(Req, State = #{is_new := false,
     %% only configuration can be updated for now
     {ok, Body, Req2} = cowboy_req:body(Req),
     %% TODO validate input fields
-    #{<<"configuration">> := Config} = hp_json:decode(Body),
+    #{configuration := Config} = hp_json:decode(Body),
 
     ok = db_channel:update(User, Name, Config),
 

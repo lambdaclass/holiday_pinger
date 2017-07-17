@@ -28,10 +28,10 @@ from_json(Req, _State) ->
     %% FIXME add stronger validations (email is email, password strong enough, valid country, etc)
     case hp_json:decode(Body) of
         #{
-           <<"email">> := Email,
-           <<"name">> := Name,
-           <<"password">> := Password,
-           <<"country">> := Country
+           email := Email,
+           name := Name,
+           password := Password,
+           country := Country
          } ->
             PasswordHash = hp_auth:password_hash(Password),
             case db_user:create(Email, Name, PasswordHash, Country) of

@@ -23,7 +23,7 @@ end_per_suite(Config) ->
 login_with_valid_user(Config) ->
     Options = [{basic_auth, {?config(user, Config), ?config(password, Config)}}],
 
-    {ok, 200, _, #{<<"access_token">> := Token}} =
+    {ok, 200, _, #{access_token := Token}} =
         test_utils:api_request(get, public, "/api/auth/token", <<"">>, Options),
     {ok, 200, _, _} = test_utils:api_request(get, Token, "/api/channels"),
 
