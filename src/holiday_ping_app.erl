@@ -9,8 +9,8 @@ start(_StartType, _StartArgs) ->
     pgapp:connect(hp_config:get(pg_options)),
 
     Dispatch = cowboy_router:compile([
-                                      {'_', [{"/", cowboy_static, {priv_file, holiday_ping, "index.html"}},
-                                             {"/assets/[...]", cowboy_static, {priv_dir, holiday_ping, ""}},
+                                      {'_', [{"/", cowboy_static, {priv_file, holiday_ping, "/ui/index.html"}},
+                                             {"/js/[...]", cowboy_static, {priv_dir, holiday_ping, "/ui/js"}},
                                              {"/api/users", user_handler, []},
                                              {"/api/auth/token", token_handler, []},
                                              {"/api/channels", channel_list_handler, []},
