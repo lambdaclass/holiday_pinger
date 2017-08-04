@@ -27,6 +27,22 @@ Build a release:
 
     $ make release
 
+### UI setup
+
+The UI code is maintained in the [holiday_ping_ui](https://github.com/lambdaclass/holiday_ping_ui) repository.
+
+For UI development, run:
+
+    $ make dev_ui
+
+This will clone the ui project to the `_ui` folder, link the relevant files
+to the priv folder of the erlang project and run figwheel for hot reload
+of the changes in the UI code.
+
+To build the ui and include it in the erlang project:
+
+    $ make release_ui
+
 ## Rest API Reference
 
 Not yet.

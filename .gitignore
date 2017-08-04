@@ -16,3 +16,5 @@ _build
 .idea
 rebar3.crashdump
 ct_log
+_ui
+priv/ui
