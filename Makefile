@@ -15,7 +15,7 @@ ops_start:
 dev_ui:
 	test -d _ui || git clone git@github.com:lambdaclass/holiday_ping_ui.git _ui && \
 	rm -rf priv/ui && ln -s ${shell pwd}/_ui/resources/public/ ${shell pwd}/priv/ui && \
-	cd _ui && lein figwheel
+	cd _ui && ${shell command -v rlwrap} lein figwheel
 
 release_ui:
 	test -d _ui || git clone git@github.com:lambdaclass/holiday_ping_ui.git _ui && \
