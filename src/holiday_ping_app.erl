@@ -10,7 +10,8 @@ start(_StartType, _StartArgs) ->
 
     Dispatch = cowboy_router:compile([
                                       {'_', [{"/", cowboy_static, {priv_file, holiday_ping, "/ui/index.html"}},
-                                             {"/[...]", cowboy_static, {priv_dir, holiday_ping, "/ui"}},
+                                             {"/js/[...]", cowboy_static, {priv_dir, holiday_ping, "/ui/js"}},
+                                             {"/css/[...]", cowboy_static, {priv_dir, holiday_ping, "/ui/css"}},
                                              {"/api/users", user_handler, []},
                                              {"/api/auth/token", token_handler, []},
                                              {"/api/channels", channel_list_handler, []},
