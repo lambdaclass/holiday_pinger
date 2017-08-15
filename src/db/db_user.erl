@@ -7,7 +7,7 @@
          get_from_countries/1,
          user_keys/0]).
 
-%% needed so atoms exist. TODO maybe put somewhere else
+%% needed so atoms exist.
 user_keys () -> [email, password, name, country].
 
 create(Email, Name, Password, Country) ->
