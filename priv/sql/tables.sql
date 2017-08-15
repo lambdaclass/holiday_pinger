@@ -16,3 +16,40 @@ CREATE TABLE channels (
   "configuration" jsonb NOT NULL,
   UNIQUE ("user", "name")
 );
+
+CREATE TABLE holidays (
+  "id" serial PRIMARY KEY,
+  "country" character varying(20) NOT NULL,
+  "date" date NOT NULL,
+  "name" character varying(50) NOT NULL,
+  UNIQUE ("country", "date")
+);
+
+
+INSERT INTO "holidays" ("country", "date", "name") VALUES
+('argentina', make_date(date_part('year', now())::int, 1, 1), 'New year'),
+('argentina', make_date(date_part('year', now())::int, 2, 27), 'Carnival'),
+('argentina', make_date(date_part('year', now())::int, 2, 28), 'Carnival'),
+('argentina', make_date(date_part('year', now())::int, 3, 24), ''),
+('argentina', make_date(date_part('year', now())::int, 4, 2), ''),
+('argentina', make_date(date_part('year', now())::int, 4, 13), ''),
+('argentina', make_date(date_part('year', now())::int, 4, 14), ''),
+('argentina', make_date(date_part('year', now())::int, 5, 1), ''),
+('argentina', make_date(date_part('year', now())::int, 5, 25), ''),
+('argentina', make_date(date_part('year', now())::int, 6, 17), ''),
+('argentina', make_date(date_part('year', now())::int, 6, 20), ''),
+('argentina', make_date(date_part('year', now())::int, 7, 9), 'Independence day'),
+('argentina', make_date(date_part('year', now())::int, 11, 20), ''),
+('argentina', make_date(date_part('year', now())::int, 12, 8), ''),
+('argentina', make_date(date_part('year', now())::int, 12, 25), 'Christmas'),
+
+('united states', make_date(date_part('year', now())::int, 1, 1), 'New years day'),
+('united states', make_date(date_part('year', now())::int, 1, 16), 'Martin Luther King Jr. Day'),
+('united states', make_date(date_part('year', now())::int, 2, 20), 'Presidents'' day'),
+('united states', make_date(date_part('year', now())::int, 5, 29), 'Memorial day'),
+('united states', make_date(date_part('year', now())::int, 7, 4), 'Independence day'),
+('united states', make_date(date_part('year', now())::int, 9, 4), 'Labor day'),
+('united states', make_date(date_part('year', now())::int, 11, 10), 'Veterans day'),
+('united states', make_date(date_part('year', now())::int, 11, 23), 'Thanksgiving'),
+('united states', make_date(date_part('year', now())::int, 12, 25), 'Christmas')
+;
