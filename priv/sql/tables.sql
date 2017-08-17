@@ -25,6 +25,14 @@ CREATE TABLE holidays (
   UNIQUE ("country", "date")
 );
 
+CREATE TABLE user_holidays (
+  "id" serial PRIMARY KEY,
+  "user" serial REFERENCES users ON DELETE CASCADE,
+  "date" date NOT NULL,
+  "name" character varying(50) NOT NULL,
+  UNIQUE ("user", "date")
+);
+
 
 INSERT INTO "holidays" ("country", "date", "name") VALUES
 ('argentina', make_date(date_part('year', now())::int, 1, 1), 'New year'),

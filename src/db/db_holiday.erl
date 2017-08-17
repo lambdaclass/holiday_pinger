@@ -4,10 +4,12 @@
          countries_with_holiday/1,
          holidays_of_country/1,
          create/3,
-         user_keys/0]).
+         get_user_holidays/1,
+         set_user_holidays/2,
+         holiday_keys/0]).
 
 %% needed so atoms exist.
-user_keys () -> [country, date, name].
+holiday_keys () -> [country, date, name, user].
 
 %% Get the list of the countries that have a holiday in the given date
 countries_with_holiday(Date) ->
@@ -29,3 +31,27 @@ create(Country, Date, Name) ->
     {ok, [Result | []]} -> {ok, Result};
     {error, unique_violation} -> {error, holiday_already_exists}
   end.
+
+get_user_holidays(Email) ->
+    Q = <<"SELECT date, name FROM user_holidays "
+          "WHERE \"user\" = (SELECT id FROM users WHERE email = $1) "
+          "ORDER BY date">>,
+    db:query(Q, [Email]).
+
+set_user_holidays(Email, Holidays) ->
+    UserQ = <<"SELECT id FROM users WHERE email = $1">>,
+    {ok, [#{id := UserId}]} = db:query(UserQ, [Email]),
+
+    Values = [io_lib:format(<<"(~p, '~s', '~s')">>, [UserId, Date, Name]) ||
+                 #{date := Date, name := Name} <- Holidays],
+    Values2 = lists:join(<<", ">>, Values),
+
+    Q = [<<"INSERT INTO user_holidays(\"user\", date, name) VALUES ">>,
+         Values2, <<" RETURNING date, name">>],
+    Q2 = iolist_to_binary(Q),
+
+    lager:debug("Inserting user holidays ~p", [Q2]),
+    case db:query(Q2, []) of
+        {ok, Result} -> {ok, Result};
+        {error, unique_violation} -> {error, holiday_already_exists}
+    end.
