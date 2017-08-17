@@ -4,39 +4,26 @@
 -compile(export_all).
 
 all() ->
-    [get_default_channels,
-     update_channels].
+    [get_default_holidays,
+     update_holidays].
 
 init_per_suite(Config) ->
     {ok, _Apps} = application:ensure_all_started(holiday_ping),
 
-    %% FIXME add a create_user_with_token util, update everywhere
-    #{email := Email1, password := Password1} = test_utils:create_user(#{country => <<"argentina">>}),
-    #{email := Email2, password := Password2} = test_utils:create_user(#{country => <<"argentina">>}),
-    #{email := Email3, password := Password3} = test_utils:create_user(#{country => <<"united states">>}),
-
-    {ok, 200, _, #{access_token := Token1}} =
-        test_utils:api_request(get, public, "/api/auth/token", <<"">>,
-                               [{basic_auth, {Email1, Password1}}]),
-
-    {ok, 200, _, #{access_token := Token2}} =
-        test_utils:api_request(get, public, "/api/auth/token", <<"">>,
-                               [{basic_auth, {Email2, Password2}}]),
-
-    {ok, 200, _, #{access_token := Token3}} =
-        test_utils:api_request(get, public, "/api/auth/token", <<"">>,
-                               [{basic_auth, {Email3, Password3}}]),
+    #{email := Email1, token := Token1} = test_utils:create_user_with_token(#{country => <<"argentina">>}),
+    #{email := Email2, token := Token2} = test_utils:create_user_with_token(#{country => <<"argentina">>}),
+    #{email := Email3, token := Token3} = test_utils:create_user_with_token(#{country => <<"united states">>}),
 
     [{user1, Email1}, {token1, Token1},
      {user2, Email2}, {token2, Token2},
-     {user3, Email3}, {token3, Token3}
-     | Config].
+     {user3, Email3}, {token3, Token3} | Config].
 
 end_per_suite(Config) ->
     ok = test_utils:delete_user(?config(user1, Config)),
-    ok = test_utils:delete_user(?config(user2, Config)).
+    ok = test_utils:delete_user(?config(user2, Config)),
+    ok = test_utils:delete_user(?config(user3, Config)).
 
-get_default_channels(Config) ->
+get_default_holidays(Config) ->
     Token1 = ?config(token1, Config),
     Token3 = ?config(token3, Config),
 
@@ -51,7 +38,7 @@ get_default_channels(Config) ->
                      end, UsHolidays),
     ok.
 
-update_channels(Config) ->
+update_holidays(Config) ->
     Token1 = ?config(token1, Config),
     Token2 = ?config(token2, Config),
     {Y, _, _} = erlang:date(),

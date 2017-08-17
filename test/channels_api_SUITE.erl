@@ -12,12 +12,7 @@ all() ->
 init_per_suite(Config) ->
     {ok, _Apps} = application:ensure_all_started(holiday_ping),
 
-    %% TODO add a create user with token function util
-    #{email := Email, password := Password} = test_utils:create_user(),
-    {ok, 200, _, #{access_token := Token}} =
-        test_utils:api_request(get, public, "/api/auth/token", <<"">>,
-                               [{basic_auth, {Email, Password}}]),
-
+    #{email := Email, token := Token} = test_utils:create_user_with_token(),
     [{user, Email}, {token, Token} | Config].
 
 end_per_suite(Config) ->

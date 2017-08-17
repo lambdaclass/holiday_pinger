@@ -6,6 +6,8 @@
          api_request/5,
          create_user/0,
          create_user/1,
+         create_user_with_token/0,
+         create_user_with_token/1,
          delete_user/1]).
 
 unique_email() ->
@@ -49,6 +51,16 @@ create_user(Overrides) ->
 
     {ok, 201, _, _} = api_request(post, public, "/api/users", Body),
     Body.
+
+create_user_with_token() ->
+    create_user_with_token(#{}).
+
+create_user_with_token(Overrides) ->
+    #{email := Email, password := Password} = User = create_user(Overrides),
+    {ok, 200, _, #{access_token := Token}} =
+        test_utils:api_request(get, public, "/api/auth/token", <<"">>,
+                               [{basic_auth, {Email, Password}}]),
+    User#{token => Token}.
 
 delete_user(Email) ->
     %% FIXME delete user via API, not db
