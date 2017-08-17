@@ -29,11 +29,14 @@ get_with_password(Email) ->
         {ok, [User | []]} -> {ok, User}
     end.
 
+get_from_countries([]) ->
+    [];
 get_from_countries(Countries) ->
     %% TODO paginate this call
-    Q = <<"SELECT email, name, country FROM users WHERE country IN ($1)">>,
-    Joined = lists:join(<<",">>, Countries),
-    db:query(Q, [Joined]).
+    Q = [<<"SELECT email, name, country FROM users WHERE country IN">>,
+         <<"('">>, lists:join(<<"', '">>, Countries), <<"')">>],
+    Joined = iolist_to_binary(Q),
+    db:query(Joined, []).
 
 delete(Email) ->
     Q = <<"DELETE FROM users WHERE email = $1">>,

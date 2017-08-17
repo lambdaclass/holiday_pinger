@@ -5,6 +5,7 @@
 handle(Config, Message) ->
     Targets = maps:get(channels, Config),
     HookUrl = maps:get(url, Config),
+    %% FIXME emoji and username should be default when blank
     BasePayload = #{
       text => Message,
       username => maps:get(username, Config, <<"Holiday Reminder">>),

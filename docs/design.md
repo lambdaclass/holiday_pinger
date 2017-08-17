@@ -45,6 +45,8 @@ https://news.ycombinator.com/item?id=13379609
 https://www.reddit.com/r/Clojure/comments/4i16v0/is_there_a_better_library_than_reframe_in_its/
 https://www.reddit.com/r/Clojure/comments/3vk58p/a_rant_on_om_next/
 https://www.reddit.com/r/Clojure/comments/421gqj/why_we_use_om_and_why_were_excited_for_om_next/
+https://purelyfunctional.tv/article/why-re-frame-instead-of-om-next/
+
 
 reagent seems very clean and re-frame too, but the latter seems to have a preference
 for global, implicit state in it's api that I'm not too thrilled about:
