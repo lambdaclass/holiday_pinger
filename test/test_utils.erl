@@ -5,6 +5,7 @@
          api_request/4,
          api_request/5,
          create_user/0,
+         create_user/1,
          delete_user/1]).
 
 unique_email() ->
@@ -34,14 +35,18 @@ api_request_internal(Method, Headers, Path, Data, Options) ->
     end.
 
 create_user() ->
+    create_user(#{}).
+
+create_user(Overrides) ->
     Email = unique_email(),
     Password = <<"S3cr3t!!">>,
-    Body = #{
+    Body = maps:merge(#{
       email => Email,
       name => <<"John Doe">>,
       password => Password,
       country => <<"argentina">>
-     },
+     }, Overrides),
+
     {ok, 201, _, _} = api_request(post, public, "/api/users", Body),
     Body.
 
