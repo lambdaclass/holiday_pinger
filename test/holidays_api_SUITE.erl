@@ -8,6 +8,8 @@ all() ->
      update_channels].
 
 init_per_suite(Config) ->
+    {ok, _Apps} = application:ensure_all_started(holiday_ping),
+
     %% FIXME add a create_user_with_token util, update everywhere
     #{email := Email1, password := Password1} = test_utils:create_user(#{country => <<"argentina">>}),
     #{email := Email2, password := Password2} = test_utils:create_user(#{country => <<"argentina">>}),
@@ -51,7 +53,7 @@ get_default_channels(Config) ->
 
 update_channels(Config) ->
     Token1 = ?config(token1, Config),
-    Token2 = ?config(token1, Config),
+    Token2 = ?config(token2, Config),
     {Y, _, _} = erlang:date(),
     CurrentYear = integer_to_binary(Y),
     CustomDay = <<CurrentYear/binary, "-03-03">>,
@@ -59,8 +61,8 @@ update_channels(Config) ->
     {ok, 200, _, ArgHolidays} = test_utils:api_request(get, Token1, "/api/holidays/"),
 
     %% Remove a holiday and add another
-    ArgHolidays2 = lists:drop_while(fun (Holiday) ->
-                                            is_same_holiday(Holiday, 7, 9, <<"Independece day">>)
+    ArgHolidays2 = lists:filter(fun (Holiday) ->
+                                            not is_same_holiday(Holiday, 7, 9, <<"Independence day">>)
                                     end, ArgHolidays),
     ArgHolidays3 = [#{date => CustomDay, name => <<"Custom day">>} | ArgHolidays2],
     {ok, 200, _, _} = test_utils:api_request(put, Token1, "/api/holidays/", ArgHolidays3),

@@ -33,10 +33,18 @@ create(Country, Date, Name) ->
   end.
 
 get_user_holidays(Email) ->
-    Q = <<"SELECT date, name FROM user_holidays "
+    Q = <<"SELECT to_char(date, 'YYYY-MM-DD') as date, name FROM user_holidays "
           "WHERE \"user\" = (SELECT id FROM users WHERE email = $1) "
           "ORDER BY date">>,
-    db:query(Q, [Email]).
+    QDefault = <<"SELECT to_char(date, 'YYYY-MM-DD') as date, name FROM holidays "
+                 "WHERE country = (SELECT country FROM users WHERE email = $1) "
+                 "ORDER BY date">>,
+
+    case db:query(Q, [Email]) of
+        {ok, []} ->
+            db:query(QDefault, [Email]);
+        R -> R
+    end.
 
 set_user_holidays(Email, Holidays) ->
     UserQ = <<"SELECT id FROM users WHERE email = $1">>,
