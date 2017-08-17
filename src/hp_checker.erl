@@ -4,6 +4,7 @@
 -export([start_link/0,
 
          force_holidays/0,
+         force_holidays/1,
 
          init/1,
          handle_call/3,
@@ -14,7 +15,9 @@
 
 %% for testing, foce the checker to send reminders
 force_holidays() ->
-    check_holidays({2017, 1, 1}),
+    force_holidays({2017, 1, 1}).
+force_holidays(Date) ->
+    check_holidays(Date),
     ok.
 
 start_link() ->

@@ -8,7 +8,9 @@
          create_user/1,
          create_user_with_token/0,
          create_user_with_token/1,
-         delete_user/1]).
+         delete_user/1,
+         is_same_holiday/3,
+         is_same_holiday/4]).
 
 unique_email() ->
     erlang:list_to_binary("test_user" ++ ktn_random:string(5) ++ "@example.com").
@@ -65,3 +67,15 @@ create_user_with_token(Overrides) ->
 delete_user(Email) ->
     %% FIXME delete user via API, not db
     db_user:delete(Email).
+
+is_same_holiday(Holiday, MM, DD, Name) ->
+    {CurrentYear, _, _} = erlang:date(),
+    Expected = list_to_binary(
+                 io_lib:format(<<"~B-~2..0B-~2..0B">>, [CurrentYear, MM, DD])),
+    (maps:get(date, Holiday) == Expected) and (maps:get(name, Holiday) == Name).
+
+is_same_holiday(Holiday, MM, DD) ->
+    {CurrentYear, _, _} = erlang:date(),
+    Expected = list_to_binary(
+                 io_lib:format(<<"~B-~2..0B-~2..0B">>, [CurrentYear, MM, DD])),
+    maps:get(date, Holiday) == Expected.
