@@ -1,32 +1,31 @@
 -module(db_holiday).
 
 -export([countries_with_holiday/0,
-         countries_with_holiday/1]).
+         countries_with_holiday/1,
+         holidays_of_country/1,
+         create/3,
+         user_keys/0]).
 
-%% TODO take from db or somewhere else
--define(HOLIDAYS, #{
-          <<"argentina">> => [{1, 1},
-                              {2, 27},
-                              {2, 28},
-                              {3, 24},
-                              {4, 2},
-                              {4, 13},
-                              {4, 14},
-                              {5, 1},
-                              {5, 25},
-                              {6, 17},
-                              {6, 20},
-                              {7, 9},
-                              {11, 20},
-                              {12, 8},
-                              {12, 25}]
-         }).
+%% needed so atoms exist.
+user_keys () -> [country, date, name].
 
 %% Get the list of the countries that have a holiday in the given date
 countries_with_holiday(Date) ->
-    {_Y, M, D} = Date,
-    CountryMap = maps:filter(fun (_K, Holidays) -> lists:member({M, D}, Holidays) end, ?HOLIDAYS),
-    maps:keys(CountryMap).
+  Q = <<"SELECT country FROM holidays WHERE date = $1">>,
+  {ok, Results} = db:query(Q, [Date]),
+  lists:map(fun (R) -> maps:get(country, R) end, Results).
 
 countries_with_holiday() ->
     countries_with_holiday(erlang:date()).
+
+holidays_of_country(Country) ->
+  Q = <<"SELECT name, date FROM holidays WHERE country = $1">>,
+  db:query(Q, [Country]).
+
+create(Country, Date, Name) ->
+  Q = <<"INSERT INTO holidays(country, date, name) "
+        "VALUES($1, $2, $3) RETURNING country, date, name">>,
+  case db:query(Q, [Country, Date, Name]) of
+    {ok, [Result | []]} -> {ok, Result};
+    {error, unique_violation} -> {error, holiday_already_exists}
+  end.
