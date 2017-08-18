@@ -71,7 +71,7 @@ send_custom_holiday_reminder(_Config) ->
     Updated = [#{date => CustomDay, name => <<"Custom day">>} | DefaultHolidays],
     {ok, 200, _, _} = test_utils:api_request(put, Token, "/api/holidays/", Updated),
 
-    TableId = ets_channel_table2,
+    TableId = ets_channel_table3,
     ChannelConfig = #{email => Email, table_id => TableId},
     db_channel:create(Email, <<"test_ets">>, ets, ChannelConfig),
     ets_channel:init_table(TableId),

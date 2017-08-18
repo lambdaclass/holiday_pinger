@@ -33,9 +33,12 @@ from_json(Req, _State) ->
            password := Password,
            country := Country
          } ->
+            LCountry = string:lowercase(Country),
             PasswordHash = hp_auth:password_hash(Password),
-            case db_user:create(Email, Name, PasswordHash, string:lowercase(Country)) of
-                {ok, _User} -> {{true, "/api/channels"}, Req2, []};
+            case db_user:create(Email, Name, PasswordHash, LCountry) of
+                {ok, _User} ->
+                    db_holiday:set_default_holidays(Email, LCountry),
+                    {{true, "/api/channels"}, Req2, []};
                 {error, user_already_exists} ->
                     req_utils:error_response(409, <<"User already exists">>, Req2)
             end;

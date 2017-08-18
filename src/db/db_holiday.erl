@@ -6,6 +6,7 @@
          create/3,
          get_user_holidays/1,
          set_user_holidays/2,
+         set_default_holidays/2,
          holiday_keys/0]).
 
 %% needed so atoms exist.
@@ -36,15 +37,13 @@ get_user_holidays(Email) ->
     Q = <<"SELECT to_char(date, 'YYYY-MM-DD') as date, name FROM user_holidays "
           "WHERE \"user\" = (SELECT id FROM users WHERE email = $1) "
           "ORDER BY date">>,
-    QDefault = <<"SELECT to_char(date, 'YYYY-MM-DD') as date, name FROM holidays "
-                 "WHERE country = (SELECT country FROM users WHERE email = $1) "
-                 "ORDER BY date">>,
+    db:query(Q, [Email]).
 
-    case db:query(Q, [Email]) of
-        {ok, []} ->
-            db:query(QDefault, [Email]);
-        R -> R
-    end.
+set_default_holidays(Email, Country) ->
+    Q = <<"INSERT INTO user_holidays(\"user\", date, name) "
+          "SELECT (SELECT id FROM users WHERE email = $1), date, name FROM holidays "
+          "WHERE country = $2">>,
+    db:query(Q, [Email, Country]).
 
 set_user_holidays(Email, Holidays) ->
     UserQ = <<"SELECT id FROM users WHERE email = $1">>,
@@ -55,11 +54,14 @@ set_user_holidays(Email, Holidays) ->
     Values2 = lists:join(<<", ">>, Values),
 
     Q = [<<"INSERT INTO user_holidays(\"user\", date, name) VALUES ">>,
-         Values2, <<" RETURNING date, name">>],
+         Values2,
+         <<" RETURNING date, name">>],
     Q2 = iolist_to_binary(Q),
 
-    lager:debug("Inserting user holidays ~p", [Q2]),
-    case db:query(Q2, []) of
-        {ok, Result} -> {ok, Result};
-        {error, unique_violation} -> {error, holiday_already_exists}
+    DeleteQ = <<"DELETE FROM user_holidays WHERE \"user\" = $1">>,
+    case db:query(DeleteQ, [UserId]) of
+        ok ->
+            lager:debug("Inserting holidays ~p", [Q2]),
+            ct:pal("Inserting holidays ~p", [Q2]),
+            db:query(Q2, [])
     end.
