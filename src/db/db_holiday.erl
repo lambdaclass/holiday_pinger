@@ -1,7 +1,6 @@
 -module(db_holiday).
 
--export([countries_with_holiday/0,
-         countries_with_holiday/1,
+-export([users_with_holiday/1,
          holidays_of_country/1,
          create/3,
          get_user_holidays/1,
@@ -12,14 +11,10 @@
 %% needed so atoms exist.
 holiday_keys () -> [country, date, name, user].
 
-%% Get the list of the countries that have a holiday in the given date
-countries_with_holiday(Date) ->
-  Q = <<"SELECT country FROM holidays WHERE date = $1">>,
-  {ok, Results} = db:query(Q, [Date]),
-  lists:map(fun (R) -> maps:get(country, R) end, Results).
-
-countries_with_holiday() ->
-    countries_with_holiday(erlang:date()).
+users_with_holiday(Date) ->
+    Q = <<"SELECT email, name, country FROM users WHERE id IN "
+        "(SELECT \"user\" from user_holidays WHERE date = $1)">>,
+    db:query(Q, [Date]).
 
 holidays_of_country(Country) ->
   Q = <<"SELECT name, date FROM holidays WHERE country = $1">>,
@@ -49,8 +44,8 @@ set_user_holidays(Email, Holidays) ->
     UserQ = <<"SELECT id FROM users WHERE email = $1">>,
     {ok, [#{id := UserId}]} = db:query(UserQ, [Email]),
 
-    Values = [io_lib:format(<<"(~p, '~s', '~s')">>, [UserId, Date, Name]) ||
-                 #{date := Date, name := Name} <- Holidays],
+    Values = [io_lib:format(<<"(~p, '~s', '~s')">>, [UserId, Date, db:escape_string(Name)])
+              || #{date := Date, name := Name} <- Holidays],
     Values2 = lists:join(<<", ">>, Values),
 
     Q = [<<"INSERT INTO user_holidays(\"user\", date, name) VALUES ">>,
@@ -60,8 +55,5 @@ set_user_holidays(Email, Holidays) ->
 
     DeleteQ = <<"DELETE FROM user_holidays WHERE \"user\" = $1">>,
     case db:query(DeleteQ, [UserId]) of
-        ok ->
-            lager:debug("Inserting holidays ~p", [Q2]),
-            ct:pal("Inserting holidays ~p", [Q2]),
-            db:query(Q2, [])
+        ok -> db:query(Q2, [])
     end.

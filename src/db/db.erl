@@ -1,6 +1,10 @@
 -module(db).
 
--export([query/2]).
+-export([query/2,
+         escape_string/1]).
+
+escape_string(String) ->
+    re:replace(String, "'", "''", [global,{return,binary}]).
 
 query(Q, Params) ->
     case pgapp:equery(Q, Params) of
@@ -9,7 +13,7 @@ query(Q, Params) ->
         {ok, _} -> ok;
         {error, {error, error, _, unique_violation, _, _}} -> {error, unique_violation};
         E ->
-            lager:error("Unexpected DB error ~p", [E]),
+            lager:error("Unexpected DB error ~p, ~p", [E, Q]),
             throw({db_error, E})
     end.
 
