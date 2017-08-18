@@ -30,7 +30,7 @@ get_with_password(Email) ->
     end.
 
 get_from_countries([]) ->
-    [];
+    {ok, []};
 get_from_countries(Countries) ->
     %% TODO paginate this call
     Q = [<<"SELECT email, name, country FROM users WHERE country IN">>,

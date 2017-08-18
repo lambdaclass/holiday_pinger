@@ -4,6 +4,7 @@
 -export([start_link/0,
 
          force_holidays/0,
+         force_holidays/1,
 
          init/1,
          handle_call/3,
@@ -14,7 +15,9 @@
 
 %% for testing, foce the checker to send reminders
 force_holidays() ->
-    check_holidays({2017, 1, 1}),
+    force_holidays({2017, 1, 1}).
+force_holidays(Date) ->
+    check_holidays(Date),
     ok.
 
 start_link() ->
@@ -49,8 +52,6 @@ code_change(_OldVsn, State, _Extra) ->
 %%% internal
 check_holidays(HolidayDate) ->
     lager:info("Running holiday checker."),
-    Countries = db_holiday:countries_with_holiday(HolidayDate),
-    lager:debug("Sending reminders for users in ~p", [Countries]),
-    {ok, Users} = db_user:get_from_countries(Countries),
+    {ok, Users} = db_holiday:users_with_holiday(HolidayDate),
     lists:foreach(fun (User) -> hp_reminder:send(User, HolidayDate) end, Users),
     ok.

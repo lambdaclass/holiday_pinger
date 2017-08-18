@@ -5,7 +5,12 @@
          api_request/4,
          api_request/5,
          create_user/0,
-         delete_user/1]).
+         create_user/1,
+         create_user_with_token/0,
+         create_user_with_token/1,
+         delete_user/1,
+         is_same_holiday/3,
+         is_same_holiday/4]).
 
 unique_email() ->
     erlang:list_to_binary("test_user" ++ ktn_random:string(5) ++ "@example.com").
@@ -34,17 +39,43 @@ api_request_internal(Method, Headers, Path, Data, Options) ->
     end.
 
 create_user() ->
+    create_user(#{}).
+
+create_user(Overrides) ->
     Email = unique_email(),
     Password = <<"S3cr3t!!">>,
-    Body = #{
+    Body = maps:merge(#{
       email => Email,
       name => <<"John Doe">>,
       password => Password,
       country => <<"argentina">>
-     },
+     }, Overrides),
+
     {ok, 201, _, _} = api_request(post, public, "/api/users", Body),
     Body.
+
+create_user_with_token() ->
+    create_user_with_token(#{}).
+
+create_user_with_token(Overrides) ->
+    #{email := Email, password := Password} = User = create_user(Overrides),
+    {ok, 200, _, #{access_token := Token}} =
+        test_utils:api_request(get, public, "/api/auth/token", <<"">>,
+                               [{basic_auth, {Email, Password}}]),
+    User#{token => Token}.
 
 delete_user(Email) ->
     %% FIXME delete user via API, not db
     db_user:delete(Email).
+
+is_same_holiday(Holiday, MM, DD, Name) ->
+    {CurrentYear, _, _} = erlang:date(),
+    Expected = list_to_binary(
+                 io_lib:format(<<"~B-~2..0B-~2..0B">>, [CurrentYear, MM, DD])),
+    (maps:get(date, Holiday) == Expected) and (maps:get(name, Holiday) == Name).
+
+is_same_holiday(Holiday, MM, DD) ->
+    {CurrentYear, _, _} = erlang:date(),
+    Expected = list_to_binary(
+                 io_lib:format(<<"~B-~2..0B-~2..0B">>, [CurrentYear, MM, DD])),
+    maps:get(date, Holiday) == Expected.
