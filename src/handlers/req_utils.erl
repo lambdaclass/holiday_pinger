@@ -23,8 +23,8 @@ is_authorized(bearer, Req, State) ->
     case cowboy_req:parse_header(<<"authorization">>, Req) of
         {ok, {<<"bearer">>, Token}, Req2} ->
             case hp_auth:token_decode(Token) of
-                {ok, #{<<"email">> := User}} ->
-                    {true, Req2, State#{user => User}};
+                {ok, User} ->
+                    {true, Req2, State#{user => User, email => maps:get(<<"email">>, User)}};
                 _ -> {Fail, Req2, State}
             end;
         _ -> {Fail, Req, State}
@@ -37,7 +37,7 @@ is_authorized(basic, Req, State) ->
         {ok, {<<"basic">>, {Email, Password}}, Req2} ->
             case hp_auth:authenticate(Email, Password) of
                 {ok, User} ->
-                    {true, Req2, State#{user => User}};
+                    {true, Req2, State#{user => User, email => Email}};
                 _ -> {Fail, Req2, State}
             end;
         _ -> {Fail, Req, State}
