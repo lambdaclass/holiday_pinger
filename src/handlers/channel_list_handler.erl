@@ -18,6 +18,6 @@ allowed_methods(Req, State) ->
 content_types_provided(Req, State) ->
     {[{<<"application/json">>, to_json}], Req, State}.
 
-to_json(Req, State = #{user := User}) ->
-    {ok, Body} = db_channel:list(User),
+to_json(Req, State = #{email := Email}) ->
+    {ok, Body} = db_channel:list(Email),
     {hp_json:encode(Body), Req, State}.

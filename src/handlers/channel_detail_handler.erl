@@ -26,8 +26,8 @@ allowed_methods(Req, State) ->
     {[<<"GET">>, <<"HEAD">>, <<"OPTIONS">>, <<"PUT">>, <<"DELETE">>],
      Req, State}.
 
-resource_exists(Req, State = #{user := User, name := Name}) ->
-    case db_channel:get(User, Name) of
+resource_exists(Req, State = #{email := Email, name := Name}) ->
+    case db_channel:get(Email, Name) of
         {ok, Channel} -> {true, Req, State#{channel => Channel, is_new => false}};
         _ -> {false, Req, State#{is_new => true}}
     end.
@@ -44,7 +44,7 @@ content_types_accepted(Req, State) ->
 
 %% PUT for create
 from_json(Req, State = #{is_new := true,
-                         user := User,
+                         email := Email,
                          name := Name}) ->
     {ok, Body, Req2} = cowboy_req:body(Req),
 
@@ -54,29 +54,28 @@ from_json(Req, State = #{is_new := true,
        configuration := Config
      } = hp_json:decode(Body),
 
-    {ok, _} = db_channel:create(User, Name, Type, Config),
+    {ok, _} = db_channel:create(Email, Name, Type, Config),
 
     Req3 = cowboy_req:set_resp_body(Body, Req2),
     {true, Req3, State};
 
 %% PUT for update
 from_json(Req, State = #{is_new := false,
-                         user := User,
+                         email := Email,
                          name := Name,
                          channel := Channel}) ->
-
     %% only configuration can be updated for now
     {ok, Body, Req2} = cowboy_req:body(Req),
     %% TODO validate input fields
     #{configuration := Config} = hp_json:decode(Body),
 
-    ok = db_channel:update(User, Name, Config),
+    ok = db_channel:update(Email, Name, Config),
 
     RespBody = Channel#{configuration := Config},
     Encoded = hp_json:encode(RespBody),
     Req3 = cowboy_req:set_resp_body(Encoded, Req2),
     {true, Req3, State}.
 
-delete_resource(Req, State = #{user := User, name := Name}) ->
-    ok = db_channel:delete(User, Name),
+delete_resource(Req, State = #{email := Email, name := Name}) ->
+    ok = db_channel:delete(Email, Name),
     {true, Req, State}.

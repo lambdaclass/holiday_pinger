@@ -25,21 +25,21 @@ allowed_methods(Req, State) ->
 content_types_provided(Req, State) ->
     {[{<<"application/json">>, to_json}], Req, State}.
 
-to_json(Req, State = #{user := User}) ->
-    {ok, Holidays} = db_holiday:get_user_holidays(User),
+to_json(Req, State = #{email := Email}) ->
+    {ok, Holidays} = db_holiday:get_user_holidays(Email),
     Body = hp_json:encode(Holidays),
     {Body, Req, State}.
 
 content_types_accepted(Req, State) ->
     {[{<<"application/json">>, from_json}], Req, State}.
 
-from_json(Req, State = #{user := User}) ->
+from_json(Req, State = #{email := Email}) ->
     %% only configuration can be updated for now
     {ok, Body, Req2} = cowboy_req:body(Req),
 
     %% TODO validate holidays
     NewHolidays = hp_json:decode(Body),
-    {ok, _} = db_holiday:set_user_holidays(User, NewHolidays),
+    {ok, _} = db_holiday:set_user_holidays(Email, NewHolidays),
 
     Req3 = cowboy_req:set_resp_body(Body, Req2),
     {true, Req3, State}.
