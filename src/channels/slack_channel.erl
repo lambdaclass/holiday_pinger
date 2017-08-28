@@ -24,5 +24,5 @@ get_not_empty(Key, Map, Default) ->
     case re:replace(Value, "\\s+", "", [global,{return,binary}]) of
         <<"">> ->
             Default;
-        V -> V
+        _ -> Value
     end.
