@@ -1,0 +1,16 @@
+.navbar-item img {
+    border-radius: 5px;
+}
+
+.dashboard-message {
+    vertical-align: middle
+}
+
+.modal-button-group {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.calendar {
+    min-width: 20rem;
+}
