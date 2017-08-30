@@ -5,7 +5,7 @@ holiday reminders through different channels (e.g. email, Slack).
 
 ## Project setup for development
 
-The project requires Elrang/OTP 20.
+The project requires Elrang/OTP 20 and Leningen for the ClojureScript web application.
 
 Setup the database (using Docker):
 
@@ -29,19 +29,14 @@ Build a release:
 
 ### UI setup
 
-The UI code is maintained in the [holiday_ping_ui](https://github.com/lambdaclass/holiday_ping_ui) repository.
+The UI is a ClojureScript project that uses [re-frame](https://github.com/Day8/re-frame).
+The code is in [priv/ui](https://github.com/lambdaclass/holiday_ping/tree/master/priv/ui) and is build as part of the `dev` and `release` targets.
 
-For UI development, run:
+For UI development, run a dev shell and then:
 
     $ make dev_ui
 
-This will clone the ui project to the `_ui` folder, link the relevant files
-to the priv folder of the erlang project and run figwheel for hot reload
-of the changes in the UI code.
-
-To build the ui and include it in the erlang project:
-
-    $ make release_ui
+Which will uses figwheel to provide a REPL and hot-reload of the code changes.
 
 ## Rest API Reference
 
