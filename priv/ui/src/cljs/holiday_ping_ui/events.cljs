@@ -4,6 +4,7 @@
             [ajax.core :as ajax]
             [day8.re-frame.http-fx]
             [goog.crypt.base64 :as base64]
+            [cljs-time.core :as time]
             [holiday-ping-ui.db :as db]
             [holiday-ping-ui.time-format :as format]
             [bouncer.core :as bouncer]
@@ -84,7 +85,7 @@
      {:db              new-db
       :set-local-store ["access_token" token]
       :dispatch-n      [[:channel-load]
-                        [:holiday-load]
+                        [:holidays-load]
                         [:switch-view :dashboard]]})))
 
 (re-frame/reg-event-fx
@@ -230,22 +231,50 @@
 ;;; HOLIDAY EVENTS
 
 (re-frame/reg-event-fx
- :holiday-load
+ :holidays-load
  (fn [{:keys [db]} _]
    {:http-xhrio {:method          :get
                  :uri             "/api/holidays"
                  :timeout         8000
                  :headers         {:authorization (str "Bearer " (:access-token db))}
                  :response-format (ajax/json-response-format {:keywords? true})
-                 :on-success      [:holiday-load-success]
+                 :on-success      [:holidays-load-success]
                  :on-failure      [:error-message "Holidays loading failed."]}}))
 
 (re-frame/reg-event-db
- :holiday-load-success
+ :holidays-load-success
  (fn [db [_ response]]
-   (->> response
-        (map #(update % :date format/string-to-date))
-        (assoc db :holidays))))
+   (let [holidays (map #(update % :date format/string-to-date) response)]
+     (-> db
+         (assoc :holidays-saved holidays)
+         (assoc :holidays-edited holidays)))))
+
+(re-frame/reg-event-fx
+ :holidays-save
+ (fn [{:keys [db]} _]
+   (let [edited       (:holidays-edited db)
+         new-holidays (map #(update % :date format/date-to-string) edited)]
+     {:http-xhrio {:method          :put
+                   :uri             "/api/holidays"
+                   :timeout         8000
+                   :headers         {:authorization (str "Bearer " (:access-token db))}
+                   :response-format (ajax/json-response-format {:keywords? true})
+                   :format          (ajax/json-request-format)
+                   :params          new-holidays
+                   :on-success      [:holidays-load-success]
+                   :on-failure      [:error-message "Holidays saving failed."]}})))
+
+(re-frame/reg-event-db
+ :holidays-reset
+ (fn [db _]
+   (assoc db :holidays-edited (:holidays-saved db))))
+
+(re-frame/reg-event-db
+ :holidays-clear
+ (fn [db _]
+   (let [past?         #(time/before? (:date %) (time/today))
+         past-holidays (take-while past? (:holidays-saved db))]
+     (assoc db :holidays-edited past-holidays))))
 
 (re-frame/reg-event-db
  :calendar-select-year

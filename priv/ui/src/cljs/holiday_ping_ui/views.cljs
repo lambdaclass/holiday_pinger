@@ -277,21 +277,21 @@
       [:a.button.is-danger
        {:title    "Clear all holidays from the calendar"
         :href     "#"
-        :on-click #(re-frame/dispatch [:calendar-clear])}
+        :on-click #(re-frame/dispatch [:holidays-clear])}
        [:span "Clear"]
        [:span.icon.is-small [:i.fa.fa-times]]]]
      [:p.control
       [:a.button
        {:title    "Drop the changes made in the calendar"
         :href     "#"
-        :on-click #(re-frame/dispatch [:calendar-reset])}
+        :on-click #(re-frame/dispatch [:holidays-reset])}
        [:span "Reset"]
        [:span.icon.is-small [:i.fa.fa-undo]]]]
      [:p.control
       [:a.button.is-success
        {:title    "Save the changes in the calendar"
         :href     "#"
-        :on-click #(re-frame/dispatch [:calendar-save])}
+        :on-click #(re-frame/dispatch [:holidays-save])}
        [:span "Save"]
        [:span.icon.is-small [:i.fa.fa-check]]]]]]])
 

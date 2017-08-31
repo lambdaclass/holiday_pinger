@@ -28,7 +28,7 @@
 
 (re-frame/reg-sub
  :next-holiday
- (fn [{holidays :holidays}]
+ (fn [{holidays :holidays-saved}]
    (let [upcoming? #(time/after? (:date %) (time/today))
          next      (first (filter upcoming? holidays))]
      (when next
@@ -72,7 +72,7 @@
 
 (re-frame/reg-sub
  :date-info
- (fn [{holidays :holidays} [_ date]]
+ (fn [{holidays :holidays-edited} [_ date]]
    (let [as-holiday (first (filter #(time/= date (:date %)) holidays))]
      {:today?        (time/= (time/today) date)
       :before-today? (time/before? date (time/today))
