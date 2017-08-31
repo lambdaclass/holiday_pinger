@@ -26,15 +26,16 @@
          (iterate #(time/plus % (time/days 1)))
          (take-while #(<= % last)))))
 
-;; TODO on click disable holiday or enable and ask for holiday name
 (defn date-button
   [month day holiday? today?]
-  (let [day-number (time/day day)]
+  (let [button (cond
+                 holiday? :button.date-item.is-active
+                 today?   :button.date-item.is-today
+                 :else    :button.date-item)]
     (when (= (time/month day) month)
-      (cond
-        holiday? [:button.date-item.is-active day-number]
-        today?   [:button.date-item.is-today day-number]
-        :else    [:button.date-item day-number]))))
+      [button
+       {:on-click #(re-frame/dispatch [:calendar-select-day day])}
+       (time/day day)])))
 
 (defn day-view
   [month day]

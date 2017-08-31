@@ -280,3 +280,39 @@
  :calendar-select-year
  (fn [db [_ year]]
    (assoc db :calendar-selected-year year)))
+
+(re-frame/reg-event-db
+ :calendar-select-day
+ (fn [db [_ day]]
+   (let [holidays (:holidays-edited db)
+         name     (:name (first (filter #(time/= day (:date %)) holidays)))]
+     (-> db
+         (assoc :calendar-selected-day day)
+         (assoc :calendar-selected-day-name name)))))
+
+(re-frame/reg-event-db
+ :calendar-deselect-day
+ (fn [db]
+   (-> db
+       (dissoc :calendar-selected-day)
+       (dissoc :calendar-selected-day-name))))
+
+(re-frame/reg-event-db
+ :calendar-selected-name-change
+ (fn [db [_ name]]
+   (assoc db :calendar-selected-day-name name)))
+
+(re-frame/reg-event-db
+ :holidays-update
+ (fn [db [_ date name]]
+   (let [edited  (:holidays-edited db)
+         removed (remove #(time/= date (:date %)) edited)
+         updated (conj removed {:date date :name name})]
+     (assoc db :holidays-edited updated))))
+
+(re-frame/reg-event-db
+ :holidays-remove
+ (fn [db [_ date]]
+   (let [edited  (:holidays-edited db)
+         removed (remove #(time/= date (:date %)) edited)]
+     (assoc db :holidays-edited removed))))
