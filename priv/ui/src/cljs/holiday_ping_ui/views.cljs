@@ -251,7 +251,7 @@
 ;;; HOLIDAYS views
 (defn holidays-year-switch
   [current next selected]
-  [:div.field.has-addons.has-addons-centered
+  [:div.field.has-addons
    [:p.control
     [:a.button.is-medium
      (if (= selected current)
@@ -265,16 +265,86 @@
        {:href "#" :on-click #(re-frame/dispatch [:calendar-select-year next])})
      next]]])
 
+(defn holiday-controls
+  [current next selected]
+  [:nav.level
+   [:div.level-left
+    [:div.level-item
+     [:div.level-item [holidays-year-switch current next selected]]]]
+   [:div.level-right
+    [:div.field.is-grouped
+     [:p.control
+      [:a.button.is-danger
+       {:title    "Clear all holidays from the calendar"
+        :href     "#"
+        :on-click #(re-frame/dispatch [:holidays-clear])}
+       [:span "Clear"]
+       [:span.icon.is-small [:i.fa.fa-times]]]]
+     [:p.control
+      [:a.button
+       {:title    "Drop the changes made in the calendar"
+        :href     "#"
+        :on-click #(re-frame/dispatch [:holidays-reset])}
+       [:span "Reset"]
+       [:span.icon.is-small [:i.fa.fa-undo]]]]
+     [:p.control
+      [:a.button.is-success
+       {:title    "Save the changes in the calendar"
+        :href     "#"
+        :on-click #(re-frame/dispatch [:holidays-save])}
+       [:span "Save"]
+       [:span.icon.is-small [:i.fa.fa-check]]]]]]])
+
+;; This is a bit too complex, try to refactor
+(defn edit-holiday-modal
+  []
+  (let [date-info      @(re-frame/subscribe [:calendar-selected-day])
+        date           (:date date-info)
+        cancel-edit    #(re-frame/dispatch [:calendar-deselect-day])
+        name-sub       (re-frame/subscribe [:calendar-selected-day-name])
+        remove-holiday #(do (re-frame/dispatch [:holidays-remove date])
+                            (re-frame/dispatch [:calendar-deselect-day]))
+        save-holiday   #(do (re-frame/dispatch [:holidays-update date @name-sub])
+                            (re-frame/dispatch [:calendar-deselect-day]))
+        name-change    #(re-frame/dispatch [:calendar-selected-name-change (-> % .-target .-value)])]
+    [:div.modal
+     (when date {:class "is-active"})
+     [:div.modal-background {:on-click cancel-edit}]
+     [:div.modal-card
+      [:header.modal-card-head
+       (when date [:p.modal-card-title "Edit Holiday on " (:date-string date-info)])
+       [:button.delete {:aria-label "close"
+                        :on-click   cancel-edit}]]
+      [:section.modal-card-body
+       [:div.field
+        [:div.control
+         [:input.input {:type        "text"
+                        :value       @name-sub
+                        :on-change   name-change
+                        :placeholder "Holiday name"}]]]]
+      [:footer.modal-card-foot
+       [:div.modal-button-group
+        [:button.button {:on-click cancel-edit}
+         "Cancel"]
+        (when (:holiday? date-info)
+          [:button.button.is-danger {:on-click remove-holiday}
+           [:span.icon.is-small [:i.fa.fa-times]]
+           [:span "Remove"]])
+        [:button.button.is-success {:on-click save-holiday}
+         [:span.icon.is-small [:i.fa.fa-check]]
+         [:span "Save"]]]]]]))
+
 (defn holidays-view
   []
   (let [current-year  @(re-frame/subscribe [:current-year])
         next-year     (inc current-year)
         selected-year @(re-frame/subscribe [:calendar-selected-year])]
     [:div
+     [edit-holiday-modal]
      [header-section "Holidays"
       [:p "Select the days of the year for which you want reminders."]]
      [section
-      [holidays-year-switch current-year next-year selected-year]
+      [holiday-controls current-year next-year selected-year]
       [:div (when-not (= selected-year current-year) {:hidden true})
        [calendar/year-view current-year]]
       [:div (when-not (= selected-year next-year) {:hidden true})

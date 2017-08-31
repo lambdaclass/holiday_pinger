@@ -25,10 +25,11 @@
 (db-subscription :current-view-args)
 (db-subscription :channel-to-test)
 (db-subscription :calendar-selected-year)
+(db-subscription :calendar-selected-day-name)
 
 (re-frame/reg-sub
  :next-holiday
- (fn [{holidays :holidays}]
+ (fn [{holidays :holidays-saved}]
    (let [upcoming? #(time/after? (:date %) (time/today))
          next      (first (filter upcoming? holidays))]
      (when next
@@ -70,14 +71,30 @@
         md5
         (gstring/format "https://www.gravatar.com/avatar/%s?d=identicon&s=32"))))
 
+(defn- find-holiday
+  [holidays date]
+  (first (filter #(time/= date (:date %)) holidays)))
+
+(defn- date-info
+  [holidays date]
+  (when date
+    (let [as-holiday (find-holiday holidays date)]
+      {:date          date
+       :date-string   (format/date-to-string date)
+       :today?        (time/= (time/today) date)
+       :before-today? (time/before? date (time/today))
+       :holiday?      (not (nil? as-holiday))
+       :holiday-name  (:name as-holiday)})))
+
 (re-frame/reg-sub
  :date-info
- (fn [{holidays :holidays} [_ date]]
-   (let [as-holiday (first (filter #(time/= date (:date %)) holidays))]
-     {:today?        (time/= (time/today) date)
-      :before-today? (time/before? date (time/today))
-      :holiday?      (not (nil? as-holiday))
-      :holiday-name  (:name as-holiday)})))
+ (fn [{holidays :holidays-edited} [_ date]]
+   (date-info holidays date)))
+
+(re-frame/reg-sub
+ :calendar-selected-day
+ (fn [{:keys [calendar-selected-day holidays-edited]} _]
+   (date-info holidays-edited calendar-selected-day)))
 
 ;; Return a range of month numbers for the given year.
 ;; If it's current year, return the range starting with the current month.
