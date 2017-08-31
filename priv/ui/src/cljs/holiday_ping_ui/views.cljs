@@ -251,7 +251,7 @@
 ;;; HOLIDAYS views
 (defn holidays-year-switch
   [current next selected]
-  [:div.field.has-addons.has-addons-centered
+  [:div.field.has-addons
    [:p.control
     [:a.button.is-medium
      (if (= selected current)
@@ -265,6 +265,36 @@
        {:href "#" :on-click #(re-frame/dispatch [:calendar-select-year next])})
      next]]])
 
+(defn holiday-controls
+  [current next selected]
+  [:nav.level
+   [:div.level-left
+    [:div.level-item
+     [:div.level-item [holidays-year-switch current next selected]]]]
+   [:div.level-right
+    [:div.field.is-grouped
+     [:p.control
+      [:a.button.is-danger
+       {:title    "Clear all holidays from the calendar"
+        :href     "#"
+        :on-click #(re-frame/dispatch [:calendar-clear])}
+       [:span "Clear"]
+       [:span.icon.is-small [:i.fa.fa-times]]]]
+     [:p.control
+      [:a.button
+       {:title    "Drop the changes made in the calendar"
+        :href     "#"
+        :on-click #(re-frame/dispatch [:calendar-reset])}
+       [:span "Reset"]
+       [:span.icon.is-small [:i.fa.fa-undo]]]]
+     [:p.control
+      [:a.button.is-success
+       {:title    "Save the changes in the calendar"
+        :href     "#"
+        :on-click #(re-frame/dispatch [:calendar-save])}
+       [:span "Save"]
+       [:span.icon.is-small [:i.fa.fa-check]]]]]]])
+
 (defn holidays-view
   []
   (let [current-year  @(re-frame/subscribe [:current-year])
@@ -274,7 +304,8 @@
      [header-section "Holidays"
       [:p "Select the days of the year for which you want reminders."]]
      [section
-      [holidays-year-switch current-year next-year selected-year]
+      [holiday-controls current-year next-year selected-year]
+      ;; [holidays-year-switch current-year next-year selected-year]
       [:div (when-not (= selected-year current-year) {:hidden true})
        [calendar/year-view current-year]]
       [:div (when-not (= selected-year next-year) {:hidden true})
