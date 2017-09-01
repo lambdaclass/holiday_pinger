@@ -1,5 +1,8 @@
--module(hp_reminder).
+-module(remind_router).
 -behaviour(gen_server).
+
+%% This module receives user and holiday data, builds a reminder message and
+%% sends it through each channel the user has configured
 
 -export([start_link/0,
 
@@ -20,7 +23,7 @@
          }).
 
 send(User, HolidayDate) ->
-    {ok, Pid} = supervisor:start_child(hp_reminder_sup, []),
+    {ok, Pid} = supervisor:start_child(remind_router_sup, []),
     gen_server:cast(Pid, {send_reminders, User, HolidayDate}).
 
 %% Exporting this function so we can test individual channels

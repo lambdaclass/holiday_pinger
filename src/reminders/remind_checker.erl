@@ -1,5 +1,9 @@
--module(hp_checker).
+-module(remind_checker).
 -behaviour(gen_server).
+
+%% This module checks periodically which users have reminders to be sent,
+%% according to their holiday configuration, and calls remind_router with the user
+%% and holiday data.
 
 -export([start_link/0,
 
@@ -12,13 +16,6 @@
          handle_info/2,
          terminate/2,
          code_change/3]).
-
-%% for testing, foce the checker to send reminders
-force_holidays() ->
-    force_holidays({2017, 1, 1}).
-force_holidays(Date) ->
-    check_holidays(Date),
-    ok.
 
 start_link() ->
     gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
@@ -49,9 +46,16 @@ terminate(_Reason, _State) ->
 code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
 
+%% for testing, foce the checker to send reminders
+force_holidays() ->
+  force_holidays({2017, 1, 1}).
+force_holidays(Date) ->
+  check_holidays(Date),
+  ok.
+
 %%% internal
 check_holidays(HolidayDate) ->
     lager:info("Running holiday checker."),
     {ok, Users} = db_holiday:users_with_holiday(HolidayDate),
-    lists:foreach(fun (User) -> hp_reminder:send(User, HolidayDate) end, Users),
+    lists:foreach(fun (User) -> remind_router:send(User, HolidayDate) end, Users),
     ok.
