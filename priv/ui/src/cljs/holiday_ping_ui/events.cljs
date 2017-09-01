@@ -50,7 +50,6 @@
 (re-frame/reg-event-db
  :error-message
  (fn [db [_ message extra]]
-   (println extra)
    (assoc db :error-message message)))
 
 (re-frame/reg-event-db
