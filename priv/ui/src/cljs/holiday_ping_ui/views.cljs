@@ -169,10 +169,13 @@
                                      :options  ["slack"]
                                      :value    "slack"
                                      :required true}
-                                    {:key      :url
-                                     :type     "text"
-                                     :label    "Slack hook url"
-                                     :required true}
+                                    {:key       :url
+                                     :type      "text"
+                                     :label     "Slack hook url"
+                                     :help-text [:span "You can get the hook url "
+                                                 [:a {:href   "https://my.slack.com/services/new/incoming-webhook/"
+                                                      :target "blank"} "here."]]
+                                     :required  true}
                                     {:key       :channels
                                      :type      "text"
                                      :label     "Targets"
@@ -203,11 +206,14 @@
                                      :options  ["slack"]
                                      :value    "slack"
                                      :required true}
-                                    {:key      :url
-                                     :type     "text"
-                                     :label    "Slack hook url"
-                                     :value    (get-in channel [:configuration :url])
-                                     :required true}
+                                    {:key       :url
+                                     :type      "text"
+                                     :label     "Slack hook url"
+                                     :value     (get-in channel [:configuration :url])
+                                     :help-text [:span "You can get the hook url "
+                                                 [:a {:href   "https://my.slack.com/services/new/incoming-webhook/"
+                                                      :target "blank"} "here."]]
+                                     :required  true}
                                     {:key       :channels
                                      :type      "text"
                                      :label     "Targets"
