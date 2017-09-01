@@ -10,7 +10,7 @@ services:
       # Use postgres/example user/password credentials
       POSTGRES_PASSWORD: example
 
-  adminer:
-    image: adminer
+  pgadmin:
+    image: thajeztah/pgadmin4
     ports:
-      - 8080:8080
+      - 5050:5050
