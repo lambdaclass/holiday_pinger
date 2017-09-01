@@ -1,9 +1,9 @@
 -module(remind_checker).
 -behaviour(gen_server).
 
-%% This module checks periodically which users have reminders to be sent,
-%% according to their holiday configuration, and calls remind_router with the user
-%% and holiday data.
+%%% This module checks periodically which users have reminders to be sent,
+%%% according to their holiday configuration, and calls remind_router with the user
+%%% and holiday data.
 
 -export([start_link/0,
 
