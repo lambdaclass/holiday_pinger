@@ -10,10 +10,7 @@
 
          init/1,
          handle_call/3,
-         handle_cast/2,
-         handle_info/2,
-         terminate/2,
-         code_change/3]).
+         handle_cast/2]).
 
 send(User, HolidayDate) ->
     {ok, Pid} = supervisor:start_child(remind_router_sup, []),
@@ -42,15 +39,6 @@ handle_cast({process_reminders, User, HolidayDate}, State) ->
 handle_cast(Request, State) ->
     lager:warning("Unknown message: ~p", [Request]),
     {noreply, State}.
-
-handle_info(_Msg, State) ->
-    {noreply, State}.
-
-terminate(_Reason, _State) ->
-    ok.
-
-code_change(_OldVsn, State, _Extra) ->
-    {ok, State}.
 
 %%% internal
 build_message(#{name := UserName}, {Y, M, D}) ->

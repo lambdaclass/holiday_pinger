@@ -9,10 +9,7 @@
 
          init/1,
          handle_call/3,
-         handle_cast/2,
-         handle_info/2,
-         terminate/2,
-         code_change/3]).
+         handle_cast/2]).
 
 send(#{type := Type, configuration := Config}, Message) ->
     {ok, Pid} = supervisor:start_child(remind_delivery_sup, []),
@@ -35,15 +32,6 @@ handle_cast({deliver_reminder, Type, Config, Message}, State) ->
 handle_cast(Request, State) ->
     lager:warning("Unknown message: ~p", [Request]),
     {noreply, State}.
-
-handle_info(_Msg, State) ->
-    {noreply, State}.
-
-terminate(_Reason, _State) ->
-    ok.
-
-code_change(_OldVsn, State, _Extra) ->
-    {ok, State}.
 
 % internal
 get_handler(slack) -> slack_channel;
