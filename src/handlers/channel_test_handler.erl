@@ -29,7 +29,7 @@ from_json(Req, State = #{user := User, email := Email, name := Name}) ->
         {ok, Channel} ->
             Username = maps:get(<<"name">>, User),
             Message = <<"This is a Holiday Ping test: ", Username/binary, " will be out on holidays.">>,
-            hp_reminder:send_to_channel(Channel, Message),
+            remind_delivery:send(Channel, Message),
             {true, Req, State};
         _ ->
             req_utils:error_response(404, <<"Channel not found.">>, Req)

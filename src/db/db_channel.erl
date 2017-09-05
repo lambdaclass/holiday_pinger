@@ -48,5 +48,8 @@ list(User) ->
 
 %%% internal
 %% TODO db:results_to_map could be smart enough to figure this decoding based on the column type
-decode_config(Data = #{configuration := Config}) ->
-    Data#{configuration := hp_json:decode(Config)}.
+decode_config(Data = #{type := Type, configuration := Config}) ->
+    Data#{
+      type := binary_to_existing_atom(Type, latin1),
+      configuration := hp_json:decode(Config)
+     }.

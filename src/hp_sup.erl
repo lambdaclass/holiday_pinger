@@ -10,19 +10,27 @@ start_link() ->
 init([]) ->
     {ok, { #{ strategy => one_for_one, intensity => 5, period => 1 },
            [#{
-               id => hp_checker,
-               start => {hp_checker, start_link, []},
+               id => remind_checker,
+               start => {remind_checker, start_link, []},
                restart => permanent,
                shutdown => 5000,
                type => worker,
-               modules => [hp_checker]
+               modules => [remind_checker]
              },
             #{
-               id => hp_reminder_sup,
-               start => {hp_reminder_sup, start_link, []},
+               id => remind_router_sup,
+               start => {remind_router_sup, start_link, []},
                restart => permanent,
                shutdown => 5000,
                type => supervisor,
-               modules => [hp_reminder_sup]
+               modules => [remind_router_sup]
+             },
+            #{
+               id => remind_delivery_sup,
+               start => {remind_delivery_sup, start_link, []},
+               restart => permanent,
+               shutdown => 5000,
+               type => supervisor,
+               modules => [remind_delivery_sup]
              }]
          }}.

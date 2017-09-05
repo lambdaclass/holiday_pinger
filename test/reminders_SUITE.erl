@@ -28,7 +28,7 @@ send_reminders(_Config) ->
     db_channel:create(Email, <<"test_ets">>, ets, ChannelConfig),
     ets_channel:init_table(TableId),
 
-    hp_checker:force_holidays(),
+    remind_checker:force_holidays(),
     timer:sleep(1000),
     [{Email, Message}] = ets_channel:get_reminders(TableId, Email),
 
@@ -55,7 +55,7 @@ dont_send_removed_reminder(_Config) ->
     db_channel:create(Email, <<"test_ets">>, ets, ChannelConfig),
     ets_channel:init_table(TableId),
 
-    hp_checker:force_holidays(),
+    remind_checker:force_holidays(),
     timer:sleep(1000),
     [] = ets_channel:get_reminders(TableId, Email),
 
@@ -76,7 +76,7 @@ send_custom_holiday_reminder(_Config) ->
     db_channel:create(Email, <<"test_ets">>, ets, ChannelConfig),
     ets_channel:init_table(TableId),
 
-    hp_checker:force_holidays({1998,3,3}),
+    remind_checker:force_holidays({1998,3,3}),
     timer:sleep(1000),
     [{Email, Message}] = ets_channel:get_reminders(TableId, Email),
 
