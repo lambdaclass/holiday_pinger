@@ -24,7 +24,8 @@
 (defmethod input-view "select"
   [form field]
   [:div.select
-   [:select {:on-change (field-handler form (:key field))}
+   [:select {:on-change (field-handler form (:key field))
+             :value     (get field :value "")}
     (for [value (:options field)]
       [:option {:key value :value value} value])]])
 

@@ -26,6 +26,7 @@
 (db-subscription :channel-to-test)
 (db-subscription :calendar-selected-year)
 (db-subscription :calendar-selected-day-name)
+(db-subscription :country)
 
 (re-frame/reg-sub
  :next-holiday

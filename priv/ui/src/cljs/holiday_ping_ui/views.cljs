@@ -3,7 +3,8 @@
    [clojure.string :as string]
    [re-frame.core :as re-frame]
    [holiday-ping-ui.forms :as forms]
-   [holiday-ping-ui.calendar :as calendar]))
+   [holiday-ping-ui.calendar :as calendar]
+   [holiday-ping-ui.helpers.countries :as countries]))
 
 (defn message-view []
   [:div
@@ -53,34 +54,36 @@
      [link-view "Click here to register." [:switch-view :register]]]]])
 
 (defn register-view []
-  [:div
-   [header-section "Register" [:p "Please fill your profile information."]]
-   [section
-    [message-view]
-    [forms/form-view {:submit-text "Register"
-                      :on-submit   [:register-submit]
-                      :fields      [{:key      :email
-                                     :type     "email"
-                                     :required true}
-                                    {:key      :country
-                                     :type     "select"
-                                     :options  ["Argentina"]
-                                     :value    "Argentina"
-                                     :required true}
-                                    {:key      :name
-                                     :label    "Full name"
-                                     :type     "text"
-                                     :required true}
-                                    {:key      :password
-                                     :type     "password"
-                                     :required true}
-                                    {:key      :password-repeat
-                                     :type     "password"
-                                     :label    "Repeat password"
-                                     :required true}]}]
-    [:br]
-    [:p.has-text-centered "Already registered? "
-     [link-view "Click here to login." [:switch-view :login]]]]])
+  (let [user-country @(re-frame/subscribe [:country])]
+    [:div
+     [header-section "Register" [:p "Please fill your profile information."]]
+     [section
+      [message-view]
+      [forms/form-view {:submit-text "Register"
+                        :on-submit   [:register-submit]
+                        :fields      [{:key      :email
+                                       :type     "email"
+                                       :required true}
+                                      {:key       :country
+                                       :type      "select"
+                                       :options   countries/list
+                                       :value     user-country
+                                       :help-text "We'll use this to load you default holidays."
+                                       :required  true}
+                                      {:key      :name
+                                       :label    "Full name"
+                                       :type     "text"
+                                       :required true}
+                                      {:key      :password
+                                       :type     "password"
+                                       :required true}
+                                      {:key      :password-repeat
+                                       :type     "password"
+                                       :label    "Repeat password"
+                                       :required true}]}]
+      [:br]
+      [:p.has-text-centered "Already registered? "
+       [link-view "Click here to login." [:switch-view :login]]]]]))
 
 ;;; CHANNEL VIEWS
 

@@ -41,14 +41,17 @@
      (cond
        (and stored-token (token/expired? stored-token))
        {:db                 expired-db
-        :remove-local-store "access_token"}
+        :remove-local-store "access_token"
+        :dispatch           [:country-detect]}
 
        stored-token
-       {:db       db/default-db
-        :dispatch [:auth-success {:access_token stored-token}]}
+       {:db         db/default-db
+        :dispatch-n [[:country-detect]
+                     [:auth-success {:access_token stored-token}]]}
 
        :else
-       {:db db/default-db}))))
+       {:db       db/default-db
+        :dispatch [:country-detect]}))))
 
 (re-frame/reg-event-db
  :switch-view
@@ -61,13 +64,32 @@
 
 (re-frame/reg-event-db
  :error-message
- (fn [db [_ message extra]]
+ (fn [db [_ message]]
    (assoc db :error-message message)))
 
 (re-frame/reg-event-db
  :success-message
  (fn [db [_ message]]
    (assoc db :success-message message)))
+
+(re-frame/reg-event-fx
+ :country-detect
+ [(re-frame/inject-cofx :local-store "country")]
+ (fn [{:keys [db local-store]} _]
+   (if local-store
+     {:db (assoc db :country local-store)}
+     {:http-xhrio {:method          :get
+                   :uri             "http://freegeoip.net/json/"
+                   :timeout         8000
+                   :response-format (ajax/json-response-format {:keywords? true})
+                   :on-success      [:country-detect-success]}})))
+
+(re-frame/reg-event-fx
+ :country-detect-success
+ (fn [{:keys [db]} [_ country-data]]
+   (let [country (:country_name country-data)]
+     {:db              (assoc db :country country)
+      :set-local-store ["country" country]})))
 
 ;;; AUTH EVENTS
 (defn- basic-auth-header
