@@ -2,7 +2,7 @@
   (:require
    [re-frame.core :as re-frame]
    [cljs-time.core :as time]
-   [holiday-ping-ui.time-format :as format]))
+   [holiday-ping-ui.helpers.time-format :as format]))
 
 (defn- first-of-calendar-month
   [year month]

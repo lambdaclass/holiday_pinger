@@ -6,7 +6,8 @@
             [goog.crypt.base64 :as base64]
             [cljs-time.core :as time]
             [holiday-ping-ui.db :as db]
-            [holiday-ping-ui.time-format :as format]
+            [holiday-ping-ui.helpers.time-format :as format]
+            [holiday-ping-ui.helpers.token :as token]
             [bouncer.core :as bouncer]
             [bouncer.validators :as validators]))
 
@@ -33,10 +34,21 @@
  :initialize-db
  [(re-frame/inject-cofx :local-store "access_token")]
  (fn [cofx _]
-   (if-let [stored-token (:local-store cofx)]
-     {:db       db/default-db
-      :dispatch [:auth-success {:access_token stored-token}]} ;; TODO should this dispatch be sync ?
-     {:db db/default-db})))
+   (let [stored-token (:local-store cofx)
+         expired-db   (-> db/default-db
+                          (dissoc :access-token)
+                          (assoc :error-message "Your session has expired, please log in again."))]
+     (cond
+       (and stored-token (token/expired? stored-token))
+       {:db                 expired-db
+        :remove-local-store "access_token"}
+
+       stored-token
+       {:db       db/default-db
+        :dispatch [:auth-success {:access_token stored-token}]}
+
+       :else
+       {:db db/default-db}))))
 
 (re-frame/reg-event-db
  :switch-view

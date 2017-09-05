@@ -4,10 +4,10 @@
    [re-frame.core :as re-frame]
    [goog.string :as gstring]
    [goog.crypt :as crypt]
-   [goog.crypt.base64 :as base64]
    [cljs-time.core :as time]
    [goog.crypt.Md5]
-   [holiday-ping-ui.time-format :as format]))
+   [holiday-ping-ui.helpers.time-format :as format]
+   [holiday-ping-ui.helpers.token :as token]))
 
 (defn db-subscription
   "Define a subscription handler that just gets a top level value from the db."
@@ -41,20 +41,10 @@
    (when-not (nil? channels)
      (count channels))))
 
-(defn- decode-token
-  [token]
-  (let [parse-json #(.parse js/JSON %)]
-    (-> token
-        (string/split #"\.")
-        second
-        base64/decodeString
-        parse-json
-        (js->clj :keywordize-keys true))))
-
 (re-frame/reg-sub
  :user-info
  (fn [_ _] (re-frame/subscribe [:access-token]))
- (fn [token _] (decode-token token)))
+ (fn [token _] (token/decode token)))
 
 (defn- md5 [s]
   (let [bytes  (crypt/stringToUtf8ByteArray s)
