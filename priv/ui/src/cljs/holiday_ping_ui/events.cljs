@@ -277,7 +277,8 @@
 (re-frame/reg-event-db
  :holidays-load-success
  (fn [db [_ response]]
-   (let [holidays (map #(update % :date format/string-to-date) response)]
+   (let [sorted   (sort-by :date response)
+         holidays (map #(update % :date format/string-to-date) sorted)]
      (-> db
          (assoc :holidays-saved holidays)
          (assoc :holidays-edited holidays)))))
@@ -338,10 +339,12 @@
 (re-frame/reg-event-db
  :holidays-update
  (fn [db [_ date name]]
-   (let [edited  (:holidays-edited db)
-         removed (remove #(time/= date (:date %)) edited)
-         updated (conj removed {:date date :name name})]
-     (assoc db :holidays-edited updated))))
+   (let [name (or name "")]
+     (->> (:holidays-edited db)
+          (remove #(time/= date (:date %)))
+          (cons {:date date :name name})
+          (sort-by :date time/before?)
+          (assoc db :holidays-edited)))))
 
 (re-frame/reg-event-db
  :holidays-remove

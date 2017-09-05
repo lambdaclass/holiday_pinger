@@ -245,7 +245,6 @@
                                (str "Your next holiday is " holiday-name " on " date ". ")
                                "You have no upcoming holidays ")]
 
-    ;; TODO if either is nil show loading spinner instead
     [header-section (str "Hello, " username "!")
      [:p.dashboard-message holiday-text
       [:a.button.is-small.is-primary.is-inverted.is-outlined
