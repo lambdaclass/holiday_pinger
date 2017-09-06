@@ -10,7 +10,8 @@
          create_user_with_token/1,
          delete_user/1,
          is_same_holiday/3,
-         is_same_holiday/4]).
+         is_same_holiday/4,
+         current_year/0]).
 
 unique_email() ->
     erlang:list_to_binary("test_user" ++ ktn_random:string(5) ++ "@example.com").
@@ -69,13 +70,15 @@ delete_user(Email) ->
     db_user:delete(Email).
 
 is_same_holiday(Holiday, MM, DD, Name) ->
-    {CurrentYear, _, _} = erlang:date(),
     Expected = list_to_binary(
-                 io_lib:format(<<"~B-~2..0B-~2..0B">>, [CurrentYear, MM, DD])),
+                 io_lib:format(<<"~B-~2..0B-~2..0B">>, [current_year(), MM, DD])),
     (maps:get(date, Holiday) == Expected) and (maps:get(name, Holiday) == Name).
 
 is_same_holiday(Holiday, MM, DD) ->
-    {CurrentYear, _, _} = erlang:date(),
     Expected = list_to_binary(
-                 io_lib:format(<<"~B-~2..0B-~2..0B">>, [CurrentYear, MM, DD])),
+                 io_lib:format(<<"~B-~2..0B-~2..0B">>, [current_year(), MM, DD])),
     maps:get(date, Holiday) == Expected.
+
+current_year() ->
+    {CurrentYear, _, _} = erlang:date(),
+    CurrentYear.

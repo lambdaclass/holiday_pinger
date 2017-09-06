@@ -1,6 +1,7 @@
 -module(db_reminder).
 
 -export([set_default_reminder_config/1,
+         get_reminder_config/1,
          update_reminder_config/3,
          get_reminders/1,
          reminder_keys/0]).
@@ -10,6 +11,11 @@ reminder_keys() -> [user, same_day, days_before, holiday_date, reminder_date].
 set_default_reminder_config(Email) ->
     Q = <<"INSERT INTO reminder_config(\"user\", same_day, days_before) "
           "VALUES((SELECT id from users WHERE email = $1), TRUE, NULL)">>,
+    db:query(Q, [Email]).
+
+get_reminder_config(Email) ->
+    Q = <<"SELECT same_day, days_before from reminder_config "
+          "WHERE \"user\" = (SELECT id from users WHERE email = $1)">>,
     db:query(Q, [Email]).
 
 update_reminder_config(Email, SameDay, DaysBefore) ->
