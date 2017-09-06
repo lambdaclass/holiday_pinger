@@ -119,6 +119,7 @@
       :set-local-store ["access_token" token]
       :dispatch-n      [[:channel-load]
                         [:holidays-load]
+                        [:reminders-load]
                         [:switch-view :dashboard]]})))
 
 (re-frame/reg-event-fx
@@ -352,3 +353,45 @@
    (let [edited  (:holidays-edited db)
          removed (remove #(time/= date (:date %)) edited)]
      (assoc db :holidays-edited removed))))
+
+;; REMINDERS EVENTS
+(re-frame/reg-event-fx
+ :reminders-load
+ (fn [{:keys [db]} _]
+   {:http-xhrio {:method          :get
+                 :uri             "/api/reminders"
+                 :timeout         8000
+                 :headers         {:authorization (str "Bearer " (:access-token db))}
+                 :response-format (ajax/json-response-format {:keywords? true})
+                 :on-success      [:reminders-load-success]
+                 :on-failure      [:error-message "Reminders configuration loding failed."]}}))
+
+(re-frame/reg-event-db
+ :reminders-load-success
+ (fn [db [_ response]]
+   (let [{days-before :days_before
+          same-day    :same_day} response]
+     (assoc db :reminder-config {:days-before days-before
+                                 :same-day    same-day}))))
+
+(re-frame/reg-event-fx
+ :reminders-submit
+ (fn [{db :db} [_ form]]
+   (let [days-before (js/parseInt (:days-before form))
+         params      {:days_before (if (zero? days-before) nil days-before)
+                      :same_day    (:same-day form)}]
+     {:http-xhrio {:method          :put
+                   :uri             (str "/api/reminders/")
+                   :headers         {:authorization (str "Bearer " (:access-token db))}
+                   :timeout         8000
+                   :format          (ajax/json-request-format)
+                   :params          params
+                   :response-format (ajax/text-response-format)
+                   :on-success      [:reminders-submit-success]
+                   :on-failure      [:error-message "Reminder configuration saving failed."]}})))
+
+(re-frame/reg-event-fx
+ :reminders-submit-success
+ (fn [{:keys [db]} [_ response]]
+   {:db       (assoc db :success-message "Reminder configuration saved successfully.")
+    :dispatch [:reminders-load-success response]}))

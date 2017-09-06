@@ -358,36 +358,33 @@
       [:div (when-not (= selected-year next-year) {:hidden true})
        [calendar/year-view next-year]]]]))
 
-
 ;; REMINDER VIEWS
 (defn reminder-config-view
   []
-  [:div
-   [header-section "Reminders"
-    [:p "Configure the frequency of the holiday alerts."]]
-   [section
-    [:form
-     [:div.field
-      [:div.control
-       [:label.label
-        " Send a reminder on the same day."]
-       [:div.select
-        [:select
-         [:option "Yes"]
-         [:option "Don't send"]]]]]
-     [:div.field
-      [:div.control
-       [:label.label
-        " Send a reminder before the holiday. "]
-       [:div.select
-        [:select
-         [:option "Don't send"]
-         [:option "One day before"]
-         [:option "Three days before"]
-         [:option "Seven days before"]]]]
-      [:div.control
-       ]]]
-    ]])
+  (let [{:keys [same-day days-before]} @(re-frame/subscribe [:reminder-config])]
+    [:div
+     [header-section "Reminders"
+      [:p "Configure the frequency of the holiday alerts."]]
+     [section
+      [message-view]
+      [forms/form-view {:submit-text "Save"
+                        :on-submit   [:reminders-submit]
+                        :fields      [{:key      :same-day
+                                       :label    "Send a reminder on the same day."
+                                       :type     "select"
+                                       :value    same-day
+                                       :options  [{:text "Yes" :value true}
+                                                  {:text "Don't send" :value false}]
+                                       :required true}
+                                      {:key      :days-before
+                                       :label    "Send a reminder before the holiday."
+                                       :type     "select"
+                                       :value    (or days-before 0)
+                                       :options  [{:text "Don't send" :value 0}
+                                                  {:text "The day before" :value 1}
+                                                  {:text "Three days before" :value 3}
+                                                  {:text "A week before" :value 7}]
+                                       :required true}]}]]]))
 
 ;; APP VIEWS
 (defn user-info-view []

@@ -16,7 +16,8 @@ set_default_reminder_config(Email) ->
 get_reminder_config(Email) ->
     Q = <<"SELECT same_day, days_before from reminder_config "
           "WHERE \"user\" = (SELECT id from users WHERE email = $1)">>,
-    db:query(Q, [Email]).
+    {ok, [Config]} = db:query(Q, [Email]),
+    {ok, Config}.
 
 update_reminder_config(Email, SameDay, DaysBefore) ->
     Q = <<"UPDATE reminder_config SET same_day = $1, days_before = $2 "

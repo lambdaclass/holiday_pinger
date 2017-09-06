@@ -38,7 +38,7 @@ from_json(Req, State = #{email := Email}) ->
     {ok, Body, Req2} = cowboy_req:body(Req),
 
     #{same_day := SameDay, days_before := DaysBefore} = hp_json:decode(Body),
-    {ok, _} = db_reminder:update_reminder_config(Email, SameDay, DaysBefore),
+    ok = db_reminder:update_reminder_config(Email, SameDay, DaysBefore),
 
     Req3 = cowboy_req:set_resp_body(Body, Req2),
     {true, Req3, State}.
