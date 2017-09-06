@@ -25,7 +25,7 @@ get_reminders(Date) ->
           "OR (c.days_before IS NOT NULL AND (h.date - c.days_before) = $1)">>,
 
     {ok, Results} = db:query(Q, [Date]),
-    [{extract_user(R), extract_holiday(R)} || R <- Results].
+    {ok, [{extract_user(R), extract_holiday(R)} || R <- Results]}.
 
 %%% internal
 extract_user(#{user_name := Name, email := Email}) ->
