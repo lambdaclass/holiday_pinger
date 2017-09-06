@@ -359,6 +359,36 @@
        [calendar/year-view next-year]]]]))
 
 
+;; REMINDER VIEWS
+(defn reminder-config-view
+  []
+  [:div
+   [header-section "Reminders"
+    [:p "Configure the frequency of the holiday alerts."]]
+   [section
+    [:form
+     [:div.field
+      [:div.control
+       [:label.label
+        " Send a reminder on the same day."]
+       [:div.select
+        [:select
+         [:option "Yes"]
+         [:option "Don't send"]]]]]
+     [:div.field
+      [:div.control
+       [:label.label
+        " Send a reminder before the holiday. "]
+       [:div.select
+        [:select
+         [:option "Don't send"]
+         [:option "One day before"]
+         [:option "Three days before"]
+         [:option "Seven days before"]]]]
+      [:div.control
+       ]]]
+    ]])
+
 ;; APP VIEWS
 (defn user-info-view []
   (let [{name :name} @(re-frame/subscribe [:user-info])
@@ -389,7 +419,8 @@
          [:div.navbar-start
           (for [[view text] {:dashboard    "Home"
                              :holidays     "Holidays"
-                             :channel-list "Channels"}]
+                             :channel-list "Channels"
+                             :reminder-config "Reminders"}]
             [:a.navbar-item
              {:key view :href "#" :on-click #(re-frame/dispatch [:switch-view view])}
              text])]
@@ -406,13 +437,14 @@
      [:p [:a.icon {:href "https://github.com/lambdaclass/holiday_ping"}
           [:i.fa.fa-github]]]]]])
 
-(def views {:channel-list   [channel-list-view]
-            :channel-edit   [channel-edit-view]
-            :channel-create [channel-add-view]
-            :login          [login-view]
-            :register       [register-view]
-            :holidays       [holidays-view]
-            :dashboard      [dashboard-view]})
+(def views {:channel-list    [channel-list-view]
+            :channel-edit    [channel-edit-view]
+            :channel-create  [channel-add-view]
+            :reminder-config [reminder-config-view]
+            :login           [login-view]
+            :register        [register-view]
+            :holidays        [holidays-view]
+            :dashboard       [dashboard-view]})
 
 (defn app
   "Build the ui based on the current-view in the app-db."
