@@ -358,6 +358,33 @@
       [:div (when-not (= selected-year next-year) {:hidden true})
        [calendar/year-view next-year]]]]))
 
+;; REMINDER VIEWS
+(defn reminder-config-view
+  []
+  (let [{:keys [same-day days-before]} @(re-frame/subscribe [:reminder-config])]
+    [:div
+     [header-section "Reminders"
+      [:p "Configure the frequency of the holiday alerts."]]
+     [section
+      [message-view]
+      [forms/form-view {:submit-text "Save"
+                        :on-submit   [:reminders-submit]
+                        :fields      [{:key      :same-day
+                                       :label    "Send a reminder on the same day."
+                                       :type     "select"
+                                       :value    same-day
+                                       :options  [{:text "Yes" :value true}
+                                                  {:text "Don't send" :value false}]
+                                       :required true}
+                                      {:key      :days-before
+                                       :label    "Send a reminder before the holiday."
+                                       :type     "select"
+                                       :value    (or days-before 0)
+                                       :options  [{:text "Don't send" :value 0}
+                                                  {:text "The day before" :value 1}
+                                                  {:text "Three days before" :value 3}
+                                                  {:text "A week before" :value 7}]
+                                       :required true}]}]]]))
 
 ;; APP VIEWS
 (defn user-info-view []
@@ -389,7 +416,8 @@
          [:div.navbar-start
           (for [[view text] {:dashboard    "Home"
                              :holidays     "Holidays"
-                             :channel-list "Channels"}]
+                             :channel-list "Channels"
+                             :reminder-config "Reminders"}]
             [:a.navbar-item
              {:key view :href "#" :on-click #(re-frame/dispatch [:switch-view view])}
              text])]
@@ -406,13 +434,14 @@
      [:p [:a.icon {:href "https://github.com/lambdaclass/holiday_ping"}
           [:i.fa.fa-github]]]]]])
 
-(def views {:channel-list   [channel-list-view]
-            :channel-edit   [channel-edit-view]
-            :channel-create [channel-add-view]
-            :login          [login-view]
-            :register       [register-view]
-            :holidays       [holidays-view]
-            :dashboard      [dashboard-view]})
+(def views {:channel-list    [channel-list-view]
+            :channel-edit    [channel-edit-view]
+            :channel-create  [channel-add-view]
+            :reminder-config [reminder-config-view]
+            :login           [login-view]
+            :register        [register-view]
+            :holidays        [holidays-view]
+            :dashboard       [dashboard-view]})
 
 (defn app
   "Build the ui based on the current-view in the app-db."

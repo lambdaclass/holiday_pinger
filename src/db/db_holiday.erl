@@ -1,7 +1,6 @@
 -module(db_holiday).
 
--export([users_with_holiday/1,
-         holidays_of_country/1,
+-export([holidays_of_country/1,
          create/3,
          get_user_holidays/1,
          set_user_holidays/2,
@@ -10,11 +9,6 @@
 
 %% needed so atoms exist.
 holiday_keys () -> [country, date, name, user].
-
-users_with_holiday(Date) ->
-    Q = <<"SELECT email, name, country FROM users WHERE id IN "
-        "(SELECT \"user\" from user_holidays WHERE date = $1)">>,
-    db:query(Q, [Date]).
 
 holidays_of_country(Country) ->
   Q = <<"SELECT name, date FROM holidays WHERE country = $1">>,

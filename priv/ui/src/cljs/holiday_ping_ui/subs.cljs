@@ -27,6 +27,7 @@
 (db-subscription :calendar-selected-year)
 (db-subscription :calendar-selected-day-name)
 (db-subscription :country)
+(db-subscription :reminder-config)
 
 (re-frame/reg-sub
  :next-holiday

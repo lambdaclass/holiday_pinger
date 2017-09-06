@@ -48,6 +48,8 @@ force_holidays(Date) ->
 %%% internal
 check_holidays(HolidayDate) ->
     lager:info("Running holiday checker."),
-    {ok, Users} = db_holiday:users_with_holiday(HolidayDate),
-    lists:foreach(fun (User) -> remind_router:send(User, HolidayDate) end, Users),
+    {ok, Results} = db_reminder:get_reminders(HolidayDate),
+    lists:foreach(fun ({User, Holiday}) ->
+                          remind_router:send(User, maps:get(date, Holiday)) end,
+                  Results),
     ok.

@@ -33,6 +33,12 @@ CREATE TABLE user_holidays (
   UNIQUE ("user", "date")
 );
 
+CREATE TABLE reminder_config (
+  "id" serial PRIMARY KEY,
+  "user" serial REFERENCES users ON DELETE CASCADE,
+  "same_day" boolean NOT NULL DEFAULT FALSE,
+  "days_before" smallint CHECK ("days_before" > 0)
+);
 
 INSERT INTO "holidays" ("country", "date", "name") VALUES
 ('argentina', make_date(date_part('year', now())::int, 1, 1), 'New year'),

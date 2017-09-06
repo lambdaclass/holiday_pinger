@@ -37,7 +37,9 @@ from_json(Req, _State) ->
             PasswordHash = hp_auth:password_hash(Password),
             case db_user:create(Email, Name, PasswordHash, LCountry) of
                 {ok, _User} ->
-                    db_holiday:set_default_holidays(Email, LCountry),
+                    %% TODO this should go in a user model eventually, instead of the API handler
+                    ok = db_holiday:set_default_holidays(Email, LCountry),
+                    ok = db_reminder:set_default_reminder_config(Email),
                     {{true, "/api/channels"}, Req2, []};
                 {error, user_already_exists} ->
                     req_utils:error_response(409, <<"User already exists">>, Req2)
