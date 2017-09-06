@@ -29,13 +29,16 @@
 (db-subscription :country)
 (db-subscription :reminder-config)
 
+(defn- next-holiday
+  [holidays]
+  (let [upcoming? #(time/after? (:date %) (time/today))]
+    (first (filter upcoming? holidays))))
+
 (re-frame/reg-sub
  :next-holiday
  (fn [{holidays :holidays-saved}]
-   (let [upcoming? #(time/after? (:date %) (time/today))
-         next      (first (filter upcoming? holidays))]
-     (when next
-       (update next :date format/date-to-string)))))
+   (when-let [next (next-holiday holidays)]
+     (update next :date format/date-to-string))))
 
 (re-frame/reg-sub
  :channel-count
@@ -87,6 +90,17 @@
  :calendar-selected-day
  (fn [{:keys [calendar-selected-day holidays-edited]} _]
    (date-info holidays-edited calendar-selected-day)))
+
+(re-frame/reg-sub
+ :calendar-edited?
+ (fn [{edited :holidays-edited
+       saved  :holidays-saved} _]
+   (not (time/= edited saved))))
+
+(re-frame/reg-sub
+ :calendar-empty?
+ (fn [{edited :holidays-edited} _]
+   (empty? (next-holiday edited))))
 
 ;; Return a range of month numbers for the given year.
 ;; If it's current year, return the range starting with the current month.

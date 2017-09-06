@@ -275,33 +275,43 @@
 
 (defn holiday-controls
   [current next selected]
-  [:nav.level
-   [:div.level-left
-    [:div.level-item
-     [:div.level-item [holidays-year-switch current next selected]]]]
-   [:div.level-right
-    [:div.field.is-grouped
-     [:p.control
-      [:a.button.is-danger
-       {:title    "Clear all holidays from the calendar"
-        :href     "#"
-        :on-click #(re-frame/dispatch [:holidays-clear])}
-       [:span "Clear"]
-       [:span.icon.is-small [:i.fa.fa-times]]]]
-     [:p.control
-      [:a.button
-       {:title    "Drop the changes made in the calendar"
-        :href     "#"
-        :on-click #(re-frame/dispatch [:holidays-reset])}
-       [:span "Reset"]
-       [:span.icon.is-small [:i.fa.fa-undo]]]]
-     [:p.control
-      [:a.button.is-success
-       {:title    "Save the changes in the calendar"
-        :href     "#"
-        :on-click #(re-frame/dispatch [:holidays-save])}
-       [:span "Save"]
-       [:span.icon.is-small [:i.fa.fa-check]]]]]]])
+  (let [edited? @(re-frame/subscribe [:calendar-edited?])
+        empty?  @(re-frame/subscribe [:calendar-empty?])]
+    [:nav.level
+     [:div.level-left
+      [:div.level-item
+       [:div.level-item [holidays-year-switch current next selected]]]
+      (when edited?
+        [:div.level-item
+         [:article.message.is-warning
+          [:div.message-body "Your calendar has unsaved changes."]]])]
+     [:div.level-right
+
+      [:div.field.is-grouped
+       [:p.control
+        [:a.button.is-danger
+         {:title    "Clear all holidays from the calendar"
+          :href     "#"
+          :class    (when empty? "is-static")
+          :on-click #(re-frame/dispatch [:holidays-clear])}
+         [:span "Clear"]
+         [:span.icon.is-small [:i.fa.fa-times]]]]
+       [:p.control
+        [:a.button
+         {:title    "Drop the changes made in the calendar"
+          :href     "#"
+          :class    (when-not edited? "is-static")
+          :on-click #(re-frame/dispatch [:holidays-reset])}
+         [:span "Reset"]
+         [:span.icon.is-small [:i.fa.fa-undo]]]]
+       [:p.control
+        [:a.button.is-success
+         {:title    "Save the changes in the calendar"
+          :href     "#"
+          :class    (when-not edited? "is-static")
+          :on-click #(re-frame/dispatch [:holidays-save])}
+         [:span "Save"]
+         [:span.icon.is-small [:i.fa.fa-check]]]]]]]))
 
 ;; This is a bit too complex, try to refactor
 (defn edit-holiday-modal
