@@ -14,6 +14,7 @@ start(_StartType, _StartArgs) ->
                                              {"/js/[...]", cowboy_static, {priv_dir, holiday_ping, "/ui/resources/public/js"}},
                                              {"/css/[...]", cowboy_static, {priv_dir, holiday_ping, "/ui/resources/public/css"}},
                                              {"/oauth/github", github_redirect_handler, []},
+                                             {"/api/auth/github", github_auth_handler, []},
                                              {"/api/users", user_handler, []},
                                              {"/api/auth/token", token_handler, []},
                                              {"/api/channels", channel_list_handler, []},
