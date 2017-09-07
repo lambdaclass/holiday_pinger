@@ -48,18 +48,28 @@
   [:div
    [header-section "Login" [:p "Please enter your credentials."]]
    [section-size :is-one-third
-    [message-view]
-    [forms/form-view {:submit-text "Login"
-                      :on-submit   [:auth-submit]
-                      :fields      [{:key      :email
-                                     :type     "email"
-                                     :required true}
-                                    {:key      :password
-                                     :type     "password"
-                                     :required true}]}]
-    [:br]
-    [:p.has-text-centered "Don't have an account? "
-     [link-view "Click here to register." [:switch-view :register]]]]])
+    [:div.card
+     [:div.card-content
+      [:div.has-text-centered
+       [:a.button.is-medium.is-primary.is-fullwidth
+        {:href "/oauth/github"}
+        [:span.icon.is-medium [:i.fa.fa-github]]
+        [:span
+         " Login with GitHub"]]]
+      [:hr]
+      [message-view]
+      [forms/form-view {:submit-text  "Login"
+                        :submit-class "is-fullwidth"
+                        :on-submit    [:auth-submit]
+                        :fields       [{:key      :email
+                                        :type     "email"
+                                        :required true}
+                                       {:key      :password
+                                        :type     "password"
+                                        :required true}]}]
+      [:br]
+      [:p.has-text-centered "Don't have an account? "
+       [link-view "Click here to register." [:switch-view :register]]]]]]])
 
 (defn register-view []
   (let [user-country @(re-frame/subscribe [:country])]
@@ -68,27 +78,27 @@
      [section-size :is-half
       [message-view]
       [forms/form-view {:submit-text "Register"
-                        :on-submit   [:register-submit]
-                        :fields      [{:key      :email
-                                       :type     "email"
-                                       :required true}
-                                      {:key       :country
-                                       :type      "select"
-                                       :options   countries/list
-                                       :value     user-country
-                                       :help-text "We'll use this to load you default holidays."
-                                       :required  true}
-                                      {:key      :name
-                                       :label    "Full name"
-                                       :type     "text"
-                                       :required true}
-                                      {:key      :password
-                                       :type     "password"
-                                       :required true}
-                                      {:key      :password-repeat
-                                       :type     "password"
-                                       :label    "Repeat password"
-                                       :required true}]}]
+                        :on-submit [:register-submit]
+                        :fields    [{:key      :email
+                                     :type     "email"
+                                     :required true}
+                                    {:key       :country
+                                     :type      "select"
+                                     :options   countries/list
+                                     :value     user-country
+                                     :help-text "We'll use this to load you default holidays."
+                                     :required  true}
+                                    {:key      :name
+                                     :label    "Full name"
+                                     :type     "text"
+                                     :required true}
+                                    {:key      :password
+                                     :type     "password"
+                                     :required true}
+                                    {:key      :password-repeat
+                                     :type     "password"
+                                     :label    "Repeat password"
+                                     :required true}]}]
       [:br]
       [:p.has-text-centered "Already registered? "
        [link-view "Click here to login." [:switch-view :login]]]]]))

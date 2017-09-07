@@ -55,7 +55,7 @@
 
 (defn form-view
   "Generate the hiccup of a form based on a spec map."
-  [{:keys [header-text submit-text on-submit on-cancel fields]}]
+  [{:keys [header-text submit-text submit-class on-submit on-cancel fields]}]
   (let [form (reagent/atom (get-defaults fields))]
     (fn []
       [:form
@@ -74,10 +74,10 @@
            [:button.button.is-medium {:type     "button"
                                       :on-click #(re-frame/dispatch on-cancel)}
             "Cancel"]])
-        [:div.control
-         [:button.button.is-primary.is-medium
-          {:type     "submit"
-           :on-click (fn [event]
-                       (re-frame/dispatch (conj on-submit @form))
-                       (.preventDefault event))}
-          submit-text]]]])))
+        [:button.button.is-primary.is-medium
+         {:type     "submit"
+          :class    submit-class
+          :on-click (fn [event]
+                      (re-frame/dispatch (conj on-submit @form))
+                      (.preventDefault event))}
+         submit-text]]])))
