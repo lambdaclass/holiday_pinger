@@ -63,8 +63,17 @@ get_primary_email(GithubToken) ->
     maps:get(email, Primary).
 
 register_user(Email, Country, GithubProfile) ->
-    % FIXME implement. first update database
-    ok.
+    %% only attempt to create it if it's not already registered
+    case db_user:exists(Email) of
+        false ->
+            db_user:create_github(Email, maps:get(name, GithubProfile), Country),
+
+            %% TODO this should go in a user model eventually, instead of the API handler
+            ok = db_holiday:set_default_holidays(Email, Country),
+            ok = db_reminder:set_default_reminder_config(Email);
+        true ->
+            ok
+    end.
 
 build_holiday_access_token(Email, Country, GithubProfile) ->
     UserData = #{
