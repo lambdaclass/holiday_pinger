@@ -29,6 +29,21 @@
  (fn [coeffects key]
    (assoc coeffects :local-store (.getItem js/localStorage key))))
 
+(re-frame/reg-fx
+ :set-location
+ (fn [value]
+   (.replaceState js/history nil "" value)))
+
+(re-frame/reg-cofx
+ :location
+ (fn [coeffects]
+   (assoc coeffects :location {:href     (aget js/location "href")
+                               :query    (aget js/location "search")
+                               :host     (aget js/location "host")
+                               :hostname (aget js/location "hostname")
+                               :origin   (aget js/location "origin")
+                               :path     (aget js/location "pathname")})))
+
 ;;; GENERAL EVENTS
 (re-frame/reg-event-fx
  :initialize-db
