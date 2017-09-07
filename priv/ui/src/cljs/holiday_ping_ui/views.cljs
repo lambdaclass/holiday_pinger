@@ -34,12 +34,20 @@
   [:section.section
    (apply vector :div.container views)])
 
+(defn section-size
+  "Take the bulma class for size as the first parameter, i.e. :is-half"
+  [size & views]
+  [:section.section
+   [:div.container
+    [:div.columns.is-centered
+     (apply vector :div.column {:class (name size)} views)]]])
+
 ;;; AUTH VIEWS
 
 (defn login-view []
   [:div
    [header-section "Login" [:p "Please enter your credentials."]]
-   [section
+   [section-size :is-one-third
     [message-view]
     [forms/form-view {:submit-text "Login"
                       :on-submit   [:auth-submit]
@@ -57,7 +65,7 @@
   (let [user-country @(re-frame/subscribe [:country])]
     [:div
      [header-section "Register" [:p "Please fill your profile information."]]
-     [section
+     [section-size :is-half
       [message-view]
       [forms/form-view {:submit-text "Register"
                         :on-submit   [:register-submit]
@@ -148,7 +156,7 @@
     [:div
      [header-section "Channels"]
      [test-channel-modal]
-     [section
+     [section-size :is-two-thirds
       [message-view]
       (if (empty? channels)
         [:p "There are no channels yet."]
@@ -159,7 +167,7 @@
 (defn channel-add-view []
   [:div
    [header-section "Create Channel" [:p "Fill the channel configuration"]]
-   [section
+   [section-size :is-half
     [message-view]
     [forms/form-view {:submit-text "Save"
                       :on-submit   [:channel-submit]
@@ -195,7 +203,7 @@
   [channel]
   [:div
    [header-section "Edit Channel" [:p "Fill the channel configuration"]]
-   [section
+   [section-size :is-half
     [message-view]
     [forms/form-view {:submit-text "Save"
                       :on-submit   [:channel-submit]
