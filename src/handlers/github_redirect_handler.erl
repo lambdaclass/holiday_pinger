@@ -1,5 +1,8 @@
 -module(github_redirect_handler).
 
+%%% HTTP handler that redirects the user to the OAuth endpoint of GitHub
+%%% with the client_id that identifies this application
+
 -export([init/3,
          handle/2,
          terminate/3]).

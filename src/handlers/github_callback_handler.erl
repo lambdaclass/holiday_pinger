@@ -1,4 +1,9 @@
--module(github_auth_handler).
+-module(github_callback_handler).
+
+%%% REST handler that receives the authentication code set by GitHub in the OAuth callback.
+%%% If the user was registered before and it's Logging in, return an access_token.
+%%% If the user is new, return a registration callback that can be used to fill
+%%% the rest of the profile (i.e. the Country).
 
 -export([init/3,
          allowed_methods/2,
@@ -18,21 +23,29 @@ content_types_accepted(Req, State) ->
 content_types_provided(Req, State) ->
     {[{<<"application/json">>, to_json}], Req, State}.
 
-from_json(Req, State ) ->
+from_json(Req, State) ->
     {ok, Body, Req2} = cowboy_req:body(Req),
 
-    #{code := Code, country := Country} = hp_json:decode(Body),
-    LCountry = string:lowercase(Country),
+    #{code := Code} = hp_json:decode(Body),
 
     GithubToken = get_github_access_token(Code),
     Profile = get_public_profile(GithubToken),
     Email = get_primary_email(GithubToken),
 
-    ok = register_user(Email, LCountry, Profile),
-    Token = build_holiday_access_token(Email, LCountry, Profile),
-    RespBody = hp_json:encode(#{access_token => Token}),
-    Req3 = cowboy_req:set_resp_body(RespBody, Req2),
+    %% return a different token according to the registration status of the user
+    RespBody = case db_user:get(Email) of
+                   {ok, User} ->
+                       Token = build_holiday_access_token(User, Profile),
+                       #{new_user => false, access_token => Token};
+                   {error, not_found} ->
+                       Token = build_registration_token(Email, Profile),
+                       #{new_user => true, registration_token => Token}
+               end,
+
+    Encoded = hp_json:encode(RespBody),
+    Req3 = cowboy_req:set_resp_body(Encoded, Req2),
     {true, Req3, State}.
+
 
 %% internal
 get_github_access_token(Code) ->
@@ -62,27 +75,15 @@ get_primary_email(GithubToken) ->
                                 end, Emails),
     maps:get(email, Primary).
 
-register_user(Email, Country, GithubProfile) ->
-    %% only attempt to create it if it's not already registered
-    case db_user:exists(Email) of
-        false ->
-            db_user:create_github(Email, maps:get(name, GithubProfile), Country),
+build_holiday_access_token(User, #{ avatar_url := Avatar}) ->
+    {ok, Token} = hp_auth:access_token_encode(User#{avatar => Avatar}),
+    Token.
 
-            %% TODO this should go in a user model eventually, instead of the API handler
-            ok = db_holiday:set_default_holidays(Email, Country),
-            ok = db_reminder:set_default_reminder_config(Email);
-        true ->
-            ok
-    end.
-
-build_holiday_access_token(Email, Country, GithubProfile) ->
+build_registration_token(Email, GithubProfile) ->
     UserData = #{
       email => Email,
-      country => Country,
       name => maps:get(name, GithubProfile),
       avatar => maps:get(avatar_url, GithubProfile)
      },
-
-    %% generate holiday ping access token
-    {ok, Token} = hp_auth:token_encode(UserData),
+    {ok, Token} = hp_auth:registration_token_encode(UserData),
     Token.

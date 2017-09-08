@@ -3,7 +3,6 @@
 -export([create_holiday/4,
          create_github/3,
          get/1,
-         exists/1,
          delete/1,
          get_with_password/1,
          get_from_countries/1,
@@ -29,8 +28,11 @@ create_github(Email, Name, Country) ->
     end.
 
 get(Email) ->
-    {ok, Result} = get_with_password(Email),
-    {ok, maps:remove(password, Result)}.
+    Q = <<"SELECT email, name, country FROM users WHERE email = $1">>,
+    case db:query(Q, [Email]) of
+        {ok, []} -> {error, not_found};
+        {ok, [User | []]} -> {ok, User}
+    end.
 
 get_with_password(Email) ->
     Q = <<"SELECT email, name, country, password FROM users "
@@ -38,13 +40,6 @@ get_with_password(Email) ->
     case db:query(Q, [Email]) of
         {ok, []} -> {error, not_found};
         {ok, [User | []]} -> {ok, User}
-    end.
-
-exists(Email) ->
-    Q = <<"SELECT count(id) FROM users WHERE email = $1">>,
-    case db:query(Q, [Email]) of
-        {ok, [#{count := 0}]} -> false;
-        {ok, [#{count := _Count}]} -> true
     end.
 
 get_from_countries([]) ->
