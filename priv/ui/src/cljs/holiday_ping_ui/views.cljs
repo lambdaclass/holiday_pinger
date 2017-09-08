@@ -48,18 +48,28 @@
   [:div
    [header-section "Login" [:p "Please enter your credentials."]]
    [section-size :is-one-third
-    [message-view]
-    [forms/form-view {:submit-text "Login"
-                      :on-submit   [:auth-submit]
-                      :fields      [{:key      :email
-                                     :type     "email"
-                                     :required true}
-                                    {:key      :password
-                                     :type     "password"
-                                     :required true}]}]
-    [:br]
-    [:p.has-text-centered "Don't have an account? "
-     [link-view "Click here to register." [:switch-view :register]]]]])
+    [:div.card
+     [:div.card-content
+      [:div.has-text-centered
+       [:a.button.is-medium.is-primary.is-fullwidth
+        {:href "/oauth/github"}
+        [:span.icon.is-medium [:i.fa.fa-github]]
+        [:span
+         " Login with GitHub"]]]
+      [:hr]
+      [message-view]
+      [forms/form-view {:submit-text  "Login"
+                        :submit-class "is-fullwidth"
+                        :on-submit    [:auth-submit]
+                        :fields       [{:key      :email
+                                        :type     "email"
+                                        :required true}
+                                       {:key      :password
+                                        :type     "password"
+                                        :required true}]}]
+      [:br]
+      [:p.has-text-centered "Don't have an account? "
+       [link-view "Click here to register." [:switch-view :register]]]]]]])
 
 (defn register-view []
   (let [user-country @(re-frame/subscribe [:country])]
@@ -93,6 +103,34 @@
       [:p.has-text-centered "Already registered? "
        [link-view "Click here to login." [:switch-view :login]]]]]))
 
+(defn github-loading-view
+  []
+  [:div
+   [header-section "GitHub Login"]
+   [section-size :is-one-third
+    [:div.card
+     [:div.card-content
+      [:div.has-text-centered
+       [:div.subtitle "Mining bitcoins..."]
+       [:a.button.is-medium.is-primary.is-loading
+        [:span
+         " Login with GitHub"]]]]]]])
+
+(defn github-register-view
+  []
+  (let [user-country @(re-frame/subscribe [:country])]
+    [:div
+     [header-section "Register" [:p "Please fill your profile information."]]
+     [section
+      [message-view]
+      [forms/form-view {:submit-text "Register"
+                        :on-submit   [:github-register-submit]
+                        :fields      [{:key       :country
+                                       :type      "select"
+                                       :options   countries/list
+                                       :value     user-country
+                                       :help-text "We'll use this to load you default holidays."
+                                       :required  true}]}]]]))
 ;;; CHANNEL VIEWS
 
 (defn test-channel-modal
@@ -458,6 +496,8 @@
             :reminder-config [reminder-config-view]
             :login           [login-view]
             :register        [register-view]
+            :github-loading  [github-loading-view]
+            :github-register [github-register-view]
             :holidays        [holidays-view]
             :dashboard       [dashboard-view]})
 

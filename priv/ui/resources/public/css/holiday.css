@@ -1,5 +1,6 @@
 .navbar-item img {
     border-radius: 5px;
+    max-height: 2.5rem;
 }
 
 .dashboard-message {

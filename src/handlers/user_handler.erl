@@ -35,7 +35,7 @@ from_json(Req, _State) ->
          } ->
             LCountry = string:lowercase(Country),
             PasswordHash = hp_auth:password_hash(Password),
-            case db_user:create(Email, Name, PasswordHash, LCountry) of
+            case db_user:create_holiday_user(Email, Name, PasswordHash, LCountry) of
                 {ok, _User} ->
                     %% TODO this should go in a user model eventually, instead of the API handler
                     ok = db_holiday:set_default_holidays(Email, LCountry),

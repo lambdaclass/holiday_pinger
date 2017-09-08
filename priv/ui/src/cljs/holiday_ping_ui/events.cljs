@@ -29,16 +29,41 @@
  (fn [coeffects key]
    (assoc coeffects :local-store (.getItem js/localStorage key))))
 
+(re-frame/reg-fx
+ :set-location
+ (fn [value]
+   (.replaceState js/history nil "" value)))
+
+(re-frame/reg-cofx
+ :location
+ (fn [coeffects]
+   (assoc coeffects :location {:href     (aget js/location "href")
+                               :query    (aget js/location "search")
+                               :host     (aget js/location "host")
+                               :hostname (aget js/location "hostname")
+                               :origin   (aget js/location "origin")
+                               :path     (aget js/location "pathname")})))
+
 ;;; GENERAL EVENTS
+(defn- github-callback?
+  [{:keys [path]}]
+  (string/includes? path "/oauth/github/callback"))
+
 (re-frame/reg-event-fx
  :initialize-db
- [(re-frame/inject-cofx :local-store "access_token")]
+ [(re-frame/inject-cofx :local-store "access_token")
+  (re-frame/inject-cofx :location)]
  (fn [cofx _]
    (let [stored-token (:local-store cofx)
          expired-db   (-> db/default-db
                           (dissoc :access-token)
                           (assoc :error-message "Your session has expired, please log in again."))]
      (cond
+       (github-callback? (:location cofx)) ;; TODO when url routing is in place, stop doing it manually here
+       {:db         db/default-db
+        :dispatch-n [[:switch-view :github-loading]
+                     [:github-code-submit]]}
+
        (and stored-token (token/expired? stored-token))
        {:db                 expired-db
         :remove-local-store "access_token"
@@ -159,6 +184,45 @@
    [_ [_ email password _]]
    {:dispatch [:auth-submit {:email    email
                              :password password}]}))
+
+(re-frame/reg-event-fx
+ :github-code-submit
+ [(re-frame/inject-cofx :location)]
+ (fn [{:keys [location]} _]
+   (let [code (-> location :query (string/split #"=") last)]
+     {:dispatch     [:country-detect]
+      :set-location "/"
+      :http-xhrio   {:method          :post
+                     :uri             "/api/auth/github/code"
+                     :timeout         8000
+                     :format          (ajax/json-request-format)
+                     :params          {:code code}
+                     :response-format (ajax/json-response-format {:keywords? true})
+                     :on-success      [:github-code-success]
+                     :on-failure      [:error-message "GitHub authentication failed"]}})))
+
+
+(re-frame/reg-event-fx
+ :github-code-success
+ (fn [{:keys [db]} [_ response]]
+   (if (:new_user response)
+     {:dispatch [:switch-view :github-register]
+      :db       (assoc db :registration-token (:registration_token response))}
+     {:dispatch [:auth-success response]})))
+
+(re-frame/reg-event-fx
+ :github-register-submit
+ (fn [{:keys [db]} [_ form]]
+   {:http-xhrio {:method          :post
+                 :uri             "/api/auth/github/registration"
+                 :timeout         8000
+                 :format          (ajax/json-request-format)
+                 :params          form
+                 :response-format (ajax/json-response-format {:keywords? true})
+                 :headers         {:authorization (str "Bearer " (:registration-token db))}
+                 :on-success      [:auth-success]
+                 :on-failure      [:error-message "GitHub registration failed"]}
+    :db         (dissoc db :registration-token)}))
 
 ;;; CHANNEL EVENTS
 

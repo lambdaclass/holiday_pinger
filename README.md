@@ -36,7 +36,12 @@ For UI development, run a dev shell and then:
 
     $ make dev_ui
 
-Which will uses figwheel to provide a REPL and hot-reload of the code changes.
+Which uses figwheel to provide a REPL and hot-reload of the code changes.
+
+### GitHub login configuration
+
+For the GitHub login option to work, [OAuth cretentials](https://github.com/settings/applications/new)
+need to be generated and set as `GITHUB_CLIENTID` and `GITHUB_SECRET`.
 
 ## Rest API Reference
 
