@@ -36,7 +36,7 @@ For UI development, run a dev shell and then:
 
     $ make dev_ui
 
-Which will uses figwheel to provide a REPL and hot-reload of the code changes.
+Which uses figwheel to provide a REPL and hot-reload of the code changes.
 
 ### GitHub login configuration
 
