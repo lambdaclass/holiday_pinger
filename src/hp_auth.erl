@@ -9,14 +9,15 @@
          authenticate/2]).
 
 access_token_encode(Data) ->
-    token_encode(<<"access_token">>, Data).
+    Expiration = hp_config:get(token_expiration),
+    token_encode(<<"access_token">>, Expiration, Data).
 
 access_token_decode(Token) ->
     token_decode(<<"access_token">>, Token).
 
-%% FIXME reg token should expire right away
 registration_token_encode(Data) ->
-    token_encode(<<"registration_token">>, Data).
+    Expiration = hp_config:get(registration_token_expiration),
+    token_encode(<<"registration_token">>, Expiration, Data).
 
 registration_token_decode(Token) ->
     token_decode(<<"registration_token">>, Token).
@@ -39,9 +40,8 @@ authenticate(Email, Password) ->
     end.
 
 %%% internal
-token_encode(Type, Data) ->
+token_encode(Type, Expiration, Data) ->
     Secret = hp_config:get(token_secret),
-    Expiration = hp_config:get(token_expiration),
     ListData = maps:to_list(Data#{ <<"token_type">> => Type }),
     jwt:encode(<<"HS256">>, ListData, Expiration, Secret).
 
