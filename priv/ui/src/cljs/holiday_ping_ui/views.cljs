@@ -105,7 +105,6 @@
 
 (defn github-loading-view
   []
-
   [:div
    [header-section "GitHub Login"]
    [section-size :is-one-third

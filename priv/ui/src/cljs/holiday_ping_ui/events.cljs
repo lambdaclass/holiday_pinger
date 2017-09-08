@@ -185,7 +185,6 @@
    {:dispatch [:auth-submit {:email    email
                              :password password}]}))
 
-;; FIXME this should switch the view and show a spinner
 (re-frame/reg-event-fx
  :github-code-submit
  [(re-frame/inject-cofx :location)]
