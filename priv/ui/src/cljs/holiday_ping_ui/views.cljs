@@ -103,10 +103,25 @@
       [:p.has-text-centered "Already registered? "
        [link-view "Click here to login." [:switch-view :login]]]]]))
 
-(defn github-register-view []
+(defn github-loading-view
+  []
+
+  [:div
+   [header-section "GitHub Login"]
+   [section-size :is-one-third
+    [:div.card
+     [:div.card-content
+      [:div.has-text-centered
+       [:div.subtitle "Mining bitcoins..."]
+       [:a.button.is-medium.is-primary.is-loading
+        [:span
+         " Login with GitHub"]]]]]]])
+
+(defn github-register-view
+  []
   (let [user-country @(re-frame/subscribe [:country])]
     [:div
-     [header-section "Complete registration" [:p "Please fill your profile information."]]
+     [header-section "Register" [:p "Please fill your profile information."]]
      [section
       [message-view]
       [forms/form-view {:submit-text "Register"
@@ -482,6 +497,7 @@
             :reminder-config [reminder-config-view]
             :login           [login-view]
             :register        [register-view]
+            :github-loading  [github-loading-view]
             :github-register [github-register-view]
             :holidays        [holidays-view]
             :dashboard       [dashboard-view]})

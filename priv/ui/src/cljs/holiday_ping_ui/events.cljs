@@ -60,8 +60,9 @@
                           (assoc :error-message "Your session has expired, please log in again."))]
      (cond
        (github-callback? (:location cofx)) ;; TODO when url routing is in place, stop doing it manually here
-       {:db       db/default-db
-        :dispatch [:github-code-submit]}
+       {:db         db/default-db
+        :dispatch-n [[:switch-view :github-loading]
+                     [:github-code-submit]]}
 
        (and stored-token (token/expired? stored-token))
        {:db                 expired-db
