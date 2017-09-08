@@ -78,31 +78,45 @@
      [section-size :is-half
       [message-view]
       [forms/form-view {:submit-text "Register"
-                        :on-submit [:register-submit]
-                        :fields    [{:key      :email
-                                     :type     "email"
-                                     :required true}
-                                    {:key       :country
-                                     :type      "select"
-                                     :options   countries/list
-                                     :value     user-country
-                                     :help-text "We'll use this to load you default holidays."
-                                     :required  true}
-                                    {:key      :name
-                                     :label    "Full name"
-                                     :type     "text"
-                                     :required true}
-                                    {:key      :password
-                                     :type     "password"
-                                     :required true}
-                                    {:key      :password-repeat
-                                     :type     "password"
-                                     :label    "Repeat password"
-                                     :required true}]}]
+                        :on-submit   [:register-submit]
+                        :fields      [{:key      :email
+                                       :type     "email"
+                                       :required true}
+                                      {:key       :country
+                                       :type      "select"
+                                       :options   countries/list
+                                       :value     user-country
+                                       :help-text "We'll use this to load you default holidays."
+                                       :required  true}
+                                      {:key      :name
+                                       :label    "Full name"
+                                       :type     "text"
+                                       :required true}
+                                      {:key      :password
+                                       :type     "password"
+                                       :required true}
+                                      {:key      :password-repeat
+                                       :type     "password"
+                                       :label    "Repeat password"
+                                       :required true}]}]
       [:br]
       [:p.has-text-centered "Already registered? "
        [link-view "Click here to login." [:switch-view :login]]]]]))
 
+(defn github-register-view []
+  (let [user-country @(re-frame/subscribe [:country])]
+    [:div
+     [header-section "Complete registration" [:p "Please fill your profile information."]]
+     [section
+      [message-view]
+      [forms/form-view {:submit-text "Register"
+                        :on-submit   [:github-register-submit]
+                        :fields      [{:key       :country
+                                       :type      "select"
+                                       :options   countries/list
+                                       :value     user-country
+                                       :help-text "We'll use this to load you default holidays."
+                                       :required  true}]}]]]))
 ;;; CHANNEL VIEWS
 
 (defn test-channel-modal
@@ -468,6 +482,7 @@
             :reminder-config [reminder-config-view]
             :login           [login-view]
             :register        [register-view]
+            :github-register [github-register-view]
             :holidays        [holidays-view]
             :dashboard       [dashboard-view]})
 

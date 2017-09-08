@@ -7,6 +7,7 @@
    :error-message              nil
    :success-message            nil
    :access-token               nil
+   :registration-token         nil
    :holidays-saved             nil
    :holidays-edited            nil
    :channels                   nil

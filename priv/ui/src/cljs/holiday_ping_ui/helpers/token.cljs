@@ -10,7 +10,7 @@
     (-> token
         (string/split #"\.")
         second
-        base64/decodeString
+        (base64/decodeString true)
         parse-json
         (js->clj :keywordize-keys true))))
 
