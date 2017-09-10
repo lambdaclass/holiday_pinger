@@ -1,7 +1,8 @@
 (ns holiday-ping-ui.helpers.token
   (:require
    [clojure.string :as string]
-   [goog.crypt.base64 :as base64]))
+   [goog.crypt.base64 :as base64]
+   [goog.crypt :as crypt]))
 
 
 (defn decode
@@ -10,7 +11,8 @@
     (-> token
         (string/split #"\.")
         second
-        (base64/decodeString true)
+        base64/decodeStringToByteArray
+        crypt/utf8ByteArrayToString
         parse-json
         (js->clj :keywordize-keys true))))
 
