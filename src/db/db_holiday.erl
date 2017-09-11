@@ -23,31 +23,31 @@ create(Country, Date, Name) ->
   end.
 
 get_user_holidays(Email) ->
-    Q = <<"SELECT to_char(date, 'YYYY-MM-DD') as date, name FROM user_holidays "
-          "WHERE \"user\" = (SELECT id FROM users WHERE email = $1) "
-          "ORDER BY date">>,
-    db:query(Q, [Email]).
+  Q = <<"SELECT to_char(date, 'YYYY-MM-DD') as date, name FROM user_holidays "
+        "WHERE \"user\" = (SELECT id FROM users WHERE email = $1) "
+        "ORDER BY date">>,
+  db:query(Q, [Email]).
 
 set_default_holidays(Email, Country) ->
-    Q = <<"INSERT INTO user_holidays(\"user\", date, name) "
-          "SELECT (SELECT id FROM users WHERE email = $1), date, name FROM holidays "
-          "WHERE country = $2">>,
-    db:query(Q, [Email, Country]).
+  Q = <<"INSERT INTO user_holidays(\"user\", date, name) "
+        "SELECT (SELECT id FROM users WHERE email = $1), date, name FROM holidays "
+        "WHERE country = $2">>,
+  db:query(Q, [Email, Country]).
 
 set_user_holidays(Email, Holidays) ->
-    UserQ = <<"SELECT id FROM users WHERE email = $1">>,
-    {ok, [#{id := UserId}]} = db:query(UserQ, [Email]),
+  UserQ = <<"SELECT id FROM users WHERE email = $1">>,
+  {ok, [#{id := UserId}]} = db:query(UserQ, [Email]),
 
-    Values = [io_lib:format(<<"(~p, '~s', '~s')">>, [UserId, Date, db:escape_string(Name)])
-              || #{date := Date, name := Name} <- Holidays],
-    Values2 = lists:join(<<", ">>, Values),
+  Values = [io_lib:format(<<"(~p, '~s', '~s')">>, [UserId, Date, db:escape_string(Name)])
+            || #{date := Date, name := Name} <- Holidays],
+  Values2 = lists:join(<<", ">>, Values),
 
-    Q = [<<"INSERT INTO user_holidays(\"user\", date, name) VALUES ">>,
-         Values2,
-         <<" RETURNING date, name">>],
-    Q2 = iolist_to_binary(Q),
+  Q = [<<"INSERT INTO user_holidays(\"user\", date, name) VALUES ">>,
+       Values2,
+       <<" RETURNING date, name">>],
+  Q2 = iolist_to_binary(Q),
 
-    DeleteQ = <<"DELETE FROM user_holidays WHERE \"user\" = $1">>,
-    case db:query(DeleteQ, [UserId]) of
-        ok -> db:query(Q2, [])
-    end.
+  DeleteQ = <<"DELETE FROM user_holidays WHERE \"user\" = $1">>,
+  case db:query(DeleteQ, [UserId]) of
+    ok -> db:query(Q2, [])
+  end.

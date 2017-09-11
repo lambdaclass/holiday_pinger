@@ -6,39 +6,39 @@
          is_authorized/3]).
 
 success_response(Data, Req) ->
-    Body = hp_json:encode(Data),
-    Req2 = cowboy_req:set_resp_body(Body, Req),
-    {true, Req2, []}.
+  Body = hp_json:encode(Data),
+  Req2 = cowboy_req:set_resp_body(Body, Req),
+  {true, Req2, []}.
 
 error_response(Message, Req) ->
-    error_response(400, Message, Req).
+  error_response(400, Message, Req).
 error_response(Status, Message, Req) ->
-    Body = hp_json:encode(#{message => Message}),
-    Req2 = cowboy_req:set_resp_body(Body, Req),
-    {ok, Req3} = cowboy_req:reply(Status, [], Body, Req2),
-    {halt, Req3, []}.
+  Body = hp_json:encode(#{message => Message}),
+  Req2 = cowboy_req:set_resp_body(Body, Req),
+  {ok, Req3} = cowboy_req:reply(Status, [], Body, Req2),
+  {halt, Req3, []}.
 
 is_authorized(bearer, Req, State) ->
-    Fail = {false, <<"Bearer realm=\"holidayping\"">>},
-    case cowboy_req:parse_header(<<"authorization">>, Req) of
-        {ok, {<<"bearer">>, Token}, Req2} ->
-            case hp_auth:access_token_decode(Token) of
-                {ok, User} ->
-                    {true, Req2, State#{user => User, email => maps:get(<<"email">>, User)}};
-                _ -> {Fail, Req2, State}
-            end;
-        _ -> {Fail, Req, State}
-    end;
+  Fail = {false, <<"Bearer realm=\"holidayping\"">>},
+  case cowboy_req:parse_header(<<"authorization">>, Req) of
+    {ok, {<<"bearer">>, Token}, Req2} ->
+      case hp_auth:access_token_decode(Token) of
+        {ok, User} ->
+          {true, Req2, State#{user => User, email => maps:get(<<"email">>, User)}};
+        _ -> {Fail, Req2, State}
+      end;
+    _ -> {Fail, Req, State}
+  end;
 
 is_authorized(basic, Req, State) ->
-    %% Using a custom auth challenge (API-Basic) so it doesn't force a browser popup on web API consumers
-    Fail = {false, <<"API-Basic realm=\"holidayping\"">>},
-    case cowboy_req:parse_header(<<"authorization">>, Req) of
-        {ok, {<<"basic">>, {Email, Password}}, Req2} ->
-            case hp_auth:authenticate(Email, Password) of
-                {ok, User} ->
-                    {true, Req2, State#{user => User, email => Email}};
-                _ -> {Fail, Req2, State}
-            end;
-        _ -> {Fail, Req, State}
-    end.
+  %% Using a custom auth challenge (API-Basic) so it doesn't force a browser popup on web API consumers
+  Fail = {false, <<"API-Basic realm=\"holidayping\"">>},
+  case cowboy_req:parse_header(<<"authorization">>, Req) of
+    {ok, {<<"basic">>, {Email, Password}}, Req2} ->
+      case hp_auth:authenticate(Email, Password) of
+        {ok, User} ->
+          {true, Req2, State#{user => User, email => Email}};
+        _ -> {Fail, Req2, State}
+      end;
+    _ -> {Fail, Req, State}
+  end.

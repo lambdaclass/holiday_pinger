@@ -7,17 +7,17 @@
          to_json/2]).
 
 init(_Transport, _Req, []) ->
-    {upgrade, protocol, cowboy_rest}.
+  {upgrade, protocol, cowboy_rest}.
 
 is_authorized(Req, _State) ->
-    req_utils:is_authorized(bearer, Req, #{}).
+  req_utils:is_authorized(bearer, Req, #{}).
 
 allowed_methods(Req, State) ->
-    {[<<"GET">>, <<"HEAD">>, <<"OPTIONS">>], Req, State}.
+  {[<<"GET">>, <<"HEAD">>, <<"OPTIONS">>], Req, State}.
 
 content_types_provided(Req, State) ->
-    {[{<<"application/json">>, to_json}], Req, State}.
+  {[{<<"application/json">>, to_json}], Req, State}.
 
 to_json(Req, State = #{email := Email}) ->
-    {ok, Body} = db_channel:list(Email),
-    {hp_json:encode(Body), Req, State}.
+  {ok, Body} = db_channel:list(Email),
+  {hp_json:encode(Body), Req, State}.

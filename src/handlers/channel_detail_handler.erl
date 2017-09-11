@@ -12,70 +12,70 @@
          delete_resource/2]).
 
 init(_Transport, _Req, []) ->
-    {upgrade, protocol, cowboy_rest}.
+  {upgrade, protocol, cowboy_rest}.
 
 rest_init(Req, _Opts) ->
-    {Name, Req2} = cowboy_req:binding(name, Req),
-    State = #{name => Name},
-    {ok, Req2, State}.
+  {Name, Req2} = cowboy_req:binding(name, Req),
+  State = #{name => Name},
+  {ok, Req2, State}.
 
 is_authorized(Req, State) ->
-    req_utils:is_authorized(bearer, Req, State).
+  req_utils:is_authorized(bearer, Req, State).
 
 allowed_methods(Req, State) ->
-    {[<<"GET">>, <<"HEAD">>, <<"OPTIONS">>, <<"PUT">>, <<"DELETE">>],
-     Req, State}.
+  {[<<"GET">>, <<"HEAD">>, <<"OPTIONS">>, <<"PUT">>, <<"DELETE">>],
+   Req, State}.
 
 resource_exists(Req, State = #{email := Email, name := Name}) ->
-    case db_channel:get(Email, Name) of
-        {ok, Channel} -> {true, Req, State#{channel => Channel, is_new => false}};
-        _ -> {false, Req, State#{is_new => true}}
-    end.
+  case db_channel:get(Email, Name) of
+    {ok, Channel} -> {true, Req, State#{channel => Channel, is_new => false}};
+    _ -> {false, Req, State#{is_new => true}}
+  end.
 
 content_types_provided(Req, State) ->
-    {[{<<"application/json">>, to_json}], Req, State}.
+  {[{<<"application/json">>, to_json}], Req, State}.
 
 to_json(Req, State = #{channel := Channel}) ->
-    Body = hp_json:encode(Channel),
-    {Body, Req, State}.
+  Body = hp_json:encode(Channel),
+  {Body, Req, State}.
 
 content_types_accepted(Req, State) ->
-    {[{<<"application/json">>, from_json}], Req, State}.
+  {[{<<"application/json">>, from_json}], Req, State}.
 
 %% PUT for create
 from_json(Req, State = #{is_new := true,
                          email := Email,
                          name := Name}) ->
-    {ok, Body, Req2} = cowboy_req:body(Req),
+  {ok, Body, Req2} = cowboy_req:body(Req),
 
-    %% TODO validate input fields
-    #{
-       type := Type,
-       configuration := Config
-     } = hp_json:decode(Body),
+  %% TODO validate input fields
+  #{
+     type := Type,
+     configuration := Config
+   } = hp_json:decode(Body),
 
-    {ok, _} = db_channel:create(Email, Name, Type, Config),
+  {ok, _} = db_channel:create(Email, Name, Type, Config),
 
-    Req3 = cowboy_req:set_resp_body(Body, Req2),
-    {true, Req3, State};
+  Req3 = cowboy_req:set_resp_body(Body, Req2),
+  {true, Req3, State};
 
 %% PUT for update
 from_json(Req, State = #{is_new := false,
                          email := Email,
                          name := Name,
                          channel := Channel}) ->
-    %% only configuration can be updated for now
-    {ok, Body, Req2} = cowboy_req:body(Req),
-    %% TODO validate input fields
-    #{configuration := Config} = hp_json:decode(Body),
+  %% only configuration can be updated for now
+  {ok, Body, Req2} = cowboy_req:body(Req),
+  %% TODO validate input fields
+  #{configuration := Config} = hp_json:decode(Body),
 
-    ok = db_channel:update(Email, Name, Config),
+  ok = db_channel:update(Email, Name, Config),
 
-    RespBody = Channel#{configuration := Config},
-    Encoded = hp_json:encode(RespBody),
-    Req3 = cowboy_req:set_resp_body(Encoded, Req2),
-    {true, Req3, State}.
+  RespBody = Channel#{configuration := Config},
+  Encoded = hp_json:encode(RespBody),
+  Req3 = cowboy_req:set_resp_body(Encoded, Req2),
+  {true, Req3, State}.
 
 delete_resource(Req, State = #{email := Email, name := Name}) ->
-    ok = db_channel:delete(Email, Name),
-    {true, Req, State}.
+  ok = db_channel:delete(Email, Name),
+  {true, Req, State}.

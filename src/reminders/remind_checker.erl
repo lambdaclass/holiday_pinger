@@ -16,27 +16,27 @@
          handle_info/2]).
 
 start_link() ->
-    gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
+  gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 
 init([]) ->
-    Interval = hp_config:get(checker_interval),
-    {ok, _} = timer:send_interval(Interval, check_holidays),
-    {ok, []}.
+  Interval = hp_config:get(checker_interval),
+  {ok, _} = timer:send_interval(Interval, check_holidays),
+  {ok, []}.
 
 handle_call(_Request, _From, State) ->
-    {noreply, State}.
+  {noreply, State}.
 
 handle_cast(_Request, State) ->
-    {noreply, State}.
+  {noreply, State}.
 
 handle_info(check_holidays, State) ->
-    %% for now remind when we're already in the holiday
-    HolidayDate = erlang:date(),
-    check_holidays(HolidayDate),
-    {noreply, State};
+  %% for now remind when we're already in the holiday
+  HolidayDate = erlang:date(),
+  check_holidays(HolidayDate),
+  {noreply, State};
 
 handle_info(_Msg, State) ->
-    {noreply, State}.
+  {noreply, State}.
 
 %% for testing, foce the checker to send reminders
 force_holidays() ->
@@ -47,9 +47,9 @@ force_holidays(Date) ->
 
 %%% internal
 check_holidays(HolidayDate) ->
-    lager:info("Running holiday checker."),
-    {ok, Results} = db_reminder:get_reminders(HolidayDate),
-    lists:foreach(fun ({User, Holiday}) ->
-                          remind_router:send(User, maps:get(date, Holiday)) end,
-                  Results),
-    ok.
+  lager:info("Running holiday checker."),
+  {ok, Results} = db_reminder:get_reminders(HolidayDate),
+  lists:foreach(fun ({User, Holiday}) ->
+                    remind_router:send(User, maps:get(date, Holiday)) end,
+                Results),
+  ok.
