@@ -296,13 +296,13 @@
   [current next selected]
   [:div.field.has-addons
    [:p.control
-    [:a.button.is-medium
+    [:a.button
      (if (= selected current)
        {:class "is-static"}
        {:href "#" :on-click #(re-frame/dispatch [:calendar-select-year current])})
      current]]
    [:p.control
-    [:a.button.is-medium
+    [:a.button
      (if (= selected next)
        {:class "is-static"}
        {:href "#" :on-click #(re-frame/dispatch [:calendar-select-year next])})

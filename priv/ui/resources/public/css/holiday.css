@@ -17,5 +17,18 @@
 }
 
 .app-title {
-    font-family: concourse-t7
+    font-family: concourse t6
+}
+
+.section {
+    font-size: 1.2rem
+}
+
+.calendar .calendar-nav {
+    font-size: 1.5rem
+}
+
+button.date-item {
+    font-size: 0.85rem
+
 }
