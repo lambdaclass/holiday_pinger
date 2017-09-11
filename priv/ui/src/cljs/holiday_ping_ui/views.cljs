@@ -450,7 +450,7 @@
      [:div.container
 
       [:div.navbar-brand
-       [:div.navbar-item.is-size-3 "HolidayPing"]
+       [:div.navbar-item.is-size-3.app-title "HolidayPing"]
        [:div.navbar-burger.burger {:data-target "navMenubd"}]]
 
       (when authenticated?
@@ -473,7 +473,7 @@
   [:footer.footer
    [:div.container
     [:div.content.has-text-centered
-     [:p [:strong "Holiday Ping"] " by "
+     [:p [:strong "HolidayPing"] " by "
       [:a {:href "https://github.com/lambdaclass/"} "LambdaClass"] "."]
      [:p [:a.icon {:href "https://github.com/lambdaclass/holiday_ping"}
           [:i.fa.fa-github]]]]]])

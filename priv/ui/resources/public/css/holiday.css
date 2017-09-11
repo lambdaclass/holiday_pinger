@@ -15,3 +15,7 @@
 .calendar {
     min-width: 20rem;
 }
+
+.app-title {
+    font-family: concourse-t7
+}
