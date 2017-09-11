@@ -58,3 +58,11 @@ registrations take place
 some reptitive tasks: handlers that just set a value, subs that just read a value from db
 looks like an interesting structure/pattern to guarantee decoupling, but at times
 feels like too much for a small project.
+
+## Random notes
+
+- Sometimes you need the UI in order to better understand the model. You need to be able
+to poke around with the app to see what feels right and what not, and maybe change
+the model accordingly. Having your db schema carved on stone from the start of the project sucks.
+
+- This is nothing new, but frontend takes way more time than backend.

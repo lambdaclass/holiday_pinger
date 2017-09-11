@@ -20,14 +20,6 @@
   [text event]
   [:a {:href "#" :on-click #(re-frame/dispatch event)} text])
 
-(defn header-section
-  "Build a section header with title and an optional list of other views."
-  [title & views]
-  [:div
-   [:section.hero.is-primary.is-bold
-    [:div.hero-body
-     (apply vector :div.container [:h1.title title] views)]]])
-
 (defn section
   "Wrap the given views in a regular section"
   [& views]
@@ -46,7 +38,6 @@
 
 (defn login-view []
   [:div
-   [header-section "Login" [:p "Please enter your credentials."]]
    [section-size :is-one-third
     [:div.card
      [:div.card-content
@@ -74,8 +65,8 @@
 (defn register-view []
   (let [user-country @(re-frame/subscribe [:country])]
     [:div
-     [header-section "Register" [:p "Please fill your profile information."]]
      [section-size :is-half
+      [:p.subtitle "Please fill your profile information."]
       [message-view]
       [forms/form-view {:submit-text "Register"
                         :on-submit   [:register-submit]
@@ -106,7 +97,6 @@
 (defn github-loading-view
   []
   [:div
-   [header-section "GitHub Login"]
    [section-size :is-one-third
     [:div.card
      [:div.card-content
@@ -119,18 +109,17 @@
 (defn github-register-view
   []
   (let [user-country @(re-frame/subscribe [:country])]
-    [:div
-     [header-section "Register" [:p "Please fill your profile information."]]
-     [section
-      [message-view]
-      [forms/form-view {:submit-text "Register"
-                        :on-submit   [:github-register-submit]
-                        :fields      [{:key       :country
-                                       :type      "select"
-                                       :options   countries/list
-                                       :value     user-country
-                                       :help-text "We'll use this to load you default holidays."
-                                       :required  true}]}]]]))
+    [section
+     [:p.subtitle "Please fill your profile information."]
+     [message-view]
+     [forms/form-view {:submit-text "Register"
+                       :on-submit   [:github-register-submit]
+                       :fields      [{:key       :country
+                                      :type      "select"
+                                      :options   countries/list
+                                      :value     user-country
+                                      :help-text "We'll use this to load you default holidays."
+                                      :required  true}]}]]))
 ;;; CHANNEL VIEWS
 
 (defn test-channel-modal
@@ -192,20 +181,21 @@
   []
   (let [channels @(re-frame/subscribe [:channels])]
     [:div
-     [header-section "Channels"]
      [test-channel-modal]
      [section-size :is-two-thirds
       [message-view]
       (if (empty? channels)
-        [:p "There are no channels yet."]
+        [:div.has-text-centered
+         [:p "There are no channels yet."]
+         [:br]]
         [:table.table.is-fullwidth.is-striped
          [:tbody (map channel-item-view channels)]])
       [add-channel-button]]]))
 
 (defn channel-add-view []
   [:div
-   [header-section "Create Channel" [:p "Fill the channel configuration"]]
    [section-size :is-half
+    [:p.subtitle "Fill the channel configuration"]
     [message-view]
     [forms/form-view {:submit-text "Save"
                       :on-submit   [:channel-submit]
@@ -240,8 +230,8 @@
 (defn channel-edit-view
   [channel]
   [:div
-   [header-section "Edit Channel" [:p "Fill the channel configuration"]]
    [section-size :is-half
+    [:p.subtitle "Fill the channel configuration"]
     [message-view]
     [forms/form-view {:submit-text "Save"
                       :on-submit   [:channel-submit]
@@ -291,15 +281,14 @@
                                (str "Your next holiday is " holiday-name " on " date ". ")
                                "You have no upcoming holidays ")]
 
-    [header-section (str "Hello, " username "!")
+    [section
+     [:h1.title.is-3 (str "Hello, " username "!")]
      [:p.dashboard-message holiday-text
-      [:a.button.is-small.is-primary.is-inverted.is-outlined
-       {:href "#" :on-click #(re-frame/dispatch [:switch-view :holidays])}
+      [:a {:href "#" :on-click #(re-frame/dispatch [:switch-view :holidays])}
        " Manage holidays"]]
      [:br]
      [:p.dashboard-message count-text
-      [:a.button.is-small.is-primary.is-inverted.is-outlined
-       {:href "#" :on-click #(re-frame/dispatch [:switch-view :channel-list])}
+      [:a {:href "#" :on-click #(re-frame/dispatch [:switch-view :channel-list])}
        " Manage channels"]]]))
 
 ;;; HOLIDAYS views
@@ -405,9 +394,8 @@
         selected-year @(re-frame/subscribe [:calendar-selected-year])]
     [:div
      [edit-holiday-modal]
-     [header-section "Holidays"
-      [:p "Select the days of the year for which you want reminders."]]
      [section
+      [:p.subtitle "Select the days of the year for which you want reminders."]
       [holiday-controls current-year next-year selected-year]
       [:div (when-not (= selected-year current-year) {:hidden true})
        [calendar/year-view current-year]]
@@ -418,29 +406,27 @@
 (defn reminder-config-view
   []
   (let [{:keys [same-day days-before]} @(re-frame/subscribe [:reminder-config])]
-    [:div
-     [header-section "Reminders"
-      [:p "Configure the frequency of the holiday alerts."]]
-     [section
-      [message-view]
-      [forms/form-view {:submit-text "Save"
-                        :on-submit   [:reminders-submit]
-                        :fields      [{:key      :same-day
-                                       :label    "Send a reminder on the same day."
-                                       :type     "select"
-                                       :value    same-day
-                                       :options  [{:text "Yes" :value true}
-                                                  {:text "Don't send" :value false}]
-                                       :required true}
-                                      {:key      :days-before
-                                       :label    "Send a reminder before the holiday."
-                                       :type     "select"
-                                       :value    (or days-before 0)
-                                       :options  [{:text "Don't send" :value 0}
-                                                  {:text "The day before" :value 1}
-                                                  {:text "Three days before" :value 3}
-                                                  {:text "A week before" :value 7}]
-                                       :required true}]}]]]))
+    [section
+     [:p.subtitle "Configure the frequency of the holiday alerts."]
+     [message-view]
+     [forms/form-view {:submit-text "Save"
+                       :on-submit   [:reminders-submit]
+                       :fields      [{:key      :same-day
+                                      :label    "Send a reminder on the same day."
+                                      :type     "select"
+                                      :value    same-day
+                                      :options  [{:text "Yes" :value true}
+                                                 {:text "Don't send" :value false}]
+                                      :required true}
+                                     {:key      :days-before
+                                      :label    "Send a reminder before the holiday."
+                                      :type     "select"
+                                      :value    (or days-before 0)
+                                      :options  [{:text "Don't send" :value 0}
+                                                 {:text "The day before" :value 1}
+                                                 {:text "Three days before" :value 3}
+                                                 {:text "A week before" :value 7}]
+                                      :required true}]}]]))
 
 ;; APP VIEWS
 (defn user-info-view []
@@ -460,25 +446,27 @@
 (defn navbar-view
   []
   (let [authenticated? @(re-frame/subscribe [:access-token])]
-    [:nav.navbar
+    [:nav.navbar.has-shadow
      [:div.container
 
       [:div.navbar-brand
-       [:div.navbar-item.is-size-3 "Holiday Ping"]
+       [:div.navbar-item.is-size-3 "HolidayPing"]
        [:div.navbar-burger.burger {:data-target "navMenubd"}]]
 
       (when authenticated?
         [:div#navMenubd.navbar-menu
          [:div.navbar-start
-          (for [[view text] {:dashboard    "Home"
-                             :holidays     "Holidays"
-                             :channel-list "Channels"
+          (for [[view text] {:dashboard       "Home"
+                             :holidays        "Holidays"
+                             :channel-list    "Channels"
                              :reminder-config "Reminders"}]
             [:a.navbar-item
              {:key view :href "#" :on-click #(re-frame/dispatch [:switch-view view])}
              text])]
          [:div.navbar-end
-          [user-info-view]]])]]))
+          [user-info-view]]])
+      ][:hr.navbar-divider]
+     ]))
 
 (defn footer-view
   []
