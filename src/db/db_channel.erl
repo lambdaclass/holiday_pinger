@@ -5,7 +5,8 @@
          update/3,
          delete/2,
          list/1,
-         channel_keys/0]).
+         channel_keys/0,
+         get_id/2]).
 
 channel_keys () -> [user, name, type, configuration].
 
@@ -45,6 +46,14 @@ list(User) ->
         "WHERE \"user\" = (SELECT id FROM users WHERE email = $1)">>,
   {ok, Results} = db:query(Q, [User]),
   {ok, lists:map(fun decode_config/1, Results)}.
+
+get_id(Email, ChannelName) ->
+  ChannelQ = <<"SELECT id FROM channels WHERE name = $1 ",
+               "AND \"user\" = (SELECT id FROM users WHERE email = $2)">>,
+  case db:query(ChannelQ, [ChannelName, Email]) of
+    {ok, [#{id := ChannelId}]} -> {ok, ChannelId};
+    {ok, []} -> {error, channel_not_found}
+  end.
 
 %%% internal
 %% TODO db:results_to_map could be smart enough to figure this decoding based on the column type

@@ -13,7 +13,9 @@ init(_Transport, _Req, []) ->
   {upgrade, protocol, cowboy_rest}.
 
 rest_init(Req, _Opts) ->
-  {ok, Req, #{}}.
+  {Channel, Req2} = cowboy_req:binding(channel, Req),
+  State = #{channel => Channel},
+  {ok, Req2, State}.
 
 is_authorized(Req, State) ->
   req_utils:is_authorized(bearer, Req, State).
@@ -25,21 +27,28 @@ allowed_methods(Req, State) ->
 content_types_provided(Req, State) ->
   {[{<<"application/json">>, to_json}], Req, State}.
 
-to_json(Req, State = #{email := Email}) ->
-  {ok, Holidays} = db_holiday:get_user_holidays(Email),
-  Body = hp_json:encode(Holidays),
-  {Body, Req, State}.
+to_json(Req, State = #{email := Email, channel := Channel}) ->
+  case db_holiday:get_channel_holidays(Email, Channel) of
+    {ok, Holidays} ->
+      Body = hp_json:encode(Holidays),
+      {Body, Req, State};
+    {error, channel_not_found} ->
+      req_utils:error_response(404, <<"Channel not found">>, Req)
+  end.
 
 content_types_accepted(Req, State) ->
   {[{<<"application/json">>, from_json}], Req, State}.
 
-from_json(Req, State = #{email := Email}) ->
-  %% only configuration can be updated for now
+from_json(Req, State = #{email := Email, channel := Channel}) ->
   {ok, Body, Req2} = cowboy_req:body(Req),
 
   %% TODO validate holidays
   NewHolidays = hp_json:decode(Body),
-  {ok, _} = db_holiday:set_user_holidays(Email, NewHolidays),
 
-  Req3 = cowboy_req:set_resp_body(Body, Req2),
-  {true, Req3, State}.
+  case db_holiday:set_channel_holidays(Email, Channel, NewHolidays) of
+    {ok, _} ->
+      Req3 = cowboy_req:set_resp_body(Body, Req2),
+      {true, Req3, State};
+    {error, channel_not_found} ->
+      req_utils:error_response(404, <<"Channel not found">>, Req2)
+  end.

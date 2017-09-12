@@ -59,11 +59,7 @@ register_user(#{<<"email">> := Email, <<"name">> := Name}, Country) ->
   %% only attempt to create it if it's not already registered
   case db_user:get(Email) of
     {error, not_found} ->
-      {ok, _} = db_user:create_github_user(Email, Name, Country),
-
-      %% TODO this should go in a user model eventually, instead of the API handler
-      ok = db_holiday:set_default_holidays(Email, Country),
-      ok = db_reminder:set_default_reminder_config(Email);
+      {ok, _} = db_user:create_github_user(Email, Name, Country);
     {ok, _} ->
       ok
   end.

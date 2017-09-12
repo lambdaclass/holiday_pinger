@@ -26,17 +26,17 @@ CREATE TABLE holidays (
   UNIQUE ("country", "date")
 );
 
-CREATE TABLE user_holidays (
+CREATE TABLE channel_holidays (
   "id" serial PRIMARY KEY,
-  "user" serial REFERENCES users ON DELETE CASCADE,
+  "channel" serial REFERENCES channels ON DELETE CASCADE,
   "date" date NOT NULL,
   "name" character varying(50) NOT NULL,
-  UNIQUE ("user", "date")
+  UNIQUE ("channel", "date")
 );
 
 CREATE TABLE reminder_config (
   "id" serial PRIMARY KEY,
-  "user" serial REFERENCES users ON DELETE CASCADE,
+  "channel" serial REFERENCES channels ON DELETE CASCADE,
   "same_day" boolean NOT NULL DEFAULT FALSE,
   "days_before" smallint CHECK ("days_before" > 0)
 );

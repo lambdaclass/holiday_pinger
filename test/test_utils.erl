@@ -14,71 +14,71 @@
          current_year/0]).
 
 unique_email() ->
-    erlang:list_to_binary("test_user" ++ ktn_random:string(5) ++ "@example.com").
+  erlang:list_to_binary("test_user" ++ ktn_random:string(5) ++ "@example.com").
 
 api_request(Method, AccessToken, Path) ->
-    api_request(Method, AccessToken, Path, <<"">>, []).
+  api_request(Method, AccessToken, Path, <<"">>, []).
 
 api_request(Method, AccessToken, Path, Data) ->
-    api_request(Method, AccessToken, Path, Data, []).
+  api_request(Method, AccessToken, Path, Data, []).
 
 api_request(Method, public, Path, Data, Options) ->
-    api_request_internal(Method, [], Path, Data, Options);
+  api_request_internal(Method, [], Path, Data, Options);
 api_request(Method, AccessToken, Path, Data, Options) ->
-    Headers = [{<<"Authorization">>, <<"Bearer ", AccessToken/binary>>}],
-    api_request_internal(Method, Headers, Path, Data, Options).
+  Headers = [{<<"Authorization">>, <<"Bearer ", AccessToken/binary>>}],
+  api_request_internal(Method, Headers, Path, Data, Options).
 
 api_request_internal(Method, Headers, Path, Data, Options) ->
-    %% TODO make url configurable
-    Port = erlang:integer_to_list(hp_config:get(port)),
-    Url = "http://localhost:" ++ Port ++ Path,
-    Body = hp_json:encode(Data),
-    AllHeaders = [{<<"Content-Type">>, <<"application/json">>} | Headers],
-    case hackney:request(Method, Url, AllHeaders, Body, [with_body | Options]) of
-        {ok, _, _, <<"">>} = Res -> Res;
-        {ok, Status, ResHeaders, ResBody} -> {ok, Status, ResHeaders, hp_json:decode(ResBody)}
-    end.
+  %% TODO make url configurable
+  Port = erlang:integer_to_list(hp_config:get(port)),
+  Url = "http://localhost:" ++ Port ++ Path,
+  Body = hp_json:encode(Data),
+  AllHeaders = [{<<"Content-Type">>, <<"application/json">>} | Headers],
+  case hackney:request(Method, Url, AllHeaders, Body, [with_body | Options]) of
+    {ok, _, _, <<"">>} = Res -> Res;
+    {ok, Status, ResHeaders, ResBody} -> {ok, Status, ResHeaders, hp_json:decode(ResBody)}
+  end.
 
 create_user() ->
-    create_user(#{}).
+  create_user(#{}).
 
 create_user(Overrides) ->
-    Email = unique_email(),
-    Password = <<"S3cr3t!!">>,
-    Body = maps:merge(#{
-      email => Email,
-      name => <<"John Doe">>,
-      password => Password,
-      country => <<"argentina">>
-     }, Overrides),
+  Email = unique_email(),
+  Password = <<"S3cr3t!!">>,
+  Body = maps:merge(#{
+                       email => Email,
+                       name => <<"John Doe">>,
+                       password => Password,
+                       country => <<"argentina">>
+                     }, Overrides),
 
-    {ok, 201, _, _} = api_request(post, public, "/api/users", Body),
-    Body.
+  {ok, 201, _, _} = api_request(post, public, "/api/users", Body),
+  Body.
 
 create_user_with_token() ->
-    create_user_with_token(#{}).
+  create_user_with_token(#{}).
 
 create_user_with_token(Overrides) ->
-    #{email := Email, password := Password} = User = create_user(Overrides),
-    {ok, 200, _, #{access_token := Token}} =
-        test_utils:api_request(get, public, "/api/auth/token", <<"">>,
-                               [{basic_auth, {Email, Password}}]),
-    User#{token => Token}.
+  #{email := Email, password := Password} = User = create_user(Overrides),
+  {ok, 200, _, #{access_token := Token}} =
+    test_utils:api_request(get, public, "/api/auth/token", <<"">>,
+                           [{basic_auth, {Email, Password}}]),
+  User#{token => Token}.
 
 delete_user(Email) ->
-    %% FIXME delete user via API, not db
-    db_user:delete(Email).
+  %% FIXME delete user via API, not db
+  db_user:delete(Email).
 
 is_same_holiday(Holiday, MM, DD, Name) ->
-    Expected = list_to_binary(
-                 io_lib:format(<<"~B-~2..0B-~2..0B">>, [current_year(), MM, DD])),
-    (maps:get(date, Holiday) == Expected) and (maps:get(name, Holiday) == Name).
+  Expected = list_to_binary(
+               io_lib:format(<<"~B-~2..0B-~2..0B">>, [current_year(), MM, DD])),
+  (maps:get(date, Holiday) == Expected) and (maps:get(name, Holiday) == Name).
 
 is_same_holiday(Holiday, MM, DD) ->
-    Expected = list_to_binary(
-                 io_lib:format(<<"~B-~2..0B-~2..0B">>, [current_year(), MM, DD])),
-    maps:get(date, Holiday) == Expected.
+  Expected = list_to_binary(
+               io_lib:format(<<"~B-~2..0B-~2..0B">>, [current_year(), MM, DD])),
+  maps:get(date, Holiday) == Expected.
 
 current_year() ->
-    {CurrentYear, _, _} = erlang:date(),
-    CurrentYear.
+  {CurrentYear, _, _} = erlang:date(),
+  CurrentYear.

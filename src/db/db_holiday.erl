@@ -2,9 +2,9 @@
 
 -export([holidays_of_country/1,
          create/3,
-         get_user_holidays/1,
-         set_user_holidays/2,
-         set_default_holidays/2,
+         get_channel_holidays/2,
+         set_channel_holidays/3,
+         set_default_holidays/3,
          holiday_keys/0]).
 
 %% needed so atoms exist.
@@ -22,32 +22,39 @@ create(Country, Date, Name) ->
     {error, unique_violation} -> {error, holiday_already_exists}
   end.
 
-get_user_holidays(Email) ->
-  Q = <<"SELECT to_char(date, 'YYYY-MM-DD') as date, name FROM user_holidays "
-        "WHERE \"user\" = (SELECT id FROM users WHERE email = $1) "
-        "ORDER BY date">>,
-  db:query(Q, [Email]).
+get_channel_holidays(Email, Channel) ->
+  case db_channel:get_id(Email, Channel) of
+    {ok, ChannelId} ->
+      Q = <<"SELECT to_char(date, 'YYYY-MM-DD') as date, name FROM channel_holidays "
+            "WHERE channel = $1 ORDER BY date ">>,
+      db:query(Q, [ChannelId]);
+    Error -> Error
+  end.
 
-set_default_holidays(Email, Country) ->
-  Q = <<"INSERT INTO user_holidays(\"user\", date, name) "
-        "SELECT (SELECT id FROM users WHERE email = $1), date, name FROM holidays "
-        "WHERE country = $2">>,
-  db:query(Q, [Email, Country]).
+set_default_holidays(Email, Channel, Country) ->
+  case db_channel:get_id(Email, Channel) of
+    {ok, ChannelId} ->
+      Q = <<"INSERT INTO channel_holidays(channel, date, name) "
+            "SELECT $1, date, name FROM holidays WHERE country = $2">>,
+      db:query(Q, [ChannelId, Country]);
+    Error -> Error
+  end.
 
-set_user_holidays(Email, Holidays) ->
-  UserQ = <<"SELECT id FROM users WHERE email = $1">>,
-  {ok, [#{id := UserId}]} = db:query(UserQ, [Email]),
+set_channel_holidays(Email, Channel, Holidays) ->
+  case db_channel:get_id(Email, Channel) of
+    {ok, ChannelId} ->
+      Values = [io_lib:format(<<"(~p, '~s', '~s')">>, [ChannelId, Date, db:escape_string(Name)])
+              || #{date := Date, name := Name} <- Holidays],
+      Values2 = lists:join(<<", ">>, Values),
 
-  Values = [io_lib:format(<<"(~p, '~s', '~s')">>, [UserId, Date, db:escape_string(Name)])
-            || #{date := Date, name := Name} <- Holidays],
-  Values2 = lists:join(<<", ">>, Values),
+      Q = [<<"INSERT INTO channel_holidays(channel, date, name) VALUES ">>,
+           Values2,
+           <<" RETURNING date, name">>],
+      Q2 = iolist_to_binary(Q),
 
-  Q = [<<"INSERT INTO user_holidays(\"user\", date, name) VALUES ">>,
-       Values2,
-       <<" RETURNING date, name">>],
-  Q2 = iolist_to_binary(Q),
-
-  DeleteQ = <<"DELETE FROM user_holidays WHERE \"user\" = $1">>,
-  case db:query(DeleteQ, [UserId]) of
-    ok -> db:query(Q2, [])
+      DeleteQ = <<"DELETE FROM channel_holidays WHERE channel = $1">>,
+      case db:query(DeleteQ, [ChannelId]) of
+        ok -> db:query(Q2, [])
+      end;
+    Error -> Error
   end.

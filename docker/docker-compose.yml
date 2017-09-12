@@ -11,6 +11,6 @@ services:
       POSTGRES_PASSWORD: example
 
   pgadmin:
-    image: thajeztah/pgadmin4
+    image: fenglc/pgadmin4
     ports:
       - 5050:5050

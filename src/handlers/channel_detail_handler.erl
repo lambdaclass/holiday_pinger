@@ -45,7 +45,8 @@ content_types_accepted(Req, State) ->
 %% PUT for create
 from_json(Req, State = #{is_new := true,
                          email := Email,
-                         name := Name}) ->
+                         name := Name,
+                         user := User}) ->
   {ok, Body, Req2} = cowboy_req:body(Req),
 
   %% TODO validate input fields
@@ -55,6 +56,10 @@ from_json(Req, State = #{is_new := true,
    } = hp_json:decode(Body),
 
   {ok, _} = db_channel:create(Email, Name, Type, Config),
+
+  Country = maps:get(<<"country">>, User),
+  ok = db_holiday:set_default_holidays(Email, Name, Country),
+  ok = db_reminder:set_default_reminder_config(Email, Name),
 
   Req3 = cowboy_req:set_resp_body(Body, Req2),
   {true, Req3, State};
