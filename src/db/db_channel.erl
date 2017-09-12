@@ -1,8 +1,8 @@
 -module(db_channel).
 
--export([create/4,
+-export([create/6,
          get/2,
-         update/3,
+         update/5,
          delete/2,
          list/1,
          get_reminders/1,
@@ -11,18 +11,18 @@
 
 channel_keys () -> [user, name, type, configuration].
 
-create(User, Name, Type, Config) ->
+create(User, Name, Type, Config, SameDay, DaysBefore) ->
   EncodedConfig = hp_json:encode(Config),
-  Q = <<"INSERT INTO channels(\"user\", name, type, configuration) "
-        "VALUES((SELECT id FROM users WHERE email = $1), $2, $3, $4) "
+  Q = <<"INSERT INTO channels(\"user\", name, type, configuration, same_day, days_before) "
+        "VALUES((SELECT id FROM users WHERE email = $1), $2, $3, $4, $5, $6) "
         "RETURNING name, type, configuration">>,
-  case db:query(Q, [User, Name, Type, EncodedConfig]) of
+  case db:query(Q, [User, Name, Type, EncodedConfig, SameDay, DaysBefore]) of
     {ok, [Result | []]} -> {ok, decode_channel(Result)};
     {error, unique_violation} -> {error, channel_already_exists}
   end.
 
 get(User, ChannelName) ->
-  Q = <<"SELECT name, type, configuration FROM channels "
+  Q = <<"SELECT name, type, configuration, same_day, days_before FROM channels "
         "WHERE \"user\" = (SELECT id FROM users WHERE email = $1) "
         "AND name = $2">>,
   case db:query(Q, [User, ChannelName]) of
@@ -30,12 +30,12 @@ get(User, ChannelName) ->
     {ok, [Channel | []]} -> {ok, decode_channel(Channel)}
   end.
 
-update(User, ChannelName, Config) ->
+update(User, ChannelName, Config, SameDay, DaysBefore) ->
   EncodedConfig = hp_json:encode(Config),
-  Q = <<"UPDATE channels SET configuration = $1 "
-        "WHERE \"user\" = (SELECT id FROM users WHERE email = $2) "
-        "AND name = $3">>,
-  db:query(Q, [EncodedConfig, User, ChannelName]).
+  Q = <<"UPDATE channels SET configuration = $1, same_day = $2, days_before = $3 "
+        "WHERE \"user\" = (SELECT id FROM users WHERE email = $4) "
+        "AND name = $5">>,
+  db:query(Q, [EncodedConfig, SameDay, DaysBefore, User, ChannelName]).
 
 delete(User, ChannelName) ->
   Q = <<"DELETE FROM channels WHERE \"user\" = (SELECT id FROM users WHERE email = $1) "
@@ -43,7 +43,7 @@ delete(User, ChannelName) ->
   db:query(Q, [User, ChannelName]).
 
 list(User) ->
-  Q = <<"SELECT name, type, configuration FROM channels "
+  Q = <<"SELECT name, type, configuration, same_day, days_before FROM channels "
         "WHERE \"user\" = (SELECT id FROM users WHERE email = $1)">>,
   {ok, Results} = db:query(Q, [User]),
   {ok, lists:map(fun decode_channel/1, Results)}.
@@ -60,10 +60,9 @@ get_reminders(Date) ->
   Q = <<"SELECT ch.name as channel_name, ch.type, ch.configuration, "
         "u.name as user_name, u.email, h.name as holiday_name, h.date FROM channels ch ",
         "JOIN users u ON u.id = ch.user "
-        "JOIN reminder_config c ON c.channel = ch.id ",
         "JOIN channel_holidays h ON h.channel = ch.id ",
-        "WHERE (c.same_day AND h.date = $1) ",
-        "OR (c.days_before IS NOT NULL AND (h.date - c.days_before) = $1)">>,
+        "WHERE (ch.same_day AND h.date = $1) ",
+        "OR (ch.days_before IS NOT NULL AND (h.date - ch.days_before) = $1)">>,
 
   {ok, Results} = db:query(Q, [Date]),
   {ok, [{extract_user(R), extract_channel(R), extract_holiday(R)}

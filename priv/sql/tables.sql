@@ -15,6 +15,8 @@ CREATE TABLE channels (
   "name" character varying(50) NOT NULL,
   "type" character varying(20) NOT NULL,
   "configuration" jsonb NOT NULL,
+  "same_day" boolean NOT NULL DEFAULT FALSE,
+  "days_before" smallint CHECK ("days_before" > 0),
   UNIQUE ("user", "name")
 );
 
@@ -32,13 +34,6 @@ CREATE TABLE channel_holidays (
   "date" date NOT NULL,
   "name" character varying(50) NOT NULL,
   UNIQUE ("channel", "date")
-);
-
-CREATE TABLE reminder_config (
-  "id" serial PRIMARY KEY,
-  "channel" serial REFERENCES channels ON DELETE CASCADE,
-  "same_day" boolean NOT NULL DEFAULT FALSE,
-  "days_before" smallint CHECK ("days_before" > 0)
 );
 
 INSERT INTO "holidays" ("country", "date", "name") VALUES

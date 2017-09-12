@@ -52,14 +52,15 @@ from_json(Req, State = #{is_new := true,
   %% TODO validate input fields
   #{
      type := Type,
-     configuration := Config
+     configuration := Config,
+     same_day := SameDay,
+     days_before := DaysBefore
    } = hp_json:decode(Body),
 
-  {ok, _} = db_channel:create(Email, Name, Type, Config),
+  {ok, _} = db_channel:create(Email, Name, Type, Config, SameDay, DaysBefore),
 
   Country = maps:get(<<"country">>, User),
   ok = db_holiday:set_default_holidays(Email, Name, Country),
-  ok = db_reminder:set_default_reminder_config(Email, Name),
 
   Req3 = cowboy_req:set_resp_body(Body, Req2),
   {true, Req3, State};
@@ -69,14 +70,22 @@ from_json(Req, State = #{is_new := false,
                          email := Email,
                          name := Name,
                          channel := Channel}) ->
-  %% only configuration can be updated for now
+
   {ok, Body, Req2} = cowboy_req:body(Req),
   %% TODO validate input fields
-  #{configuration := Config} = hp_json:decode(Body),
+  #{
+     configuration := Config,
+     same_day := SameDay,
+     days_before := DaysBefore
+   } = hp_json:decode(Body),
 
-  ok = db_channel:update(Email, Name, Config),
+  ok = db_channel:update(Email, Name, Config, SameDay, DaysBefore),
 
-  RespBody = Channel#{configuration := Config},
+  RespBody = Channel#{
+               configuration := Config,
+               same_day := SameDay,
+               days_before := DaysBefore
+              },
   Encoded = hp_json:encode(RespBody),
   Req3 = cowboy_req:set_resp_body(Encoded, Req2),
   {true, Req3, State}.

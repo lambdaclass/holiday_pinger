@@ -82,7 +82,9 @@ create_channel(Token, Name) ->
     configuration => #{
       url => <<"http://example.com">>,
       channels => [<<"#general">>]
-     }
+     },
+    same_day => true,
+    days_before => null
    },
   {ok, 201, _, _} = test_utils:api_request(put, Token, "/api/channels/" ++ Name, Body),
   Body.

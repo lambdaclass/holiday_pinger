@@ -12,7 +12,7 @@ all() ->
    send_custom_holiday_reminder,
    dont_send_removed_reminder,
    send_custom_holiday_reminder,
-   dont_send_days_before_by_default,
+   dont_send_days_before_when_disabled,
    send_days_before_when_set].
 
 init_per_suite(Config) ->
@@ -30,7 +30,7 @@ send_reminders(_Config) ->
   create_channel(Token, Email, <<"test_ets">>, TableId),
 
   remind_checker:force_holidays({test_utils:current_year(), 1, 1}),
-  timer:sleep(1000),
+  timer:sleep(100),
   [{Email, Message}] = ets_channel:get_reminders(TableId, Email),
 
   Expected = list_to_binary(
@@ -55,7 +55,7 @@ dont_send_removed_reminder(_Config) ->
   {ok, 200, _, _} = test_utils:api_request(put, Token, "/api/channels/test_ets2/holidays/", Updated),
 
   remind_checker:force_holidays({test_utils:current_year(), 1, 1}),
-  timer:sleep(1000),
+  timer:sleep(100),
   [] = ets_channel:get_reminders(TableId, Email),
 
   ok = test_utils:delete_user(Email).
@@ -73,7 +73,7 @@ send_custom_holiday_reminder(_Config) ->
   {ok, 200, _, _} = test_utils:api_request(put, Token, "/api/channels/test_ets3/holidays/", Updated),
 
   remind_checker:force_holidays({1998,3,3}),
-  timer:sleep(1000),
+  timer:sleep(100),
   [{Email, Message}] = ets_channel:get_reminders(TableId, Email),
 
   Expected = list_to_binary(
@@ -83,15 +83,15 @@ send_custom_holiday_reminder(_Config) ->
 
   ok = test_utils:delete_user(Email).
 
-dont_send_days_before_by_default(_Config) ->
+dont_send_days_before_when_disabled(_Config) ->
   #{email := Email, token := Token} = test_utils:create_user_with_token(),
 
-  TableId = ets_channel_table3,
+  TableId = ets_channel_table4,
   create_channel(Token, Email, <<"test_ets4">>, TableId),
 
   %% force a holiday three days before new years
   remind_checker:force_holidays({test_utils:current_year() - 1, 12, 29}),
-  timer:sleep(1000),
+  timer:sleep(100),
   [] = ets_channel:get_reminders(TableId, Email),
 
   ok = test_utils:delete_user(Email).
@@ -99,20 +99,17 @@ dont_send_days_before_by_default(_Config) ->
 send_days_before_when_set(_Config) ->
   #{email := Email, token := Token} = test_utils:create_user_with_token(),
 
-  TableId = ets_channel_table4,
-  create_channel(Token, Email, <<"test_ets4">>, TableId),
-
-  ReminderConfig = #{days_before => 3, same_day => false},
-  {ok, 200, _, _} = test_utils:api_request(put, Token, "/api/channels/test_ets4/reminders", ReminderConfig),
+  TableId = ets_channel_table5,
+  create_channel(Token, Email, <<"test_ets5">>, TableId, false, 3),
 
   %% no reminder on new years
   remind_checker:force_holidays({test_utils:current_year(), 1, 1}),
-  timer:sleep(1000),
+  timer:sleep(100),
   [] = ets_channel:get_reminders(TableId, Email),
 
   %% reminder three days before new years
   remind_checker:force_holidays({test_utils:current_year() - 1, 12, 29}),
-  timer:sleep(1000),
+  timer:sleep(100),
 
   [{Email, Message}] = ets_channel:get_reminders(TableId, Email),
   Expected = list_to_binary(
@@ -124,15 +121,17 @@ send_days_before_when_set(_Config) ->
 
 %%% internal
 create_channel(Token, Email, Name, TableId) ->
+  create_channel(Token, Email, Name, TableId, true, null).
+
+create_channel(Token, Email, Name, TableId, SameDay, DaysBefore) ->
   Body = #{
     type => ets,
     configuration => #{
       email => Email,
       table_id => TableId
-     }
+     },
+    same_day => SameDay,
+    days_before => DaysBefore
    },
   {ok, 201, _, _} = test_utils:api_request(put, Token, "/api/channels/" ++ Name, Body),
-
-  ChannelConfig = #{email => Email, table_id => TableId},
-  db_channel:create(Email, Name, ets, ChannelConfig),
   ets_channel:init_table(TableId).

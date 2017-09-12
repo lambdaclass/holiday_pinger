@@ -30,7 +30,9 @@ test_channel(Config) ->
     configuration => #{
       email => Email,
       table_id => TableId
-     }
+     },
+    same_day => true,
+    days_before => null
    },
   {ok, 201, _, _} = test_utils:api_request(put, Token, "/api/channels/my_channel", Body),
   {ok, 204, _, _} = test_utils:api_request(post, Token, "/api/channels/my_channel/test", #{}),
@@ -38,4 +40,5 @@ test_channel(Config) ->
   timer:sleep(1000),
   [{Email, Message}] = ets_channel:get_reminders(TableId, Email),
   <<"This is a Holiday Ping test: John Doe will be out on holidays.">> = Message,
-  ok.
+
+  ok = test_utils:delete_user(Email).
