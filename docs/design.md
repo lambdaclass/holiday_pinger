@@ -64,5 +64,10 @@ feels like too much for a small project.
 - Sometimes you need the UI in order to better understand the model. You need to be able
 to poke around with the app to see what feels right and what not, and maybe change
 the model accordingly. Having your db schema carved on stone from the start of the project sucks.
+The same can be said about a models file or your REST URIs.
+
+Once we saw the UI, we knew we have to turn around the relations between our
+entities, and what's more when we did the code turned out to be simpler
+(a supervisor and gen server we had recently introduced became unnecessary)
 
 - This is nothing new, but frontend takes way more time than backend.

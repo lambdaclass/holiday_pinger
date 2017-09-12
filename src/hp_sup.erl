@@ -24,13 +24,5 @@ init([]) ->
              shutdown => 5000,
              type => supervisor,
              modules => [remind_router_sup]
-           },
-          #{
-             id => remind_delivery_sup,
-             start => {remind_delivery_sup, start_link, []},
-             restart => permanent,
-             shutdown => 5000,
-             type => supervisor,
-             modules => [remind_delivery_sup]
            }]
        }}.
