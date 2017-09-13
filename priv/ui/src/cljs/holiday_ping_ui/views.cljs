@@ -77,7 +77,7 @@
                                        :type      "select"
                                        :options   countries/list
                                        :value     user-country
-                                       :help-text "We'll use this to load you default holidays."
+                                       :help-text "We'll use this to load your default holidays."
                                        :required  true}
                                       {:key      :name
                                        :label    "Full name"
@@ -175,7 +175,7 @@
    [:button.button.is-success
     {:on-click #(re-frame/dispatch [:switch-view :channel-create])}
     [:span.icon.is-small [:i.fa.fa-plus]]
-    [:span "Add Channel"]]])
+    [:span "New Channel"]]])
 
 (defn channel-list-view
   []
@@ -184,10 +184,9 @@
      [test-channel-modal]
      [section-size :is-two-thirds
       [message-view]
-      (if (empty? channels)
-        [:div.has-text-centered
-         [:p "There are no channels yet."]
-         [:br]]
+      [:p.subtitle.has-text-centered
+       "Setup the channels you want to use to send your holiday reminders."]
+      (when-not (empty? channels)
         [:table.table.is-fullwidth.is-striped
          [:tbody (map channel-item-view channels)]])
       [add-channel-button]]]))
@@ -269,27 +268,27 @@
                                      :label "Bot emoji"}]}]]])
 
 ;;; DASHBOARD views
-(defn dashboard-view
-  []
-  (let [{username :name}     @(re-frame/subscribe [:user-info])
-        {holiday-name :name
-         date         :date} @(re-frame/subscribe [:next-holiday])
-        count                @(re-frame/subscribe [:channel-count])
-        count-text           (str "You have " (if (= 0 count) "no" count)
-                                  " configured channels. ")
-        holiday-text         (if holiday-name
-                               (str "Your next holiday is " holiday-name " on " date ". ")
-                               "You have no upcoming holidays ")]
+;; (defn dashboard-view
+;;   []
+;;   (let [{username :name}     @(re-frame/subscribe [:user-info])
+;;         {holiday-name :name
+;;          date         :date} @(re-frame/subscribe [:next-holiday])
+;;         count                @(re-frame/subscribe [:channel-count])
+;;         count-text           (str "You have " (if (= 0 count) "no" count)
+;;                                   " configured channels. ")
+;;         holiday-text         (if holiday-name
+;;                                (str "Your next holiday is " holiday-name " on " date ". ")
+;;                                "You have no upcoming holidays ")]
 
-    [section
-     [:h1.title.is-3 (str "Hello, " username "!")]
-     [:p.dashboard-message holiday-text
-      [:a {:href "#" :on-click #(re-frame/dispatch [:switch-view :holidays])}
-       " Manage holidays"]]
-     [:br]
-     [:p.dashboard-message count-text
-      [:a {:href "#" :on-click #(re-frame/dispatch [:switch-view :channel-list])}
-       " Manage channels"]]]))
+;;     [section
+;;      [:h1.title.is-3 (str "Hello, " username "!")]
+;;      [:p.dashboard-message holiday-text
+;;       [:a {:href "#" :on-click #(re-frame/dispatch [:switch-view :holidays])}
+;;        " Manage holidays"]]
+;;      [:br]
+;;      [:p.dashboard-message count-text
+;;       [:a {:href "#" :on-click #(re-frame/dispatch [:switch-view :channel-list])}
+;;        " Manage channels"]]]))
 
 ;;; HOLIDAYS views
 (defn holidays-year-switch
@@ -456,13 +455,14 @@
       (when authenticated?
         [:div#navMenubd.navbar-menu
          [:div.navbar-start
-          (for [[view text] {:dashboard       "Home"
-                             :holidays        "Holidays"
-                             :channel-list    "Channels"
-                             :reminder-config "Reminders"}]
-            [:a.navbar-item
-             {:key view :href "#" :on-click #(re-frame/dispatch [:switch-view view])}
-             text])]
+          [:a.navbar-item
+           {:href   "https://notamonadtutorial.com"
+            :target "_blank"}
+           "Blog"]
+          [:a.navbar-item
+           {:href   "https://github.com/lambdaclass/holiday_ping"
+            :target "_blank"}
+           "GitHub"]]
          [:div.navbar-end
           [user-info-view]]])
       ][:hr.navbar-divider]
@@ -474,20 +474,20 @@
    [:div.container
     [:div.content.has-text-centered
      [:p [:strong "HolidayPing"] " by "
-      [:a {:href "https://github.com/lambdaclass/"} "LambdaClass"] "."]
+      [:a {:href "https://github.com/lambdaclass/" :target "_blank"} "LambdaClass"] "."]
      [:p [:a.icon {:href "https://github.com/lambdaclass/holiday_ping"}
           [:i.fa.fa-github]]]]]])
 
-(def views {:channel-list    [channel-list-view]
-            :channel-edit    [channel-edit-view]
-            :channel-create  [channel-add-view]
-            :reminder-config [reminder-config-view]
+(def views {:channel-list   [channel-list-view]
+            :channel-edit   [channel-edit-view]
+            :channel-create [channel-add-view]
+
             :login           [login-view]
             :register        [register-view]
             :github-loading  [github-loading-view]
             :github-register [github-register-view]
             :holidays        [holidays-view]
-            :dashboard       [dashboard-view]})
+            })
 
 (defn app
   "Build the ui based on the current-view in the app-db."

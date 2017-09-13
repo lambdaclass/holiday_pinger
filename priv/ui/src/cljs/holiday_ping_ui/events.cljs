@@ -143,9 +143,7 @@
      {:db              new-db
       :set-local-store ["access_token" token]
       :dispatch-n      [[:channel-load]
-                        [:holidays-load]
-                        [:reminders-load]
-                        [:switch-view :dashboard]]})))
+                        [:switch-view :channel-list]]})))
 
 (re-frame/reg-event-fx
  :logout
