@@ -78,14 +78,29 @@
        {:db       db/default-db
         :dispatch [:country-detect]}))))
 
-(re-frame/reg-event-db
+(re-frame/reg-event-fx
  :switch-view
- (fn [db [_ new-view & args]]
-   (-> db
-       (assoc :current-view new-view)
-       (assoc :current-view-args args)
-       (dissoc :error-message)
-       (dissoc :success-message))))
+ (fn [{:keys [db]} [_ new-view & args]]
+   {:dispatch (apply vector :load-view new-view args)
+    :db       (-> db
+                  (assoc :current-view new-view)
+                  (assoc :current-view-args args)
+                  (dissoc :error-message)
+                  (dissoc :success-message))}))
+
+(defmulti load-view
+  "Define an event handler to load data necessary for each specific view."
+  (fn [cofx [view]]
+    view))
+
+(defmethod load-view :default
+  [& args]
+  {})
+
+(re-frame/reg-event-fx
+ :load-view
+ (fn [cofx [_ new-view & args]]
+   (load-view cofx (apply vector new-view args))))
 
 (re-frame/reg-event-db
  :error-message
@@ -223,7 +238,6 @@
     :db         (dissoc db :registration-token)}))
 
 ;;; CHANNEL EVENTS
-
 (re-frame/reg-event-fx
  :channel-load
  (fn [{:keys [db]} _]
@@ -329,17 +343,16 @@
                  :on-failure      [:error-message "There was an error sending the reminder."]}}))
 
 ;;; HOLIDAY EVENTS
-
-(re-frame/reg-event-fx
- :holidays-load
- (fn [{:keys [db]} _]
-   {:http-xhrio {:method          :get
-                 :uri             "/api/holidays"
-                 :timeout         8000
-                 :headers         {:authorization (str "Bearer " (:access-token db))}
-                 :response-format (ajax/json-response-format {:keywords? true})
-                 :on-success      [:holidays-load-success]
-                 :on-failure      [:error-message "Holidays loading failed."]}}))
+(defmethod load-view
+  :holidays
+  [{:keys [db]} [_ channel-name]]
+  {:http-xhrio {:method          :get
+                :uri             (str "/api/channels/" channel-name "/holidays")
+                :timeout         8000
+                :headers         {:authorization (str "Bearer " (:access-token db))}
+                :response-format (ajax/json-response-format {:keywords? true})
+                :on-success      [:holidays-load-success]
+                :on-failure      [:error-message "Holidays loading failed."]}})
 
 (re-frame/reg-event-db
  :holidays-load-success
@@ -352,11 +365,11 @@
 
 (re-frame/reg-event-fx
  :holidays-save
- (fn [{:keys [db]} _]
+ (fn [{:keys [db]} [_ channel-name]]
    (let [edited       (:holidays-edited db)
          new-holidays (map #(update % :date format/date-to-string) edited)]
      {:http-xhrio {:method          :put
-                   :uri             "/api/holidays"
+                   :uri             (str "/api/channels/" channel-name "/holidays")
                    :timeout         8000
                    :headers         {:authorization (str "Bearer " (:access-token db))}
                    :response-format (ajax/json-response-format {:keywords? true})

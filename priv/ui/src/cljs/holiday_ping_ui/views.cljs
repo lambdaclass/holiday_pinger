@@ -160,14 +160,19 @@
        [:span "Delete"]]]
      [:p.control
       [:button.button.is-info.is-small
+       {:on-click #(re-frame/dispatch [:switch-view :channel-edit channel])}
+       [:span.icon.is-small [:i.fa.fa-edit]]
+       [:span "Edit"]]]
+     [:p.control
+      [:button.button.is-small
        {:on-click #(re-frame/dispatch [:channel-test-start channel])}
        [:span.icon.is-small [:i.fa.fa-cogs]]
        [:span "Test"]]]
      [:p.control
-      [:button.button.is-info.is-small
-       {:on-click #(re-frame/dispatch [:switch-view :channel-edit channel])}
-       [:span.icon.is-small [:i.fa.fa-edit]]
-       [:span "Edit"]]]]]])
+      [:button.button.is-small
+       {:on-click #(re-frame/dispatch [:switch-view :holidays name])}
+       [:span.icon.is-small [:i.fa.fa-calendar]]
+       [:span "Holidays"]]]]]])
 
 (defn add-channel-button
   []
@@ -340,7 +345,7 @@
      next]]])
 
 (defn holiday-controls
-  [current next selected]
+  [channel-name current next selected]
   (let [edited? @(re-frame/subscribe [:calendar-edited?])
         empty?  @(re-frame/subscribe [:calendar-empty?])]
     [:nav.level
@@ -375,7 +380,7 @@
          {:title    "Save the changes in the calendar"
           :href     "#"
           :class    (when-not edited? "is-static")
-          :on-click #(re-frame/dispatch [:holidays-save])}
+          :on-click #(re-frame/dispatch [:holidays-save channel-name])}
          [:span "Save"]
          [:span.icon.is-small [:i.fa.fa-check]]]]]]]))
 
@@ -419,7 +424,7 @@
          [:span "Save"]]]]]]))
 
 (defn holidays-view
-  []
+  [channel-name]
   (let [current-year  @(re-frame/subscribe [:current-year])
         next-year     (inc current-year)
         selected-year @(re-frame/subscribe [:calendar-selected-year])]
@@ -427,7 +432,7 @@
      [edit-holiday-modal]
      [section
       [:p.subtitle "Select the days of the year for which you want reminders."]
-      [holiday-controls current-year next-year selected-year]
+      [holiday-controls channel-name current-year next-year selected-year]
       [:div (when-not (= selected-year current-year) {:hidden true})
        [calendar/year-view current-year]]
       [:div (when-not (= selected-year next-year) {:hidden true})
@@ -455,7 +460,9 @@
      [:div.container
 
       [:div.navbar-brand
-       [:div.navbar-item.is-size-3.app-title "HolidayPing"]
+       [:a.navbar-item.is-size-3.app-title
+        {:href "#" :on-click #(re-frame/dispatch [:switch-view :channel-list])}
+        "HolidayPing"]
        [:div.navbar-burger.burger {:data-target "navMenubd"}]]
 
       (when authenticated?
@@ -470,9 +477,7 @@
             :target "_blank"}
            "GitHub"]]
          [:div.navbar-end
-          [user-info-view]]])
-      ][:hr.navbar-divider]
-     ]))
+          [user-info-view]]])]]))
 
 (defn footer-view
   []
