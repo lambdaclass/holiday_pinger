@@ -185,7 +185,7 @@
      [section-size :is-two-thirds
       [message-view]
       [:p.subtitle.has-text-centered
-       "Setup the channels you want to use to send your holiday reminders."]
+       "Setup the channels to send your holiday reminders."]
       (when-not (empty? channels)
         [:table.table.is-fullwidth.is-striped
          [:tbody (map channel-item-view channels)]])
@@ -224,7 +224,23 @@
                                      :label "Bot username"}
                                     {:key   :emoji
                                      :type  "text"
-                                     :label "Bot emoji"}]}]]])
+                                     :label "Bot emoji"}
+                                    {:key      :same-day
+                                     :label    "Send a reminder on the same day."
+                                     :type     "select"
+                                     :value    true
+                                     :options  [{:text "Yes" :value true}
+                                                {:text "Don't send" :value false}]
+                                     :required true}
+                                    {:key      :days-before
+                                     :label    "Send a reminder before the holiday."
+                                     :type     "select"
+                                     :value    0
+                                     :options  [{:text "Don't send" :value 0}
+                                                {:text "The day before" :value 1}
+                                                {:text "Three days before" :value 3}
+                                                {:text "A week before" :value 7}]
+                                     :required true}]}]]])
 
 (defn channel-edit-view
   [channel]
@@ -265,7 +281,23 @@
                                     {:key   :emoji
                                      :type  "text"
                                      :value (get-in channel [:configuration :emoji])
-                                     :label "Bot emoji"}]}]]])
+                                     :label "Bot emoji"}
+                                    {:key      :same-day
+                                     :label    "Send a reminder on the same day."
+                                     :type     "select"
+                                     :value    (:same_day channel)
+                                     :options  [{:text "Yes" :value true}
+                                                {:text "Don't send" :value false}]
+                                     :required true}
+                                    {:key      :days-before
+                                     :label    "Send a reminder before the holiday."
+                                     :type     "select"
+                                     :value    (or(:days_before channel) 0)
+                                     :options  [{:text "Don't send" :value 0}
+                                                {:text "The day before" :value 1}
+                                                {:text "Three days before" :value 3}
+                                                {:text "A week before" :value 7}]
+                                     :required true}]}]]])
 
 ;;; DASHBOARD views
 ;; (defn dashboard-view
@@ -401,32 +433,6 @@
       [:div (when-not (= selected-year next-year) {:hidden true})
        [calendar/year-view next-year]]]]))
 
-;; REMINDER VIEWS
-(defn reminder-config-view
-  []
-  (let [{:keys [same-day days-before]} @(re-frame/subscribe [:reminder-config])]
-    [section
-     [:p.subtitle "Configure the frequency of the holiday alerts."]
-     [message-view]
-     [forms/form-view {:submit-text "Save"
-                       :on-submit   [:reminders-submit]
-                       :fields      [{:key      :same-day
-                                      :label    "Send a reminder on the same day."
-                                      :type     "select"
-                                      :value    same-day
-                                      :options  [{:text "Yes" :value true}
-                                                 {:text "Don't send" :value false}]
-                                      :required true}
-                                     {:key      :days-before
-                                      :label    "Send a reminder before the holiday."
-                                      :type     "select"
-                                      :value    (or days-before 0)
-                                      :options  [{:text "Don't send" :value 0}
-                                                 {:text "The day before" :value 1}
-                                                 {:text "Three days before" :value 3}
-                                                 {:text "A week before" :value 7}]
-                                      :required true}]}]]))
-
 ;; APP VIEWS
 (defn user-info-view []
   (let [{name :name} @(re-frame/subscribe [:user-info])
@@ -481,13 +487,11 @@
 (def views {:channel-list   [channel-list-view]
             :channel-edit   [channel-edit-view]
             :channel-create [channel-add-view]
-
             :login           [login-view]
             :register        [register-view]
             :github-loading  [github-loading-view]
             :github-register [github-register-view]
-            :holidays        [holidays-view]
-            })
+            :holidays        [holidays-view]})
 
 (defn app
   "Build the ui based on the current-view in the app-db."
