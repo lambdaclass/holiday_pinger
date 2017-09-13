@@ -230,22 +230,20 @@
                                     {:key   :emoji
                                      :type  "text"
                                      :label "Bot emoji"}
-                                    {:key      :same-day
-                                     :label    "Send a reminder on the same day."
-                                     :type     "select"
-                                     :value    true
-                                     :options  [{:text "Yes" :value true}
-                                                {:text "Don't send" :value false}]
-                                     :required true}
-                                    {:key      :days-before
-                                     :label    "Send a reminder before the holiday."
-                                     :type     "select"
-                                     :value    0
-                                     :options  [{:text "Don't send" :value 0}
-                                                {:text "The day before" :value 1}
-                                                {:text "Three days before" :value 3}
-                                                {:text "A week before" :value 7}]
-                                     :required true}]}]]])
+                                    {:key     :same-day
+                                     :label   "Send a reminder on the same day."
+                                     :type    "select"
+                                     :value   true
+                                     :options [{:text "Yes" :value true}
+                                               {:text "Don't send" :value false}]}
+                                    {:key     :days-before
+                                     :label   "Send a reminder before the holiday."
+                                     :type    "select"
+                                     :value   0
+                                     :options [{:text "Don't send" :value 0}
+                                               {:text "The day before" :value 1}
+                                               {:text "Three days before" :value 3}
+                                               {:text "A week before" :value 7}]}]}]]])
 
 (defn channel-edit-view
   [channel]
@@ -287,45 +285,20 @@
                                      :type  "text"
                                      :value (get-in channel [:configuration :emoji])
                                      :label "Bot emoji"}
-                                    {:key      :same-day
-                                     :label    "Send a reminder on the same day."
-                                     :type     "select"
-                                     :value    (:same_day channel)
-                                     :options  [{:text "Yes" :value true}
-                                                {:text "Don't send" :value false}]
-                                     :required true}
-                                    {:key      :days-before
-                                     :label    "Send a reminder before the holiday."
-                                     :type     "select"
-                                     :value    (or(:days_before channel) 0)
-                                     :options  [{:text "Don't send" :value 0}
-                                                {:text "The day before" :value 1}
-                                                {:text "Three days before" :value 3}
-                                                {:text "A week before" :value 7}]
-                                     :required true}]}]]])
-
-;;; DASHBOARD views
-;; (defn dashboard-view
-;;   []
-;;   (let [{username :name}     @(re-frame/subscribe [:user-info])
-;;         {holiday-name :name
-;;          date         :date} @(re-frame/subscribe [:next-holiday])
-;;         count                @(re-frame/subscribe [:channel-count])
-;;         count-text           (str "You have " (if (= 0 count) "no" count)
-;;                                   " configured channels. ")
-;;         holiday-text         (if holiday-name
-;;                                (str "Your next holiday is " holiday-name " on " date ". ")
-;;                                "You have no upcoming holidays ")]
-
-;;     [section
-;;      [:h1.title.is-3 (str "Hello, " username "!")]
-;;      [:p.dashboard-message holiday-text
-;;       [:a {:href "#" :on-click #(re-frame/dispatch [:switch-view :holidays])}
-;;        " Manage holidays"]]
-;;      [:br]
-;;      [:p.dashboard-message count-text
-;;       [:a {:href "#" :on-click #(re-frame/dispatch [:switch-view :channel-list])}
-;;        " Manage channels"]]]))
+                                    {:key     :same-day
+                                     :label   "Send a reminder on the same day."
+                                     :type    "select"
+                                     :value   (:same_day channel)
+                                     :options [{:text "Yes" :value true}
+                                               {:text "Don't send" :value false}]}
+                                    {:key     :days-before
+                                     :label   "Send a reminder before the holiday."
+                                     :type    "select"
+                                     :value   (or(:days_before channel) 0)
+                                     :options [{:text "Don't send" :value 0}
+                                               {:text "The day before" :value 1}
+                                               {:text "Three days before" :value 3}
+                                               {:text "A week before" :value 7}]}]}]]])
 
 ;;; HOLIDAYS views
 (defn holidays-year-switch
@@ -452,7 +425,6 @@
       [:a.navbar-item {:href "#" :on-click #(re-frame/dispatch [:logout])} "Logout"]]
      ]))
 
-;; FIXME properly select the one that's active
 (defn navbar-view
   []
   (let [authenticated? @(re-frame/subscribe [:access-token])]

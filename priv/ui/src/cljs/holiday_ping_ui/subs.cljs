@@ -27,24 +27,11 @@
 (db-subscription :calendar-selected-year)
 (db-subscription :calendar-selected-day-name)
 (db-subscription :country)
-(db-subscription :reminder-config)
 
 (defn- next-holiday
   [holidays]
   (let [upcoming? #(time/after? (:date %) (time/today))]
     (first (filter upcoming? holidays))))
-
-(re-frame/reg-sub
- :next-holiday
- (fn [{holidays :holidays-saved}]
-   (when-let [next (next-holiday holidays)]
-     (update next :date format/date-to-string))))
-
-(re-frame/reg-sub
- :channel-count
- (fn [{channels :channels}]
-   (when-not (nil? channels)
-     (count channels))))
 
 (re-frame/reg-sub
  :user-info
