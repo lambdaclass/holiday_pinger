@@ -150,29 +150,34 @@
 (defn channel-item-view
   [{:keys [name type] :as channel}]
   [:tr {:key name}
-   [:td [:span.icon.is-small {:title "Slack"} [:i.fa.fa-slack]] "  " name]
-   [:td.has-text-right
-    [:div.field.is-grouped.is-grouped-right
+   [:td
+    [:div.title.is-5 name]
+    [:div.subtitle.is-6 (str type " channel")]]
+   [:td
+    [:div.field.is-pulled-right.has-addons
      [:p.control
-      [:button.button.is-danger.is-small
-       {:on-click #(re-frame/dispatch [:channel-delete name])}
-       [:span.icon.is-small [:i.fa.fa-times]]
-       [:span "Delete"]]]
+      [:button.button.is-danger.is-small.tooltip
+       {:on-click     #(re-frame/dispatch [:channel-delete name])
+        :data-tooltip "Delete"}
+       [:span.icon.is-small [:i.fa.fa-times]]]]
+
      [:p.control
-      [:button.button.is-info.is-small
-       {:on-click #(re-frame/dispatch [:switch-view :channel-edit channel])}
-       [:span.icon.is-small [:i.fa.fa-edit]]
-       [:span "Edit"]]]
+      [:button.button.is-info.is-small.tooltip
+       {:on-click     #(re-frame/dispatch [:switch-view :channel-edit channel])
+        :data-tooltip "Edit"}
+       [:span.icon.is-small [:i.fa.fa-edit]]]]
+
      [:p.control
-      [:button.button.is-small
-       {:on-click #(re-frame/dispatch [:channel-test-start channel])}
-       [:span.icon.is-small [:i.fa.fa-cogs]]
-       [:span "Test"]]]
+      [:button.button.is-small.tooltip
+       {:on-click     #(re-frame/dispatch [:channel-test-start channel])
+        :data-tooltip "Test channel"}
+       [:span.icon.is-small [:i.fa.fa-cogs]]]]
+
      [:p.control
-      [:button.button.is-small
-       {:on-click #(re-frame/dispatch [:switch-view :holidays name])}
-       [:span.icon.is-small [:i.fa.fa-calendar]]
-       [:span "Holidays"]]]]]])
+      [:button.button.is-small.tooltip
+       {:on-click     #(re-frame/dispatch [:switch-view :holidays name])
+        :data-tooltip "Select holidays"}
+       [:span.icon.is-small [:i.fa.fa-calendar]]]]]]])
 
 (defn add-channel-button
   []
@@ -192,7 +197,7 @@
       [:p.subtitle.has-text-centered
        "Setup the channels to send your holiday reminders."]
       (when-not (empty? channels)
-        [:table.table.is-fullwidth.is-striped
+        [:table.table.is-fullwidth.is-outlined
          [:tbody (map channel-item-view channels)]])
       [add-channel-button]]]))
 
