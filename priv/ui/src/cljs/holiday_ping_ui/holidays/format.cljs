@@ -1,4 +1,4 @@
-(ns holiday-ping-ui.helpers.time-format
+(ns holiday-ping-ui.holidays.format
   (:require
    [cljs-time.core :as time]
    [cljs-time.format :as format]))
