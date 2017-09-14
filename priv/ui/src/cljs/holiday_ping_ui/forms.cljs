@@ -42,7 +42,7 @@
                     (assoc attrs :disabled true)
                     attrs)]))
 
-(defn- input-label
+(defn input-label
   [field]
   [:label.label [:b (field-name field) (when (:required field) "*") " "]])
 
@@ -53,6 +53,15 @@
      (assoc defaults (:key field) (get field :value "")))
    {} fields))
 
+(defn field-view
+  [form {:keys [help-text] :as field}]
+  [:div.field
+   [input-label field]
+   [:div.control
+    [input-view form field]]
+   (when help-text
+     [:p.help help-text])])
+
 (defn form-view
   "Generate the hiccup of a form based on a spec map."
   [{:keys [header-text submit-text submit-class on-submit on-cancel fields]}]
@@ -61,13 +70,8 @@
       [:form
        [:div.content
         [:p header-text]]
-       (for [{:keys [key help-text] :as field} fields]
-         [:div.field {:key key}
-          [input-label field]
-          [:div.control
-           [input-view form field]]
-          (when help-text
-            [:p.help help-text])])
+       (for [{:keys [key] :as field} fields]
+         ^{:key key}[field-view form field])
        [:div.field.is-grouped.is-grouped-centered
         (when on-cancel
           [:div.control

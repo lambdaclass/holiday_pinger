@@ -78,14 +78,29 @@
        {:db       db/default-db
         :dispatch [:country-detect]}))))
 
-(re-frame/reg-event-db
+(re-frame/reg-event-fx
  :switch-view
- (fn [db [_ new-view & args]]
-   (-> db
-       (assoc :current-view new-view)
-       (assoc :current-view-args args)
-       (dissoc :error-message)
-       (dissoc :success-message))))
+ (fn [{:keys [db]} [_ new-view & args]]
+   {:dispatch (apply vector :load-view new-view args)
+    :db       (-> db
+                  (assoc :current-view new-view)
+                  (assoc :current-view-args args)
+                  (dissoc :error-message)
+                  (dissoc :success-message))}))
+
+(defmulti load-view
+  "Define an event handler to load data necessary for each specific view."
+  (fn [cofx [view]]
+    view))
+
+(defmethod load-view :default
+  [& args]
+  {})
+
+(re-frame/reg-event-fx
+ :load-view
+ (fn [cofx [_ new-view & args]]
+   (load-view cofx (apply vector new-view args))))
 
 (re-frame/reg-event-db
  :error-message
@@ -143,9 +158,7 @@
      {:db              new-db
       :set-local-store ["access_token" token]
       :dispatch-n      [[:channel-load]
-                        [:holidays-load]
-                        [:reminders-load]
-                        [:switch-view :dashboard]]})))
+                        [:switch-view :channel-list]]})))
 
 (re-frame/reg-event-fx
  :logout
@@ -225,7 +238,6 @@
     :db         (dissoc db :registration-token)}))
 
 ;;; CHANNEL EVENTS
-
 (re-frame/reg-event-fx
  :channel-load
  (fn [{:keys [db]} _]
@@ -268,14 +280,18 @@
 
 (re-frame/reg-event-fx
  :channel-submit
- (fn [{db :db} [_ {:keys [name type url channels username emoji]}]]
-   (let [channels (string/split channels #"\s+")
-         params   {:name          name
-                   :type          type
-                   :configuration {:channels channels
-                                   :url      url
-                                   :username username
-                                   :emoji    emoji}}]
+ (fn [{db :db} [_ {:keys [name type url channels username emoji days-before
+                          same-day]}]]
+   (let [channels    (string/split channels #"\s+")
+         days-before (js/parseInt days-before)
+         params      {:name          name
+                      :type          type
+                      :same_day      same-day
+                      :days_before   (if (zero? days-before) nil days-before)
+                      :configuration {:channels channels
+                                      :url      url
+                                      :username username
+                                      :emoji    emoji}}]
      (cond
        (some string/blank? [name type url])
        {:dispatch [:error-message "Please fill required fields."]}
@@ -327,17 +343,16 @@
                  :on-failure      [:error-message "There was an error sending the reminder."]}}))
 
 ;;; HOLIDAY EVENTS
-
-(re-frame/reg-event-fx
- :holidays-load
- (fn [{:keys [db]} _]
-   {:http-xhrio {:method          :get
-                 :uri             "/api/holidays"
-                 :timeout         8000
-                 :headers         {:authorization (str "Bearer " (:access-token db))}
-                 :response-format (ajax/json-response-format {:keywords? true})
-                 :on-success      [:holidays-load-success]
-                 :on-failure      [:error-message "Holidays loading failed."]}}))
+(defmethod load-view
+  :holidays
+  [{:keys [db]} [_ channel-name]]
+  {:http-xhrio {:method          :get
+                :uri             (str "/api/channels/" channel-name "/holidays")
+                :timeout         8000
+                :headers         {:authorization (str "Bearer " (:access-token db))}
+                :response-format (ajax/json-response-format {:keywords? true})
+                :on-success      [:holidays-load-success]
+                :on-failure      [:error-message "Holidays loading failed."]}})
 
 (re-frame/reg-event-db
  :holidays-load-success
@@ -350,11 +365,11 @@
 
 (re-frame/reg-event-fx
  :holidays-save
- (fn [{:keys [db]} _]
+ (fn [{:keys [db]} [_ channel-name]]
    (let [edited       (:holidays-edited db)
          new-holidays (map #(update % :date format/date-to-string) edited)]
      {:http-xhrio {:method          :put
-                   :uri             "/api/holidays"
+                   :uri             (str "/api/channels/" channel-name "/holidays")
                    :timeout         8000
                    :headers         {:authorization (str "Bearer " (:access-token db))}
                    :response-format (ajax/json-response-format {:keywords? true})
@@ -417,45 +432,3 @@
    (let [edited  (:holidays-edited db)
          removed (remove #(time/= date (:date %)) edited)]
      (assoc db :holidays-edited removed))))
-
-;; REMINDERS EVENTS
-(re-frame/reg-event-fx
- :reminders-load
- (fn [{:keys [db]} _]
-   {:http-xhrio {:method          :get
-                 :uri             "/api/reminders"
-                 :timeout         8000
-                 :headers         {:authorization (str "Bearer " (:access-token db))}
-                 :response-format (ajax/json-response-format {:keywords? true})
-                 :on-success      [:reminders-load-success]
-                 :on-failure      [:error-message "Reminders configuration loding failed."]}}))
-
-(re-frame/reg-event-db
- :reminders-load-success
- (fn [db [_ response]]
-   (let [{days-before :days_before
-          same-day    :same_day} response]
-     (assoc db :reminder-config {:days-before days-before
-                                 :same-day    same-day}))))
-
-(re-frame/reg-event-fx
- :reminders-submit
- (fn [{db :db} [_ form]]
-   (let [days-before (js/parseInt (:days-before form))
-         params      {:days_before (if (zero? days-before) nil days-before)
-                      :same_day    (:same-day form)}]
-     {:http-xhrio {:method          :put
-                   :uri             (str "/api/reminders/")
-                   :headers         {:authorization (str "Bearer " (:access-token db))}
-                   :timeout         8000
-                   :format          (ajax/json-request-format)
-                   :params          params
-                   :response-format (ajax/text-response-format)
-                   :on-success      [:reminders-submit-success]
-                   :on-failure      [:error-message "Reminder configuration saving failed."]}})))
-
-(re-frame/reg-event-fx
- :reminders-submit-success
- (fn [{:keys [db]} [_ response]]
-   {:db       (assoc db :success-message "Reminder configuration saved successfully.")
-    :dispatch [:reminders-load-success response]}))

@@ -77,7 +77,7 @@
                                        :type      "select"
                                        :options   countries/list
                                        :value     user-country
-                                       :help-text "We'll use this to load you default holidays."
+                                       :help-text "We'll use this to load your default holidays."
                                        :required  true}
                                       {:key      :name
                                        :label    "Full name"
@@ -150,24 +150,34 @@
 (defn channel-item-view
   [{:keys [name type] :as channel}]
   [:tr {:key name}
-   [:td [:span.icon.is-small {:title "Slack"} [:i.fa.fa-slack]] "  " name]
-   [:td.has-text-right
-    [:div.field.is-grouped.is-grouped-right
+   [:td
+    [:div.title.is-5 name]
+    [:div.subtitle.is-6 (str type " channel")]]
+   [:td
+    [:div.field.is-pulled-right.has-addons
      [:p.control
-      [:button.button.is-danger.is-small
-       {:on-click #(re-frame/dispatch [:channel-delete name])}
-       [:span.icon.is-small [:i.fa.fa-times]]
-       [:span "Delete"]]]
+      [:button.button.is-danger.is-small.tooltip
+       {:on-click     #(re-frame/dispatch [:channel-delete name])
+        :data-tooltip "Delete"}
+       [:span.icon.is-small [:i.fa.fa-times]]]]
+
      [:p.control
-      [:button.button.is-info.is-small
-       {:on-click #(re-frame/dispatch [:channel-test-start channel])}
-       [:span.icon.is-small [:i.fa.fa-cogs]]
-       [:span "Test"]]]
+      [:button.button.is-info.is-small.tooltip
+       {:on-click     #(re-frame/dispatch [:switch-view :channel-edit channel])
+        :data-tooltip "Edit"}
+       [:span.icon.is-small [:i.fa.fa-edit]]]]
+
      [:p.control
-      [:button.button.is-info.is-small
-       {:on-click #(re-frame/dispatch [:switch-view :channel-edit channel])}
-       [:span.icon.is-small [:i.fa.fa-edit]]
-       [:span "Edit"]]]]]])
+      [:button.button.is-small.tooltip
+       {:on-click     #(re-frame/dispatch [:channel-test-start channel])
+        :data-tooltip "Test channel"}
+       [:span.icon.is-small [:i.fa.fa-cogs]]]]
+
+     [:p.control
+      [:button.button.is-small.tooltip
+       {:on-click     #(re-frame/dispatch [:switch-view :holidays name])
+        :data-tooltip "Select holidays"}
+       [:span.icon.is-small [:i.fa.fa-calendar]]]]]]])
 
 (defn add-channel-button
   []
@@ -175,7 +185,7 @@
    [:button.button.is-success
     {:on-click #(re-frame/dispatch [:switch-view :channel-create])}
     [:span.icon.is-small [:i.fa.fa-plus]]
-    [:span "Add Channel"]]])
+    [:span "New Channel"]]])
 
 (defn channel-list-view
   []
@@ -184,11 +194,10 @@
      [test-channel-modal]
      [section-size :is-two-thirds
       [message-view]
-      (if (empty? channels)
-        [:div.has-text-centered
-         [:p "There are no channels yet."]
-         [:br]]
-        [:table.table.is-fullwidth.is-striped
+      [:p.subtitle.has-text-centered
+       "Setup the channels to send your holiday reminders."]
+      (when-not (empty? channels)
+        [:table.table.is-fullwidth.is-outlined
          [:tbody (map channel-item-view channels)]])
       [add-channel-button]]]))
 
@@ -225,7 +234,21 @@
                                      :label "Bot username"}
                                     {:key   :emoji
                                      :type  "text"
-                                     :label "Bot emoji"}]}]]])
+                                     :label "Bot emoji"}
+                                    {:key     :same-day
+                                     :label   "Send a reminder on the same day."
+                                     :type    "select"
+                                     :value   true
+                                     :options [{:text "Yes" :value true}
+                                               {:text "Don't send" :value false}]}
+                                    {:key     :days-before
+                                     :label   "Send a reminder before the holiday."
+                                     :type    "select"
+                                     :value   0
+                                     :options [{:text "Don't send" :value 0}
+                                               {:text "The day before" :value 1}
+                                               {:text "Three days before" :value 3}
+                                               {:text "A week before" :value 7}]}]}]]])
 
 (defn channel-edit-view
   [channel]
@@ -266,30 +289,21 @@
                                     {:key   :emoji
                                      :type  "text"
                                      :value (get-in channel [:configuration :emoji])
-                                     :label "Bot emoji"}]}]]])
-
-;;; DASHBOARD views
-(defn dashboard-view
-  []
-  (let [{username :name}     @(re-frame/subscribe [:user-info])
-        {holiday-name :name
-         date         :date} @(re-frame/subscribe [:next-holiday])
-        count                @(re-frame/subscribe [:channel-count])
-        count-text           (str "You have " (if (= 0 count) "no" count)
-                                  " configured channels. ")
-        holiday-text         (if holiday-name
-                               (str "Your next holiday is " holiday-name " on " date ". ")
-                               "You have no upcoming holidays ")]
-
-    [section
-     [:h1.title.is-3 (str "Hello, " username "!")]
-     [:p.dashboard-message holiday-text
-      [:a {:href "#" :on-click #(re-frame/dispatch [:switch-view :holidays])}
-       " Manage holidays"]]
-     [:br]
-     [:p.dashboard-message count-text
-      [:a {:href "#" :on-click #(re-frame/dispatch [:switch-view :channel-list])}
-       " Manage channels"]]]))
+                                     :label "Bot emoji"}
+                                    {:key     :same-day
+                                     :label   "Send a reminder on the same day."
+                                     :type    "select"
+                                     :value   (:same_day channel)
+                                     :options [{:text "Yes" :value true}
+                                               {:text "Don't send" :value false}]}
+                                    {:key     :days-before
+                                     :label   "Send a reminder before the holiday."
+                                     :type    "select"
+                                     :value   (or(:days_before channel) 0)
+                                     :options [{:text "Don't send" :value 0}
+                                               {:text "The day before" :value 1}
+                                               {:text "Three days before" :value 3}
+                                               {:text "A week before" :value 7}]}]}]]])
 
 ;;; HOLIDAYS views
 (defn holidays-year-switch
@@ -309,7 +323,7 @@
      next]]])
 
 (defn holiday-controls
-  [current next selected]
+  [channel-name current next selected]
   (let [edited? @(re-frame/subscribe [:calendar-edited?])
         empty?  @(re-frame/subscribe [:calendar-empty?])]
     [:nav.level
@@ -344,7 +358,7 @@
          {:title    "Save the changes in the calendar"
           :href     "#"
           :class    (when-not edited? "is-static")
-          :on-click #(re-frame/dispatch [:holidays-save])}
+          :on-click #(re-frame/dispatch [:holidays-save channel-name])}
          [:span "Save"]
          [:span.icon.is-small [:i.fa.fa-check]]]]]]]))
 
@@ -388,7 +402,7 @@
          [:span "Save"]]]]]]))
 
 (defn holidays-view
-  []
+  [channel-name]
   (let [current-year  @(re-frame/subscribe [:current-year])
         next-year     (inc current-year)
         selected-year @(re-frame/subscribe [:calendar-selected-year])]
@@ -396,37 +410,11 @@
      [edit-holiday-modal]
      [section
       [:p.subtitle "Select the days of the year for which you want reminders."]
-      [holiday-controls current-year next-year selected-year]
+      [holiday-controls channel-name current-year next-year selected-year]
       [:div (when-not (= selected-year current-year) {:hidden true})
        [calendar/year-view current-year]]
       [:div (when-not (= selected-year next-year) {:hidden true})
        [calendar/year-view next-year]]]]))
-
-;; REMINDER VIEWS
-(defn reminder-config-view
-  []
-  (let [{:keys [same-day days-before]} @(re-frame/subscribe [:reminder-config])]
-    [section
-     [:p.subtitle "Configure the frequency of the holiday alerts."]
-     [message-view]
-     [forms/form-view {:submit-text "Save"
-                       :on-submit   [:reminders-submit]
-                       :fields      [{:key      :same-day
-                                      :label    "Send a reminder on the same day."
-                                      :type     "select"
-                                      :value    same-day
-                                      :options  [{:text "Yes" :value true}
-                                                 {:text "Don't send" :value false}]
-                                      :required true}
-                                     {:key      :days-before
-                                      :label    "Send a reminder before the holiday."
-                                      :type     "select"
-                                      :value    (or days-before 0)
-                                      :options  [{:text "Don't send" :value 0}
-                                                 {:text "The day before" :value 1}
-                                                 {:text "Three days before" :value 3}
-                                                 {:text "A week before" :value 7}]
-                                      :required true}]}]]))
 
 ;; APP VIEWS
 (defn user-info-view []
@@ -442,7 +430,6 @@
       [:a.navbar-item {:href "#" :on-click #(re-frame/dispatch [:logout])} "Logout"]]
      ]))
 
-;; FIXME properly select the one that's active
 (defn navbar-view
   []
   (let [authenticated? @(re-frame/subscribe [:access-token])]
@@ -450,23 +437,24 @@
      [:div.container
 
       [:div.navbar-brand
-       [:div.navbar-item.is-size-3.app-title "HolidayPing"]
+       [:a.navbar-item.is-size-3.app-title
+        {:href "#" :on-click #(re-frame/dispatch [:switch-view :channel-list])}
+        "HolidayPing"]
        [:div.navbar-burger.burger {:data-target "navMenubd"}]]
 
       (when authenticated?
         [:div#navMenubd.navbar-menu
          [:div.navbar-start
-          (for [[view text] {:dashboard       "Home"
-                             :holidays        "Holidays"
-                             :channel-list    "Channels"
-                             :reminder-config "Reminders"}]
-            [:a.navbar-item
-             {:key view :href "#" :on-click #(re-frame/dispatch [:switch-view view])}
-             text])]
+          [:a.navbar-item
+           {:href   "https://notamonadtutorial.com"
+            :target "_blank"}
+           "Blog"]
+          [:a.navbar-item
+           {:href   "https://github.com/lambdaclass/holiday_ping"
+            :target "_blank"}
+           "GitHub"]]
          [:div.navbar-end
-          [user-info-view]]])
-      ][:hr.navbar-divider]
-     ]))
+          [user-info-view]]])]]))
 
 (defn footer-view
   []
@@ -474,20 +462,18 @@
    [:div.container
     [:div.content.has-text-centered
      [:p [:strong "HolidayPing"] " by "
-      [:a {:href "https://github.com/lambdaclass/"} "LambdaClass"] "."]
+      [:a {:href "https://github.com/lambdaclass/" :target "_blank"} "LambdaClass"] "."]
      [:p [:a.icon {:href "https://github.com/lambdaclass/holiday_ping"}
           [:i.fa.fa-github]]]]]])
 
-(def views {:channel-list    [channel-list-view]
-            :channel-edit    [channel-edit-view]
-            :channel-create  [channel-add-view]
-            :reminder-config [reminder-config-view]
+(def views {:channel-list   [channel-list-view]
+            :channel-edit   [channel-edit-view]
+            :channel-create [channel-add-view]
             :login           [login-view]
             :register        [register-view]
             :github-loading  [github-loading-view]
             :github-register [github-register-view]
-            :holidays        [holidays-view]
-            :dashboard       [dashboard-view]})
+            :holidays        [holidays-view]})
 
 (defn app
   "Build the ui based on the current-view in the app-db."
