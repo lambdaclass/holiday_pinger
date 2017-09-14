@@ -1,9 +1,8 @@
-(ns holiday-ping-ui.helpers.token
+(ns holiday-ping-ui.auth.token
   (:require
    [clojure.string :as string]
    [goog.crypt.base64 :as base64]
    [goog.crypt :as crypt]))
-
 
 (defn decode
   [token]

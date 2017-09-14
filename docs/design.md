@@ -59,6 +59,12 @@ some reptitive tasks: handlers that just set a value, subs that just read a valu
 looks like an interesting structure/pattern to guarantee decoupling, but at times
 feels like too much for a small project.
 
+quote by re-frame author:
+mikethompson [3:34 AM]
+@sandbags @gklijs I always have the same response :-)  You can absolutely use Reagent by itself if your application is simple enough.  BUT if  you just use Reagent by itself then you only have the V bit of an application.  As your application starts to get more complicated, you **will** start to create an architecture which adds `control logic` and `state management` - the M and C parts (even if you don't think you are, you are).  So then the question becomes:  is your architecture better than re-frame's or not?  And some people prefer their own architectures and would answer "yes" :-)   Fair enough.
+I think the only danger arises if this process is not conscious - if someone creates a dogs breakfast of an architecture and doesn;t even know they've done it.  I've had MANY people privately admit that's what happened to them ... and then they swapped to re-frame to get some structure back.
+So, my advice is .... if your application is a little more complicated, be sure to make a conscious choice around architecture, because one way or another you'll be using one. (edited)
+
 ## Random notes
 
 - Sometimes you need the UI in order to better understand the model. You need to be able

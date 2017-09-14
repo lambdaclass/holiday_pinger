@@ -1,63 +1,17 @@
-(ns holiday-ping-ui.subs
+(ns holiday-ping-ui.holidays.subs
   (:require
-   [clojure.string :as string]
    [re-frame.core :as re-frame]
-   [goog.string :as gstring]
-   [goog.crypt :as crypt]
    [cljs-time.core :as time]
-   [goog.crypt.Md5]
-   [holiday-ping-ui.helpers.time-format :as format]
-   [holiday-ping-ui.helpers.token :as token]))
+   [holiday-ping-ui.common.subs :as subs]
+   [holiday-ping-ui.holidays.format :as format]))
 
-(defn db-subscription
-  "Define a subscription handler that just gets a top level value from the db."
-  ([db-kw] (db-subscription db-kw db-kw))
-  ([sub-kw db-kw]
-   (re-frame/reg-sub
-    sub-kw
-    (fn [db] (get db db-kw)))))
-
-(db-subscription :access-token)
-(db-subscription :channels)
-(db-subscription :error-message)
-(db-subscription :success-message)
-(db-subscription :current-view)
-(db-subscription :current-view-args)
-(db-subscription :channel-to-test)
-(db-subscription :calendar-selected-year)
-(db-subscription :calendar-selected-day-name)
-(db-subscription :country)
+(subs/db-subscription :calendar-selected-year)
+(subs/db-subscription :calendar-selected-day-name)
 
 (defn- next-holiday
   [holidays]
   (let [upcoming? #(time/after? (:date %) (time/today))]
     (first (filter upcoming? holidays))))
-
-(re-frame/reg-sub
- :user-info
- (fn [_ _] (re-frame/subscribe [:access-token]))
- (fn [token _] (token/decode token)))
-
-(defn- md5 [s]
-  (let [bytes  (crypt/stringToUtf8ByteArray s)
-        hasher (doto (goog.crypt.Md5.) (.update bytes))]
-    (-> hasher .digest crypt/byteArrayToHex)))
-
-(defn- gravatar
-  [email]
-  (->> email
-       string/lower-case
-       string/trim
-       md5
-       (gstring/format "https://www.gravatar.com/avatar/%s?d=identicon&s=64")))
-
-(re-frame/reg-sub
- :avatar
- (fn [_ _] (re-frame/subscribe [:user-info]))
- (fn [{:keys [email avatar]} _]
-   (if avatar
-     avatar
-     (gravatar email))))
 
 (defn- find-holiday
   [holidays date]

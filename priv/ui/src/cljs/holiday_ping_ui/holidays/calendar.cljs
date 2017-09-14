@@ -1,8 +1,8 @@
-(ns holiday-ping-ui.calendar
+(ns holiday-ping-ui.holidays.calendar
   (:require
    [re-frame.core :as re-frame]
    [cljs-time.core :as time]
-   [holiday-ping-ui.helpers.time-format :as format]))
+   [holiday-ping-ui.holidays.format :as format]))
 
 (defn- first-of-calendar-month
   [year month]

@@ -1,4 +1,4 @@
-(ns holiday-ping-ui.forms
+(ns holiday-ping-ui.common.forms
   (:require
    [clojure.string :as string]
    [reagent.core  :as reagent]
