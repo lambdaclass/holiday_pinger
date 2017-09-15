@@ -1,6 +1,7 @@
 (ns holiday-ping-ui.core
   (:require [reagent.core :as reagent]
             [re-frame.core :as re-frame]
+            [holiday-ping-ui.routes :as routes]
 
             [holiday-ping-ui.common.events]
             [holiday-ping-ui.auth.events]
@@ -18,6 +19,7 @@
             [holiday-ping-ui.holidays.views :as holidays]
 
             [holiday-ping-ui.config :as config]))
+
 
 (def views {:channel-list    [channels/list-view]
             :channel-edit    [channels/edit-view]
@@ -51,5 +53,6 @@
 
 (defn ^:export init []
   (dev-setup)
+  (routes/start-history!)
   (re-frame/dispatch-sync [:initialize-db])
   (mount-root))

@@ -81,7 +81,7 @@
  :channel-submit-success
  (fn [_ _]
    {:dispatch-n [[:channel-load]
-                 [:switch-view :channel-list]]}))
+                 [:navigate :channel-list]]}))
 
 (re-frame/reg-event-db
  :channel-test-start

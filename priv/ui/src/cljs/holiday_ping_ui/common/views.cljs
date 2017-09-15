@@ -46,9 +46,7 @@
      [:div.container
 
       [:div.navbar-brand
-       [:a.navbar-item.is-size-3.app-title
-        {:href "#" :on-click #(re-frame/dispatch [:switch-view :channel-list])}
-        "HolidayPing"]
+       [:a.navbar-item.is-size-3.app-title {:href "/"} "HolidayPing"]
        [:div.navbar-burger.burger {:data-target "navMenubd"}]]
 
       (when authenticated?

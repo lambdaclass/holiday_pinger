@@ -1,6 +1,7 @@
 (ns holiday-ping-ui.auth.views
   (:require
    [re-frame.core :as re-frame]
+   [holiday-ping-ui.routes :as routes]
    [holiday-ping-ui.common.views :as views]
    [holiday-ping-ui.common.forms :as forms]
    [holiday-ping-ui.auth.countries :as countries]))
@@ -31,7 +32,7 @@
                                         :required true}]}]
       [:br]
       [:p.has-text-centered "Don't have an account? "
-       [:a {:href "#" :on-click #(re-frame/dispatch [:switch-view :register])} "Click here to register."]]]]]])
+       [:a {:href (routes/url-for :register)} "Click here to register."]]]]]])
 
 (defn register-view []
   (let [user-country @(re-frame/subscribe [:country])]
@@ -63,7 +64,7 @@
                                        :required true}]}]
       [:br]
       [:p.has-text-centered "Already registered? "
-       [:a {:href "#" :on-click #(re-frame/dispatch [:switch-view :login])} "Click here to login."]]]]))
+       [:a {:href (routes/url-for :login)} "Click here to login."]]]]))
 
 (defn github-loading-view
   []

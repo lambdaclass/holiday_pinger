@@ -1,5 +1,6 @@
 (ns holiday-ping-ui.common.events
-  (:require [re-frame.core :as re-frame]))
+  (:require [re-frame.core :as re-frame]
+            [holiday-ping-ui.routes :as routes]))
 
 ;;; EFFECTS/COEFFECTS
 
@@ -19,10 +20,16 @@
  (fn [coeffects key]
    (assoc coeffects :local-store (.getItem js/localStorage key))))
 
+;; FIXME remove
 (re-frame/reg-fx
  :set-location
  (fn [value]
    (.replaceState js/history nil "" value)))
+
+(re-frame/reg-fx
+ :set-history
+ (fn [view & args]
+   (apply routes/set-history! view args)))
 
 (re-frame/reg-cofx
  :location
@@ -44,6 +51,12 @@
                   (assoc :current-view-args args)
                   (dissoc :error-message)
                   (dissoc :success-message))}))
+
+(re-frame/reg-event-fx
+ :navigate
+ (fn [_ [_ new-view & args]]
+   {:dispatch    (apply vector :switch-view new-view args)
+    :set-history new-view}))
 
 (defmulti load-view
   "Define an event handler to load data necessary for each specific view.
