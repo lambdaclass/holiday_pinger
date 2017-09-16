@@ -30,9 +30,8 @@
          auth-route?  (routes/auth-route? path)]
      (cond
        (and auth-route? logged-in?)
-       {:db         db/default-db
-        :dispatch-n [[:navigate :channel-list]
-                     [:user-load {:access_token stored-token}]]}
+       {:db       db/default-db
+        :dispatch [:login-success {:access_token stored-token}]}
 
        (and (not auth-route?) (not logged-in?))
        {:db       db/default-db
@@ -48,7 +47,7 @@
 
        stored-token
        {:db       db/default-db
-        :dispatch [:user-load {:access_token stored-token}]}
+        :dispatch [:store-token stored-token]}
 
        :else
        {:db db/default-db}))))
@@ -73,17 +72,16 @@
 (re-frame/reg-event-fx
  :login-success
  (fn [_ [_ response]]
-   {:dispatch-n [[:navigate :channel-list]
-                 [:user-load response]]}))
+   {:dispatch-n [[:store-token (:access_token response)]
+                 [:navigate :channel-list]]}))
 
 (re-frame/reg-event-fx
- :user-load
+ :store-token
  (fn
-   [{:keys [db]} [_ response]]
-   (let [token (:access_token response)]
-     {:db              (assoc db :access-token token)
-      :set-local-store ["access_token" token]
-      :dispatch        [:channel-load]})))
+   [{:keys [db]} [_ token]]
+   {:db              (assoc db :access-token token)
+    :set-local-store ["access_token" token]
+    :dispatch        [:channel-load]})) ;; TODO try to remove this, load in the view instead
 
 (re-frame/reg-event-fx
  :logout
