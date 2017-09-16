@@ -8,6 +8,7 @@
             [bouncer.validators :as validators]
             [holiday-ping-ui.db :as db]
             [holiday-ping-ui.routes :as routes]
+            [holiday-ping-ui.common.events :as events]
             [holiday-ping-ui.auth.token :as token]))
 
 ;;; AUTH EVENTS
@@ -27,8 +28,6 @@
          logged-in?   (and stored-token (not (token/expired? stored-token)))
          path         (get-in cofx [:location :path])
          auth-route?  (routes/auth-route? path)]
-     ;; FIXME this conditions are complex and partially overlapping
-     ;; Try to separate in orthogonal events
      (cond
        (and auth-route? logged-in?)
        {:db         db/default-db
@@ -36,27 +35,23 @@
                      [:user-load {:access_token stored-token}]]}
 
        (and (not auth-route?) (not logged-in?))
-       {:db         db/default-db
-        :dispatch-n [[:navigate :login]
-                     [:country-detect]]}
+       {:db       db/default-db
+        :dispatch [:navigate :login]}
 
        (github-callback? path)
-       {:db         db/default-db
-        :dispatch-n [[:github-code-submit]
-                     [:country-detect]]}
+       {:db       db/default-db
+        :dispatch [:github-code-submit]}
 
        (and stored-token (token/expired? stored-token))
        {:db                 expired-db
-        :remove-local-store "access_token"
-        :dispatch           [:country-detect]}
+        :remove-local-store "access_token"}
 
        stored-token
        {:db       db/default-db
         :dispatch [:user-load {:access_token stored-token}]}
 
        :else
-       {:db       db/default-db
-        :dispatch [:country-detect]}))))
+       {:db db/default-db}))))
 
 (defn- basic-auth-header
   [user password]
@@ -162,6 +157,14 @@
                  :on-success      [:login-success]
                  :on-failure      [:error-message "GitHub registration failed"]}
     :db         (dissoc db :registration-token)}))
+
+(defmethod events/load-view
+  :register [_ _]
+  {:dispatch [:country-detect]})
+
+(defmethod events/load-view
+  :github-loading [_ _]
+  {:dispatch [:country-detect]})
 
 (re-frame/reg-event-fx
  :country-detect
