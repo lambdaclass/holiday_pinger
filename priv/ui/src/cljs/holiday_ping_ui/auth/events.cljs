@@ -7,12 +7,13 @@
             [bouncer.core :as bouncer]
             [bouncer.validators :as validators]
             [holiday-ping-ui.db :as db]
+            [holiday-ping-ui.routes :as routes]
             [holiday-ping-ui.auth.token :as token]))
 
 ;;; AUTH EVENTS
 (defn- github-callback?
-  [{:keys [path]}]
-  (string/includes? path "/oauth/github/callback"))
+  [path]
+  (= (:handler (routes/parse-url path)) :github-loading))
 
 (re-frame/reg-event-fx
  :initialize-db
@@ -22,12 +23,27 @@
    (let [stored-token (:local-store cofx)
          expired-db   (-> db/default-db
                           (dissoc :access-token)
-                          (assoc :error-message "Your session has expired, please log in again."))]
+                          (assoc :error-message "Your session has expired, please log in again."))
+         logged-in?   (and stored-token (not (token/expired? stored-token)))
+         path         (get-in cofx [:location :path])
+         auth-route?  (routes/auth-route? path)]
+     ;; FIXME this conditions are complex and partially overlapping
+     ;; Try to separate in orthogonal events
      (cond
-       (github-callback? (:location cofx)) ;; TODO when url routing is in place, stop doing it manually here
+       (and auth-route? logged-in?)
        {:db         db/default-db
-        :dispatch-n [[:switch-view :github-loading]
-                     [:github-code-submit]]}
+        :dispatch-n [[:navigate :channel-list]
+                     [:user-load {:access_token stored-token}]]}
+
+       (and (not auth-route?) (not logged-in?))
+       {:db         db/default-db
+        :dispatch-n [[:navigate :login]
+                     [:country-detect]]}
+
+       (github-callback? path)
+       {:db         db/default-db
+        :dispatch-n [[:github-code-submit]
+                     [:country-detect]]}
 
        (and stored-token (token/expired? stored-token))
        {:db                 expired-db
@@ -35,9 +51,8 @@
         :dispatch           [:country-detect]}
 
        stored-token
-       {:db         db/default-db
-        :dispatch-n [[:country-detect]
-                     [:auth-success {:access_token stored-token}]]}
+       {:db       db/default-db
+        :dispatch [:user-load {:access_token stored-token}]}
 
        :else
        {:db       db/default-db
@@ -57,26 +72,29 @@
                  :timeout         8000
                  :headers         {:authorization (basic-auth-header email password)}
                  :response-format (ajax/json-response-format {:keywords? true})
-                 :on-success      [:auth-success]
+                 :on-success      [:login-success]
                  :on-failure      [:error-message "Authentication failed"]}}))
 
 (re-frame/reg-event-fx
- :auth-success
+ :login-success
+ (fn [_ [_ response]]
+   {:dispatch-n [[:navigate :channel-list]
+                 [:user-load response]]}))
+
+(re-frame/reg-event-fx
+ :user-load
  (fn
    [{:keys [db]} [_ response]]
-   (let [token  (:access_token response)
-         new-db (assoc db :access-token token)]
-     {:db              new-db
+   (let [token (:access_token response)]
+     {:db              (assoc db :access-token token)
       :set-local-store ["access_token" token]
-      :dispatch-n      [[:channel-load]
-                        [:switch-view :channel-list]]})))
+      :dispatch        [:channel-load]})))
 
 (re-frame/reg-event-fx
  :logout
  (fn [{:keys [db]} _]
-   {:db                 (-> db
-                            (dissoc :access-token)
-                            (assoc :current-view :login))
+   {:db                 (dissoc db :access-token)
+    :dispatch           [:navigate :login]
     :remove-local-store "access_token"}))
 
 (re-frame/reg-event-fx
@@ -114,24 +132,22 @@
  [(re-frame/inject-cofx :location)]
  (fn [{:keys [location]} _]
    (let [code (-> location :query (string/split #"=") last)]
-     {:dispatch     [:country-detect]
-      :set-location "/"
-      :http-xhrio   {:method          :post
-                     :uri             "/api/auth/github/code"
-                     :timeout         8000
-                     :format          (ajax/json-request-format)
-                     :params          {:code code}
-                     :response-format (ajax/json-response-format {:keywords? true})
-                     :on-success      [:github-code-success]
-                     :on-failure      [:error-message "GitHub authentication failed"]}})))
+     {:http-xhrio {:method          :post
+                   :uri             "/api/auth/github/code"
+                   :timeout         8000
+                   :format          (ajax/json-request-format)
+                   :params          {:code code}
+                   :response-format (ajax/json-response-format {:keywords? true})
+                   :on-success      [:github-code-success]
+                   :on-failure      [:error-message "GitHub authentication failed"]}})))
 
 (re-frame/reg-event-fx
  :github-code-success
  (fn [{:keys [db]} [_ response]]
    (if (:new_user response)
-     {:dispatch [:switch-view :github-register]
+     {:dispatch [:navigate :github-register]
       :db       (assoc db :registration-token (:registration_token response))}
-     {:dispatch [:auth-success response]})))
+     {:dispatch [:login-success response]})))
 
 (re-frame/reg-event-fx
  :github-register-submit
@@ -143,7 +159,7 @@
                  :params          form
                  :response-format (ajax/json-response-format {:keywords? true})
                  :headers         {:authorization (str "Bearer " (:registration-token db))}
-                 :on-success      [:auth-success]
+                 :on-success      [:login-success]
                  :on-failure      [:error-message "GitHub registration failed"]}
     :db         (dissoc db :registration-token)}))
 

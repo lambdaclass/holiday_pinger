@@ -10,11 +10,11 @@
                       ["channels/" [#".+" :channel] "/holidays"] :holidays
                       "login"                                    :login
                       "register"                                 :register
-                      "github"                                   :github-loading
                       "github/profile"                           :github-register
+                      "oauth/github/callback"                    :github-loading
                       }])
 
-(defn- parse-url [url]
+(defn parse-url [url]
   (bidi/match-route app-routes url))
 
 (defn- dispatch-route [matched-route]
@@ -41,4 +41,7 @@
   "Return true if the given route is intended for unauthorized users
   (loging, register, etc.)."
   [location]
-  )
+  (let [view (:handler (parse-url location))]
+    (contains?
+     #{:login :register :github-loading :github-register :github-callback}
+     view)))

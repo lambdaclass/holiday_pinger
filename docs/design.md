@@ -65,6 +65,10 @@ mikethompson [3:34 AM]
 I think the only danger arises if this process is not conscious - if someone creates a dogs breakfast of an architecture and doesn;t even know they've done it.  I've had MANY people privately admit that's what happened to them ... and then they swapped to re-frame to get some structure back.
 So, my advice is .... if your application is a little more complicated, be sure to make a conscious choice around architecture, because one way or another you'll be using one. (edited)
 
+for a strongly structured and opinionated framework, it feels lacking
+a standarad for routing and handling the data loading associated with a
+each route. It's a tricky thing to implement on a per app basis.
+
 ## Random notes
 
 - Sometimes you need the UI in order to better understand the model. You need to be able

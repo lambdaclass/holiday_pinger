@@ -20,12 +20,6 @@
  (fn [coeffects key]
    (assoc coeffects :local-store (.getItem js/localStorage key))))
 
-;; FIXME remove
-(re-frame/reg-fx
- :set-location
- (fn [value]
-   (.replaceState js/history nil "" value)))
-
 (re-frame/reg-fx
  :set-history
  (fn [view & args]

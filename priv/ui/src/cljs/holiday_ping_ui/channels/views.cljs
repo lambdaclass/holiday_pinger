@@ -40,28 +40,26 @@
    [:td
     [:div.field.is-pulled-right.has-addons
      [:p.control
-      [:button.button.is-danger.is-small.tooltip
-       {:on-click     #(re-frame/dispatch [:channel-delete name])
-        :data-tooltip "Delete"}
-       [:span.icon.is-small [:i.fa.fa-times]]]]
-
+      [:button.button.is-small.tooltip
+       {:on-click     #(re-frame/dispatch [:channel-test-start channel])
+        :data-tooltip "Test channel"}
+       [:span.icon.is-small [:i.fa.fa-cogs]]]]
+     [:p.control
+      [:a.button.is-small.tooltip
+       {:href         (routes/url-for :holidays :channel name)
+        :data-tooltip "Select holidays"}
+       [:span.icon.is-small [:i.fa.fa-calendar]]]]
      [:p.control
       [:a.button.is-info.is-small.tooltip
        {:href         (routes/url-for :channel-edit :channel name)
         :data-tooltip "Edit"}
        [:span.icon.is-small [:i.fa.fa-edit]]]]
-
      [:p.control
-      [:button.button.is-small.tooltip
-       {:on-click     #(re-frame/dispatch [:channel-test-start channel])
-        :data-tooltip "Test channel"}
-       [:span.icon.is-small [:i.fa.fa-cogs]]]]
-
-     [:p.control
-      [:a.button.is-small.tooltip
-       {:href         (routes/url-for :holidays :channel name)
-        :data-tooltip "Select holidays"}
-       [:span.icon.is-small [:i.fa.fa-calendar]]]]]]])
+      [:button.button.is-danger.is-small.tooltip
+       {:on-click     #(re-frame/dispatch [:channel-delete name])
+        :data-tooltip "Delete"}
+       [:span.icon.is-small [:i.fa.fa-times]]]]
+     ]]])
 
 (defn add-button
   []
@@ -79,10 +77,10 @@
       [views/message-view]
       [:p.subtitle.has-text-centered
        "Setup the channels to send your holiday reminders."]
+      [add-button]
       (when-not (empty? channels)
         [:table.table.is-fullwidth.is-outlined
-         [:tbody (map item-view channels)]])
-      [add-button]]]))
+         [:tbody (map item-view channels)]])]]))
 
 (defn add-view []
   [:div
@@ -135,7 +133,7 @@
 
 (defn edit-view
   [channel-name]
-  (let [channel @(re-frame/subscribe [:channel channel-name])]
+  (if-let [channel @(re-frame/subscribe [:channel channel-name])]
     [:div
      [views/section-size :is-half
       [:p.subtitle "Fill the channel configuration"]
