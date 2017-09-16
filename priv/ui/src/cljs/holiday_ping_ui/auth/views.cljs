@@ -17,8 +17,7 @@
        [:a.button.is-medium.is-primary.is-fullwidth
         {:href "/oauth/github"}
         [:span.icon.is-medium [:i.fa.fa-github]]
-        [:span
-         " Login with GitHub"]]]
+        [:span " Login with GitHub"]]]
       [:hr]
       [views/message-view]
       [forms/form-view {:submit-text  "Login"
@@ -35,7 +34,7 @@
        [:a {:href (routes/url-for :register)} "Click here to register."]]]]]])
 
 (defn register-view []
-  (let [user-country @(re-frame/subscribe [:country])]
+  (if-let [user-country @(re-frame/subscribe [:country])]
     [:div
      [views/section-size :is-half
       [:p.subtitle "Please fill your profile information."]
@@ -64,19 +63,12 @@
                                        :required true}]}]
       [:br]
       [:p.has-text-centered "Already registered? "
-       [:a {:href (routes/url-for :login)} "Click here to login."]]]]))
+       [:a {:href (routes/url-for :login)} "Click here to login."]]]]
+    [views/loading-view]))
 
 (defn github-loading-view
   []
-  [:div
-   [views/section-size :is-one-third
-    [:div.card
-     [:div.card-content
-      [:div.has-text-centered
-       [:div.subtitle "Mining bitcoins..."]
-       [:a.button.is-medium.is-primary.is-loading
-        [:span
-         " Login with GitHub"]]]]]]])
+  [views/loading-view])
 
 (defn github-register-view
   []

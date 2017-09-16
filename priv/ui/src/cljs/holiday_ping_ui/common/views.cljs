@@ -72,3 +72,14 @@
       [:a {:href "https://github.com/lambdaclass/" :target "_blank"} "LambdaClass"] "."]
      [:p [:a.icon {:href "https://github.com/lambdaclass/holiday_ping"}
           [:i.fa.fa-github]]]]]])
+
+(defn loading-view
+  []
+  [:div
+   [section-size :is-one-third
+    [:div.card
+     [:div.card-content
+      [:div.has-text-centered
+       [:div.subtitle "Mining bitcoins…"]
+       [:a.button.is-medium.is-primary.is-loading
+        [:span "Mining bitcoins"]]]]]]])

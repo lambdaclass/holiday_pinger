@@ -87,3 +87,11 @@ entities, and what's more when we did the code turned out to be simpler
 (a supervisor and gen server we had recently introduced became unnecessary)
 
 - This is nothing new, but frontend takes way more time than backend.
+
+- although it's super fun to code a frontend app with cljs, it's great
+to get some experience with react/re-frame, and get in touch with fronted develpment
+again, I have to say I agree on what a bad idea it is to make everything a
+SPA. Apps that don't inherently have a lot of dynamic components (e.g. google docs),
+and instead are more classic (navigation oriented) make you invest a ton of time
+just reproducing the native behavior of the browser and you get little of the benefits
+of using a js framework.

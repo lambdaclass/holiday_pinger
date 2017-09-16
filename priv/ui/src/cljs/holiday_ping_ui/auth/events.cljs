@@ -29,6 +29,10 @@
          path         (get-in cofx [:location :path])
          auth-route?  (routes/auth-route? path)]
      (cond
+       ;; TODO the first two checks, to redirect on logged/not logged conditions, should probably
+       ;; be done for every navigation; no matter if entering via url or within the app
+       ;; that way back/fw buttons work after login/logout
+       ;; If we do that, then we can remove them from here, and just do navigations
        (and auth-route? logged-in?)
        {:db       db/default-db
         :dispatch [:login-success {:access_token stored-token}]}
@@ -170,17 +174,23 @@
  :country-detect
  [(re-frame/inject-cofx :local-store "country")]
  (fn [{:keys [db local-store]} _]
-   (if local-store
+   (if-not (string/blank? local-store)
      {:db (assoc db :country local-store)}
      {:http-xhrio {:method          :get
                    :uri             "https://freegeoip.net/json/"
                    :timeout         8000
                    :response-format (ajax/json-response-format {:keywords? true})
+                   :on-failure      [:country-detect-failure]
                    :on-success      [:country-detect-success]}})))
 
 (re-frame/reg-event-fx
  :country-detect-success
  (fn [{:keys [db]} [_ country-data]]
    (let [country (:country_name country-data)]
-     {:db              (assoc db :country country)
+     {:db (assoc db :country country)
       :set-local-store ["country" country]})))
+
+(re-frame/reg-event-db
+ :country-detect-failure
+ ;; if request fails leave it empty (but not nil)
+ (fn [db _] (assoc db :country "")))
