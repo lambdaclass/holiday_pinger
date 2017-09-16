@@ -2,12 +2,18 @@
 
 ## Erlang vs Elixir
 
+why we prefer to learn elrang/show erlang skills before elixir.
+
 ## Supervisor structure
 
 one simple one for one to start.
 possibly another simple one for one to isolate different channels
 why not gen event
 why not pools
+
+## API
+### identifiers
+db id vs names vs uuid
 
 ## Database decisions
 

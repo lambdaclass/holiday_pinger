@@ -46,9 +46,12 @@
         :remove-local-store "access_token"}
 
        stored-token
-       {:db       db/default-db
-        :dispatch [:store-token stored-token]}
-
+       {:db         db/default-db
+        :dispatch-n [[:store-token stored-token]
+                     ;; at least for now the views/events are built assuming the channel list is always loaded upon entering the app
+                     ;; we force here since the entering point is not the channel list in this case
+                     ;; we should probably make it so this is not necessary (i.e. all the view loading events know how to get what's necessary to show it)
+                     [:channel-load]]}
        :else
        {:db db/default-db}))))
 
@@ -80,8 +83,7 @@
  (fn
    [{:keys [db]} [_ token]]
    {:db              (assoc db :access-token token)
-    :set-local-store ["access_token" token]
-    :dispatch        [:channel-load]})) ;; TODO try to remove this, load in the view instead
+    :set-local-store ["access_token" token]}))
 
 (re-frame/reg-event-fx
  :logout
@@ -171,7 +173,7 @@
    (if local-store
      {:db (assoc db :country local-store)}
      {:http-xhrio {:method          :get
-                   :uri             "http://freegeoip.net/json/"
+                   :uri             "https://freegeoip.net/json/"
                    :timeout         8000
                    :response-format (ajax/json-response-format {:keywords? true})
                    :on-success      [:country-detect-success]}})))

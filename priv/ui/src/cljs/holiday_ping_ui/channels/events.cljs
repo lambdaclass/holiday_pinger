@@ -1,7 +1,12 @@
 (ns holiday-ping-ui.channels.events
   (:require [clojure.string :as string]
             [re-frame.core :as re-frame]
-            [ajax.core :as ajax]))
+            [ajax.core :as ajax]
+            [holiday-ping-ui.common.events :as events]))
+
+(defmethod events/load-view
+  :channel-list [_ _]
+  {:dispatch [:channel-load]})
 
 (re-frame/reg-event-fx
  :channel-load
