@@ -5,24 +5,36 @@
             [holiday-ping-ui.common.events :as events]))
 
 (defmethod events/load-view
-  :channel-list [_ _]
-  {:dispatch [:channel-load]})
+  :channel-list
+  [{:keys [db]} _]
+  {:http-xhrio {:method          :get
+                :uri             "/api/channels"
+                :timeout         8000
+                :headers         {:authorization (str "Bearer " (:access-token db))}
+                :response-format (ajax/json-response-format {:keywords? true})
+                :on-success      [:channel-list-success]
+                :on-failure      [:error-message "Channel loading failed."]}})
 
-(re-frame/reg-event-fx
- :channel-load
- (fn [{:keys [db]} _]
-   {:http-xhrio {:method          :get
-                 :uri             "/api/channels"
-                 :timeout         8000
-                 :headers         {:authorization (str "Bearer " (:access-token db))}
-                 :response-format (ajax/json-response-format {:keywords? true})
-                 :on-success      [:channel-load-success]
-                 :on-failure      [:error-message "Channel loading failed."]}}))
+(defmethod events/load-view
+  :channel-edit
+  [{:keys [db]} [_ channel-name]]
+  {:http-xhrio {:method          :get
+                :uri             (str "/api/channels/" channel-name)
+                :timeout         8000
+                :headers         {:authorization (str "Bearer " (:access-token db))}
+                :response-format (ajax/json-response-format {:keywords? true})
+                :on-success      [:channel-detail-success]
+                :on-failure      [:error-message "Channel loading failed."]}})
 
 (re-frame/reg-event-db
- :channel-load-success
+ :channel-list-success
  (fn [db [_ response]]
    (assoc db :channels response)))
+
+(re-frame/reg-event-db
+ :channel-detail-success
+ (fn [db [_ response]]
+   (assoc db :channel-to-edit response)))
 
 (re-frame/reg-event-fx
  :channel-delete
@@ -79,14 +91,8 @@
                            :format          (ajax/json-request-format)
                            :params          params
                            :response-format (ajax/text-response-format)
-                           :on-success      [:channel-submit-success]
+                           :on-success      [:navigate :channel-list]
                            :on-failure      [:error-message "Channel submission failed"]}}))))
-
-(re-frame/reg-event-fx
- :channel-submit-success
- (fn [_ _]
-   {:dispatch-n [[:channel-load]
-                 [:navigate :channel-list]]}))
 
 (re-frame/reg-event-db
  :channel-test-start

@@ -63,7 +63,7 @@
 
 (defn add-button
   []
-  [:p.has-text-centered
+  [:div.has-text-centered
    [:a.button.is-success {:href (routes/url-for :channel-create)}
     [:span.icon.is-small [:i.fa.fa-plus]]
     [:span "New Channel"]]])
@@ -78,6 +78,7 @@
       [:p.subtitle.has-text-centered
        "Setup the channels to send your holiday reminders."]
       [add-button]
+      [:br]
       (when-not (empty? channels)
         [:table.table.is-fullwidth.is-outlined
          [:tbody (map item-view channels)]])]]))
@@ -133,7 +134,7 @@
 
 (defn edit-view
   [channel-name]
-  (if-let [channel @(re-frame/subscribe [:channel channel-name])]
+  (if-let [channel @(re-frame/subscribe [:channel-to-edit])]
     [:div
      [views/section-size :is-half
       [:p.subtitle "Fill the channel configuration"]

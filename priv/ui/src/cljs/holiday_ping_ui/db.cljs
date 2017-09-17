@@ -11,6 +11,7 @@
    :holidays-saved             nil
    :holidays-edited            nil
    :channels                   nil
+   :channel-to-edit            nil
    :channel-to-test            nil
    :calendar-selected-year     (time/year (time/today))
    :calendar-selected-day      nil

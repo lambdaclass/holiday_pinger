@@ -11,8 +11,6 @@
             [holiday-ping-ui.auth.token :as token]))
 
 ;;; AUTH EVENTS
-
-;; if we get to remove all auth stuff from this, move it back to common.events
 (re-frame/reg-event-fx
  :initialize-db
  [(re-frame/inject-cofx :local-store "access_token")
@@ -29,11 +27,8 @@
         :dispatch           [:navigate :login]}
 
        stored-token
-       {:db       (assoc db/default-db :access-token stored-token)
-        ;; at least for now the views/events are built assuming the channel list is always loaded upon entering the app
-        ;; we force here since the entering point is not the channel list in this case
-        ;; we should probably make it so this is not necessary (i.e. all the view loading events know how to get what's necessary to show it)
-        :dispatch [:channel-load]}
+       {:db (assoc db/default-db :access-token stored-token)}
+
        :else
        {:db db/default-db}))))
 
