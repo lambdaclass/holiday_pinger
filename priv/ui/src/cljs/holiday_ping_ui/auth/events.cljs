@@ -7,17 +7,12 @@
             [bouncer.core :as bouncer]
             [bouncer.validators :as validators]
             [holiday-ping-ui.db :as db]
-            [holiday-ping-ui.routes :as routes]
             [holiday-ping-ui.common.events :as events]
             [holiday-ping-ui.auth.token :as token]))
 
 ;;; AUTH EVENTS
-(defn- github-callback?
-  [path]
-  (= (:handler (routes/parse-url path)) :github-loading))
 
-
-;; TODO when this is simplified enough, may make sense to move it to common
+;; if we get to remove all auth stuff from this, move it back to common.events
 (re-frame/reg-event-fx
  :initialize-db
  [(re-frame/inject-cofx :local-store "access_token")
@@ -26,14 +21,8 @@
    (let [stored-token (:local-store cofx)
          expired-db   (-> db/default-db
                           (dissoc :access-token)
-                          (assoc :error-message "Your session has expired, please log in again."))
-         path         (get-in cofx [:location :path])]
+                          (assoc :error-message "Your session has expired, please log in again."))]
      (cond
-       ;; FIXME this event should be a side effect of the callback view, instead of a special case here
-       (github-callback? path)
-       {:db       db/default-db
-        :dispatch [:github-code-submit]}
-
        (and stored-token (token/expired? stored-token))
        {:db                 expired-db
         :remove-local-store "access_token"
@@ -152,7 +141,8 @@
 
 (defmethod events/load-view
   :github-loading [_ _]
-  {:dispatch [:country-detect]})
+  {:dispatch-n [[:github-code-submit]
+                [:country-detect]]})
 
 (re-frame/reg-event-fx
  :country-detect
