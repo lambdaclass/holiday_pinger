@@ -36,12 +36,10 @@
   [view & args]
   (pushy/set-token! history (apply url-for view args)))
 
-;; TODO does this get string or keyword?
 (defn auth-route?
   "Return true if the given route is intended for unauthorized users
   (loging, register, etc.)."
-  [location]
-  (let [view (:handler (parse-url location))]
-    (contains?
-     #{:login :register :github-loading :github-register :github-callback}
-     view)))
+  [view]
+  (contains?
+   #{:login :register :github-loading :github-register :github-callback}
+   view))

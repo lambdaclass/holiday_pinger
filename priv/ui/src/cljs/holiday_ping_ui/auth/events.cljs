@@ -16,6 +16,8 @@
   [path]
   (= (:handler (routes/parse-url path)) :github-loading))
 
+
+;; TODO when this is simplified enough, may make sense to move it to common
 (re-frame/reg-event-fx
  :initialize-db
  [(re-frame/inject-cofx :local-store "access_token")
@@ -25,37 +27,24 @@
          expired-db   (-> db/default-db
                           (dissoc :access-token)
                           (assoc :error-message "Your session has expired, please log in again."))
-         logged-in?   (and stored-token (not (token/expired? stored-token)))
-         path         (get-in cofx [:location :path])
-         auth-route?  (routes/auth-route? path)]
+         path         (get-in cofx [:location :path])]
      (cond
-       ;; TODO the first two checks, to redirect on logged/not logged conditions, should probably
-       ;; be done for every navigation; no matter if entering via url or within the app
-       ;; that way back/fw buttons work after login/logout
-       ;; If we do that, then we can remove them from here, and just do navigations
-       (and auth-route? logged-in?)
-       {:db       db/default-db
-        :dispatch [:login-success {:access_token stored-token}]}
-
-       (and (not auth-route?) (not logged-in?))
-       {:db       db/default-db
-        :dispatch [:navigate :login]}
-
+       ;; FIXME this event should be a side effect of the callback view, instead of a special case here
        (github-callback? path)
        {:db       db/default-db
         :dispatch [:github-code-submit]}
 
        (and stored-token (token/expired? stored-token))
        {:db                 expired-db
-        :remove-local-store "access_token"}
+        :remove-local-store "access_token"
+        :dispatch           [:navigate :login]}
 
        stored-token
-       {:db         db/default-db
-        :dispatch-n [[:store-token stored-token]
-                     ;; at least for now the views/events are built assuming the channel list is always loaded upon entering the app
-                     ;; we force here since the entering point is not the channel list in this case
-                     ;; we should probably make it so this is not necessary (i.e. all the view loading events know how to get what's necessary to show it)
-                     [:channel-load]]}
+       {:db       (assoc db/default-db :access-token stored-token)
+        ;; at least for now the views/events are built assuming the channel list is always loaded upon entering the app
+        ;; we force here since the entering point is not the channel list in this case
+        ;; we should probably make it so this is not necessary (i.e. all the view loading events know how to get what's necessary to show it)
+        :dispatch [:channel-load]}
        :else
        {:db db/default-db}))))
 
@@ -78,16 +67,11 @@
 
 (re-frame/reg-event-fx
  :login-success
- (fn [_ [_ response]]
-   {:dispatch-n [[:store-token (:access_token response)]
-                 [:navigate :channel-list]]}))
-
-(re-frame/reg-event-fx
- :store-token
- (fn
-   [{:keys [db]} [_ token]]
-   {:db              (assoc db :access-token token)
-    :set-local-store ["access_token" token]}))
+ (fn [{:keys [db]} [_ response]]
+   (let [token (:access_token response)]
+     {:dispatch        [:navigate :channel-list]
+      :db              (assoc db :access-token token)
+      :set-local-store ["access_token" token]})))
 
 (re-frame/reg-event-fx
  :logout

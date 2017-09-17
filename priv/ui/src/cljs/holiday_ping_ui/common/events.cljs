@@ -39,12 +39,22 @@
 (re-frame/reg-event-fx
  :switch-view
  (fn [{:keys [db]} [_ new-view & args]]
-   {:dispatch (apply vector :load-view new-view args)
-    :db       (-> db
-                  (assoc :current-view new-view)
-                  (assoc :current-view-args args)
-                  (dissoc :error-message)
-                  (dissoc :success-message))}))
+   (let [logged-in?  (:access-token db)
+         auth-route? (routes/auth-route? new-view)]
+     (cond
+       (and auth-route? logged-in?)
+       {:dispatch [:navigate :channel-list]}
+
+       (and (not auth-route?) (not logged-in?))
+       {:dispatch [:navigate :login]}
+
+       :else
+       {:dispatch (apply vector :load-view new-view args)
+        :db       (-> db
+                      (assoc :current-view new-view)
+                      (assoc :current-view-args args)
+                      (dissoc :error-message)
+                      (dissoc :success-message))}))))
 
 (re-frame/reg-event-fx
  :navigate
