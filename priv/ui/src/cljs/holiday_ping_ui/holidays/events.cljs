@@ -16,7 +16,7 @@
                 :headers         {:authorization (str "Bearer " (:access-token db))}
                 :response-format (ajax/json-response-format {:keywords? true})
                 :on-success      [:holidays-load-success]
-                :on-failure      [:error-message "Holidays loading failed."]}})
+                :on-failure      [:switch-view :not-found]}})
 
 (re-frame/reg-event-db
  :holidays-load-success
@@ -24,6 +24,7 @@
    (let [sorted   (sort-by :date response)
          holidays (map #(update % :date format/string-to-date) sorted)]
      (-> db
+         (assoc :loading-view? false)
          (assoc :holidays-saved holidays)
          (assoc :holidays-edited holidays)))))
 

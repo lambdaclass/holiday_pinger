@@ -6,6 +6,8 @@
                  [cljs-ajax "0.6.0"]
                  [day8.re-frame/http-fx "0.1.4"]
                  [com.andrewmcveigh/cljs-time "0.5.0"]
+                 [bidi "2.1.2"]
+                 [kibu/pushy "0.3.8"]
                  [bouncer "1.0.1"]]
 
   :plugins [[lein-cljsbuild "1.1.4"]]

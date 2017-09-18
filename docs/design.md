@@ -2,12 +2,18 @@
 
 ## Erlang vs Elixir
 
+why we prefer to learn elrang/show erlang skills before elixir.
+
 ## Supervisor structure
 
 one simple one for one to start.
 possibly another simple one for one to isolate different channels
 why not gen event
 why not pools
+
+## API
+### identifiers
+db id vs names vs uuid
 
 ## Database decisions
 
@@ -65,6 +71,10 @@ mikethompson [3:34 AM]
 I think the only danger arises if this process is not conscious - if someone creates a dogs breakfast of an architecture and doesn;t even know they've done it.  I've had MANY people privately admit that's what happened to them ... and then they swapped to re-frame to get some structure back.
 So, my advice is .... if your application is a little more complicated, be sure to make a conscious choice around architecture, because one way or another you'll be using one. (edited)
 
+for a strongly structured and opinionated framework, it feels lacking
+a standarad for routing and handling the data loading associated with a
+each route. It's a tricky thing to implement on a per app basis.
+
 ## Random notes
 
 - Sometimes you need the UI in order to better understand the model. You need to be able
@@ -77,3 +87,11 @@ entities, and what's more when we did the code turned out to be simpler
 (a supervisor and gen server we had recently introduced became unnecessary)
 
 - This is nothing new, but frontend takes way more time than backend.
+
+- although it's super fun to code a frontend app with cljs, it's great
+to get some experience with react/re-frame, and get in touch with fronted develpment
+again, I have to say I agree on what a bad idea it is to make everything a
+SPA. Apps that don't inherently have a lot of dynamic components (e.g. google docs),
+and instead are more classic (navigation oriented) make you invest a ton of time
+just reproducing the native behavior of the browser and you get little of the benefits
+of using a js framework.

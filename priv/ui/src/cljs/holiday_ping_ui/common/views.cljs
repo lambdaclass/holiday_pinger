@@ -46,9 +46,7 @@
      [:div.container
 
       [:div.navbar-brand
-       [:a.navbar-item.is-size-3.app-title
-        {:href "#" :on-click #(re-frame/dispatch [:switch-view :channel-list])}
-        "HolidayPing"]
+       [:a.navbar-item.is-size-3.app-title {:href "/"} "HolidayPing"]
        [:div.navbar-burger.burger {:data-target "navMenubd"}]]
 
       (when authenticated?
@@ -74,3 +72,21 @@
       [:a {:href "https://github.com/lambdaclass/" :target "_blank"} "LambdaClass"] "."]
      [:p [:a.icon {:href "https://github.com/lambdaclass/holiday_ping"}
           [:i.fa.fa-github]]]]]])
+
+(defn loading-view
+  []
+  [:div
+   [section-size :is-one-third
+    [:div.card
+     [:div.card-content
+      [:div.has-text-centered
+       [:div.subtitle "Mining bitcoins…"]
+       [:a.button.is-medium.is-primary.is-loading
+        [:span "Mining bitcoins"]]]]]]])
+
+(defn not-found-view
+  []
+  [section
+   [:div.has-text-centered
+    [:div.subtitle "The page you are looking for was not found."]
+    [:div.subtitle [:a {:href "/"} "Take me some place safe."]]]])

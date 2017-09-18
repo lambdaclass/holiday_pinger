@@ -2,6 +2,7 @@
   (:require
    [clojure.string :as string]
    [re-frame.core :as re-frame]
+   [holiday-ping-ui.routes :as routes]
    [holiday-ping-ui.common.forms :as forms]
    [holiday-ping-ui.common.views :as views]))
 
@@ -39,34 +40,31 @@
    [:td
     [:div.field.is-pulled-right.has-addons
      [:p.control
-      [:button.button.is-danger.is-small.tooltip
-       {:on-click     #(re-frame/dispatch [:channel-delete name])
-        :data-tooltip "Delete"}
-       [:span.icon.is-small [:i.fa.fa-times]]]]
-
-     [:p.control
-      [:button.button.is-info.is-small.tooltip
-       {:on-click     #(re-frame/dispatch [:switch-view :channel-edit channel])
-        :data-tooltip "Edit"}
-       [:span.icon.is-small [:i.fa.fa-edit]]]]
-
-     [:p.control
       [:button.button.is-small.tooltip
        {:on-click     #(re-frame/dispatch [:channel-test-start channel])
         :data-tooltip "Test channel"}
        [:span.icon.is-small [:i.fa.fa-cogs]]]]
-
      [:p.control
-      [:button.button.is-small.tooltip
-       {:on-click     #(re-frame/dispatch [:switch-view :holidays name])
+      [:a.button.is-small.tooltip
+       {:href         (routes/url-for :holidays :channel name)
         :data-tooltip "Select holidays"}
-       [:span.icon.is-small [:i.fa.fa-calendar]]]]]]])
+       [:span.icon.is-small [:i.fa.fa-calendar]]]]
+     [:p.control
+      [:a.button.is-info.is-small.tooltip
+       {:href         (routes/url-for :channel-edit :channel name)
+        :data-tooltip "Edit"}
+       [:span.icon.is-small [:i.fa.fa-edit]]]]
+     [:p.control
+      [:button.button.is-danger.is-small.tooltip
+       {:on-click     #(re-frame/dispatch [:channel-delete name])
+        :data-tooltip "Delete"}
+       [:span.icon.is-small [:i.fa.fa-times]]]]
+     ]]])
 
 (defn add-button
   []
-  [:p.has-text-centered
-   [:button.button.is-success
-    {:on-click #(re-frame/dispatch [:switch-view :channel-create])}
+  [:div.has-text-centered
+   [:a.button.is-success {:href (routes/url-for :channel-create)}
     [:span.icon.is-small [:i.fa.fa-plus]]
     [:span "New Channel"]]])
 
@@ -79,10 +77,11 @@
       [views/message-view]
       [:p.subtitle.has-text-centered
        "Setup the channels to send your holiday reminders."]
+      [add-button]
+      [:br]
       (when-not (empty? channels)
         [:table.table.is-fullwidth.is-outlined
-         [:tbody (map item-view channels)]])
-      [add-button]]]))
+         [:tbody (map item-view channels)]])]]))
 
 (defn add-view []
   [:div
@@ -91,7 +90,7 @@
     [views/message-view]
     [forms/form-view {:submit-text "Save"
                       :on-submit   [:channel-submit]
-                      :on-cancel   [:switch-view :channel-list]
+                      :on-cancel   [:navigate :channel-list]
                       :fields      [{:key      :name
                                      :type     "text"
                                      :required true}
@@ -134,56 +133,57 @@
                                                {:text "A week before" :value 7}]}]}]]])
 
 (defn edit-view
-  [channel]
-  [:div
-   [views/section-size :is-half
-    [:p.subtitle "Fill the channel configuration"]
-    [views/message-view]
-    [forms/form-view {:submit-text "Save"
-                      :on-submit   [:channel-submit]
-                      :on-cancel   [:switch-view :channel-list]
-                      :fields      [{:key      :name
-                                     :type     "text"
-                                     :value    (:name channel)
-                                     :disabled true}
-                                    {:key      :type
-                                     :type     "select"
-                                     :options  ["slack"]
-                                     :value    "slack"
-                                     :required true}
-                                    {:key       :url
-                                     :type      "text"
-                                     :label     "Slack hook url"
-                                     :value     (get-in channel [:configuration :url])
-                                     :help-text [:span "You can get the hook url "
-                                                 [:a {:href   "https://my.slack.com/services/new/incoming-webhook/"
-                                                      :target "blank"} "here."]]
-                                     :required  true}
-                                    {:key       :channels
-                                     :type      "text"
-                                     :label     "Targets"
-                                     :value     (string/join " " (get-in channel [:configuration :channels]))
-                                     :required  true
-                                     :help-text "Space separated, use \"#name\" for channels and \"@name\" for users."}
-                                    {:key   :username
-                                     :type  "text"
-                                     :value (get-in channel [:configuration :username])
-                                     :label "Bot username"}
-                                    {:key   :emoji
-                                     :type  "text"
-                                     :value (get-in channel [:configuration :emoji])
-                                     :label "Bot emoji"}
-                                    {:key     :same-day
-                                     :label   "Send a reminder on the same day."
-                                     :type    "select"
-                                     :value   (:same_day channel)
-                                     :options [{:text "Yes" :value true}
-                                               {:text "Don't send" :value false}]}
-                                    {:key     :days-before
-                                     :label   "Send a reminder before the holiday."
-                                     :type    "select"
-                                     :value   (or(:days_before channel) 0)
-                                     :options [{:text "Don't send" :value 0}
-                                               {:text "The day before" :value 1}
-                                               {:text "Three days before" :value 3}
-                                               {:text "A week before" :value 7}]}]}]]])
+  [channel-name]
+  (let [channel @(re-frame/subscribe [:channel-to-edit])]
+    [:div
+     [views/section-size :is-half
+      [:p.subtitle "Fill the channel configuration"]
+      [views/message-view]
+      [forms/form-view {:submit-text "Save"
+                        :on-submit   [:channel-submit]
+                        :on-cancel   [:navigate :channel-list]
+                        :fields      [{:key      :name
+                                       :type     "text"
+                                       :value    (:name channel)
+                                       :disabled true}
+                                      {:key      :type
+                                       :type     "select"
+                                       :options  ["slack"]
+                                       :value    "slack"
+                                       :required true}
+                                      {:key       :url
+                                       :type      "text"
+                                       :label     "Slack hook url"
+                                       :value     (get-in channel [:configuration :url])
+                                       :help-text [:span "You can get the hook url "
+                                                   [:a {:href   "https://my.slack.com/services/new/incoming-webhook/"
+                                                        :target "blank"} "here."]]
+                                       :required  true}
+                                      {:key       :channels
+                                       :type      "text"
+                                       :label     "Targets"
+                                       :value     (string/join " " (get-in channel [:configuration :channels]))
+                                       :required  true
+                                       :help-text "Space separated, use \"#name\" for channels and \"@name\" for users."}
+                                      {:key   :username
+                                       :type  "text"
+                                       :value (get-in channel [:configuration :username])
+                                       :label "Bot username"}
+                                      {:key   :emoji
+                                       :type  "text"
+                                       :value (get-in channel [:configuration :emoji])
+                                       :label "Bot emoji"}
+                                      {:key     :same-day
+                                       :label   "Send a reminder on the same day."
+                                       :type    "select"
+                                       :value   (:same_day channel)
+                                       :options [{:text "Yes" :value true}
+                                                 {:text "Don't send" :value false}]}
+                                      {:key     :days-before
+                                       :label   "Send a reminder before the holiday."
+                                       :type    "select"
+                                       :value   (or(:days_before channel) 0)
+                                       :options [{:text "Don't send" :value 0}
+                                                 {:text "The day before" :value 1}
+                                                 {:text "Three days before" :value 3}
+                                                 {:text "A week before" :value 7}]}]}]]]))

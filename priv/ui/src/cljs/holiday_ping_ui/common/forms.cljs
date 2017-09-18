@@ -24,8 +24,8 @@
 (defmethod input-view "select"
   [form field]
   [:div.select
-   [:select {:on-change     (field-handler form (:key field))
-             :default-value (get field :value "")}
+   [:select {:on-change (field-handler form (:key field))
+             :value     (get field :value "")}
     (for [option (:options field)
           :let   [value (get option :value option)
                   text  (get option :text option)]]
@@ -33,11 +33,11 @@
 
 (defmethod input-view :default
   [form {:keys [key type disabled] :as field}]
-  (let [attrs {:type          type
-               :name          (field-name field)
-               :placeholder   (field-name field)
-               :default-value (get @form key)
-               :on-change     (field-handler form key)}]
+  (let [attrs {:type        type
+               :name        (field-name field)
+               :placeholder (field-name field)
+               :value       (get @form key)
+               :on-change   (field-handler form key)}]
     [:input.input (if disabled
                     (assoc attrs :disabled true)
                     attrs)]))

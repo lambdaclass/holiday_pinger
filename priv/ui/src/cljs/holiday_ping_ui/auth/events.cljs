@@ -7,13 +7,10 @@
             [bouncer.core :as bouncer]
             [bouncer.validators :as validators]
             [holiday-ping-ui.db :as db]
+            [holiday-ping-ui.common.events :as events]
             [holiday-ping-ui.auth.token :as token]))
 
 ;;; AUTH EVENTS
-(defn- github-callback?
-  [{:keys [path]}]
-  (string/includes? path "/oauth/github/callback"))
-
 (re-frame/reg-event-fx
  :initialize-db
  [(re-frame/inject-cofx :local-store "access_token")
@@ -24,24 +21,16 @@
                           (dissoc :access-token)
                           (assoc :error-message "Your session has expired, please log in again."))]
      (cond
-       (github-callback? (:location cofx)) ;; TODO when url routing is in place, stop doing it manually here
-       {:db         db/default-db
-        :dispatch-n [[:switch-view :github-loading]
-                     [:github-code-submit]]}
-
        (and stored-token (token/expired? stored-token))
        {:db                 expired-db
         :remove-local-store "access_token"
-        :dispatch           [:country-detect]}
+        :dispatch           [:navigate :login]}
 
        stored-token
-       {:db         db/default-db
-        :dispatch-n [[:country-detect]
-                     [:auth-success {:access_token stored-token}]]}
+       {:db (assoc db/default-db :access-token stored-token)}
 
        :else
-       {:db       db/default-db
-        :dispatch [:country-detect]}))))
+       {:db db/default-db}))))
 
 (defn- basic-auth-header
   [user password]
@@ -57,26 +46,22 @@
                  :timeout         8000
                  :headers         {:authorization (basic-auth-header email password)}
                  :response-format (ajax/json-response-format {:keywords? true})
-                 :on-success      [:auth-success]
+                 :on-success      [:login-success]
                  :on-failure      [:error-message "Authentication failed"]}}))
 
 (re-frame/reg-event-fx
- :auth-success
- (fn
-   [{:keys [db]} [_ response]]
-   (let [token  (:access_token response)
-         new-db (assoc db :access-token token)]
-     {:db              new-db
-      :set-local-store ["access_token" token]
-      :dispatch-n      [[:channel-load]
-                        [:switch-view :channel-list]]})))
+ :login-success
+ (fn [{:keys [db]} [_ response]]
+   (let [token (:access_token response)]
+     {:dispatch        [:navigate :channel-list]
+      :db              (assoc db :access-token token)
+      :set-local-store ["access_token" token]})))
 
 (re-frame/reg-event-fx
  :logout
  (fn [{:keys [db]} _]
-   {:db                 (-> db
-                            (dissoc :access-token)
-                            (assoc :current-view :login))
+   {:db                 (dissoc db :access-token)
+    :dispatch           [:navigate :login]
     :remove-local-store "access_token"}))
 
 (re-frame/reg-event-fx
@@ -114,24 +99,22 @@
  [(re-frame/inject-cofx :location)]
  (fn [{:keys [location]} _]
    (let [code (-> location :query (string/split #"=") last)]
-     {:dispatch     [:country-detect]
-      :set-location "/"
-      :http-xhrio   {:method          :post
-                     :uri             "/api/auth/github/code"
-                     :timeout         8000
-                     :format          (ajax/json-request-format)
-                     :params          {:code code}
-                     :response-format (ajax/json-response-format {:keywords? true})
-                     :on-success      [:github-code-success]
-                     :on-failure      [:error-message "GitHub authentication failed"]}})))
+     {:http-xhrio {:method          :post
+                   :uri             "/api/auth/github/code"
+                   :timeout         8000
+                   :format          (ajax/json-request-format)
+                   :params          {:code code}
+                   :response-format (ajax/json-response-format {:keywords? true})
+                   :on-success      [:github-code-success]
+                   :on-failure      [:error-message "GitHub authentication failed"]}})))
 
 (re-frame/reg-event-fx
  :github-code-success
  (fn [{:keys [db]} [_ response]]
    (if (:new_user response)
-     {:dispatch [:switch-view :github-register]
+     {:dispatch [:navigate :github-register]
       :db       (assoc db :registration-token (:registration_token response))}
-     {:dispatch [:auth-success response]})))
+     {:dispatch [:login-success response]})))
 
 (re-frame/reg-event-fx
  :github-register-submit
@@ -143,25 +126,47 @@
                  :params          form
                  :response-format (ajax/json-response-format {:keywords? true})
                  :headers         {:authorization (str "Bearer " (:registration-token db))}
-                 :on-success      [:auth-success]
+                 :on-success      [:login-success]
                  :on-failure      [:error-message "GitHub registration failed"]}
     :db         (dissoc db :registration-token)}))
+
+(defmethod events/load-view
+  :register [_ _]
+  {:dispatch [:country-detect]})
+
+(defmethod events/load-view
+  :github-register [_ _]
+  {:dispatch [:country-detect]})
+
+(defmethod events/load-view
+  :github-callback [_ _]
+  {:dispatch [:github-code-submit]})
 
 (re-frame/reg-event-fx
  :country-detect
  [(re-frame/inject-cofx :local-store "country")]
  (fn [{:keys [db local-store]} _]
    (if local-store
-     {:db (assoc db :country local-store)}
+     {:db (-> db
+              (assoc :country local-store)
+              (assoc :loading-view? false))}
      {:http-xhrio {:method          :get
-                   :uri             "http://freegeoip.net/json/"
+                   :uri             "https://freegeoip.net/json/"
                    :timeout         8000
                    :response-format (ajax/json-response-format {:keywords? true})
+                   :on-failure      [:country-detect-failure]
                    :on-success      [:country-detect-success]}})))
 
 (re-frame/reg-event-fx
  :country-detect-success
  (fn [{:keys [db]} [_ country-data]]
    (let [country (:country_name country-data)]
-     {:db              (assoc db :country country)
+     {:db              (-> db
+                           (assoc :country country)
+                           (assoc :loading-view? false))
       :set-local-store ["country" country]})))
+
+(re-frame/reg-event-db
+ :country-detect-failure
+ (fn [db _]
+   (assoc db :loading-view? false)))
