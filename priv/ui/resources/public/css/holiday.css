@@ -32,3 +32,7 @@ button.date-item {
     font-size: 0.85rem
 
 }
+
+.breadcrumb ul :first-child a {
+    padding: 0.5em 0.75em 0.5em 0em;
+}

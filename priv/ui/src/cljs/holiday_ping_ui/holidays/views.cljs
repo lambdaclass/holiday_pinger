@@ -2,6 +2,7 @@
   (:require
    [re-frame.core :as re-frame]
    [holiday-ping-ui.common.views :as views]
+   [holiday-ping-ui.routes :as routes]
    [holiday-ping-ui.holidays.calendar :as calendar]))
 
 (defn holidays-year-switch
@@ -107,7 +108,10 @@
     [:div
      [edit-holiday-modal]
      [views/section
-      [:p.subtitle "Select the days of the year for which you want reminders."]
+      [views/breadcrumbs [["Channels" "/"]
+                          [channel-name (routes/url-for :channel-edit :channel channel-name)]
+                          ["Holidays"]]]
+      [:p.subtitle.has "Select the days of the year for which you want reminders."]
       [holiday-controls channel-name current-year next-year selected-year]
       [:div (when-not (= selected-year current-year) {:hidden true})
        [calendar/year-view current-year]]

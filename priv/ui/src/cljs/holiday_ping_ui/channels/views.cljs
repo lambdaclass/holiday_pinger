@@ -86,57 +86,62 @@
 (defn add-view []
   [:div
    [views/section-size :is-half
-    [:p.subtitle "Fill the channel configuration"]
-    [views/message-view]
-    [forms/form-view {:submit-text "Save"
-                      :on-submit   [:channel-submit]
-                      :on-cancel   [:navigate :channel-list]
-                      :fields      [{:key      :name
-                                     :type     "text"
-                                     :required true}
-                                    {:key      :type
-                                     :type     "select"
-                                     :options  ["slack"]
-                                     :value    "slack"
-                                     :required true}
-                                    {:key       :url
-                                     :type      "text"
-                                     :label     "Slack hook url"
-                                     :help-text [:span "You can get the hook url "
-                                                 [:a {:href   "https://my.slack.com/services/new/incoming-webhook/"
-                                                      :target "blank"} "here."]]
-                                     :required  true}
-                                    {:key       :channels
-                                     :type      "text"
-                                     :label     "Targets"
-                                     :required  true
-                                     :help-text "Space separated, use \"#name\" for channels and \"@name\" for users."}
-                                    {:key   :username
-                                     :type  "text"
-                                     :label "Bot username"}
-                                    {:key   :emoji
-                                     :type  "text"
-                                     :label "Bot emoji"}
-                                    {:key     :same-day
-                                     :label   "Send a reminder on the same day."
-                                     :type    "select"
-                                     :value   true
-                                     :options [{:text "Yes" :value true}
-                                               {:text "Don't send" :value false}]}
-                                    {:key     :days-before
-                                     :label   "Send a reminder before the holiday."
-                                     :type    "select"
-                                     :value   0
-                                     :options [{:text "Don't send" :value 0}
-                                               {:text "The day before" :value 1}
-                                               {:text "Three days before" :value 3}
-                                               {:text "A week before" :value 7}]}]}]]])
+    [views/breadcrumbs [["Channels" "/"]
+                        ["New"]]]
+    [:div
+     [:p.subtitle "Fill the channel configuration"]
+     [views/message-view]
+     [forms/form-view {:submit-text "Save"
+                       :on-submit   [:channel-submit]
+                       :on-cancel   [:navigate :channel-list]
+                       :fields      [{:key      :name
+                                      :type     "text"
+                                      :required true}
+                                     {:key      :type
+                                      :type     "select"
+                                      :options  ["slack"]
+                                      :value    "slack"
+                                      :required true}
+                                     {:key       :url
+                                      :type      "text"
+                                      :label     "Slack hook url"
+                                      :help-text [:span "You can get the hook url "
+                                                  [:a {:href   "https://my.slack.com/services/new/incoming-webhook/"
+                                                       :target "blank"} "here."]]
+                                      :required  true}
+                                     {:key       :channels
+                                      :type      "text"
+                                      :label     "Targets"
+                                      :required  true
+                                      :help-text "Space separated, use \"#name\" for channels and \"@name\" for users."}
+                                     {:key   :username
+                                      :type  "text"
+                                      :label "Bot username"}
+                                     {:key   :emoji
+                                      :type  "text"
+                                      :label "Bot emoji"}
+                                     {:key     :same-day
+                                      :label   "Send a reminder on the same day."
+                                      :type    "select"
+                                      :value   true
+                                      :options [{:text "Yes" :value true}
+                                                {:text "Don't send" :value false}]}
+                                     {:key     :days-before
+                                      :label   "Send a reminder before the holiday."
+                                      :type    "select"
+                                      :value   0
+                                      :options [{:text "Don't send" :value 0}
+                                                {:text "The day before" :value 1}
+                                                {:text "Three days before" :value 3}
+                                                {:text "A week before" :value 7}]}]}]]]])
 
 (defn edit-view
   [channel-name]
   (let [channel @(re-frame/subscribe [:channel-to-edit])]
     [:div
      [views/section-size :is-half
+      [views/breadcrumbs [["Channels" "/"]
+                          [channel-name (routes/url-for :channel-edit :channel channel-name)]]]
       [:p.subtitle "Fill the channel configuration"]
       [views/message-view]
       [forms/form-view {:submit-text "Save"

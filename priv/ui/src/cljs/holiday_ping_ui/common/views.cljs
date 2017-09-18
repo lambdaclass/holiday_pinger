@@ -90,3 +90,11 @@
    [:div.has-text-centered
     [:div.subtitle "The page you are looking for was not found."]
     [:div.subtitle [:a {:href "/"} "Take me some place safe."]]]])
+
+(defn breadcrumbs
+  [items]
+  [:div.breadcrumb.has-succeeds-separator
+   [:ul
+    (for [[text href] (butlast items)]
+      [:li {:key text }[:a {:href href} text]])
+    [:li.is-active [:a (-> items last first)]]]])
