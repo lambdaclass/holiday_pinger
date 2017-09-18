@@ -5,7 +5,8 @@
 
 ;; maybe slugify names instead of having to put a regex here?
 (def app-routes ["/" [[""                                         :channel-list]
-                      ["channels/new"                             :channel-create]
+                      ["channels/new"                             :channel-type-select]
+                      [["channels/new/" :type]                    :channel-create]
                       [["channels/" [#".+" :channel] "/edit"]     :channel-edit]
                       [["channels/" [#".+" :channel] "/holidays"] :holidays]
                       ["login"                                    :login]

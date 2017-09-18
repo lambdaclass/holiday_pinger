@@ -2,6 +2,7 @@
   (:require
    [clojure.string :as string]
    [re-frame.core :as re-frame]
+   [reagent.core  :as reagent]
    [holiday-ping-ui.routes :as routes]
    [holiday-ping-ui.common.forms :as forms]
    [holiday-ping-ui.common.views :as views]))
@@ -64,7 +65,7 @@
 (defn add-button
   []
   [:div.has-text-centered
-   [:a.button.is-success {:href (routes/url-for :channel-create)}
+   [:a.button.is-success {:href (routes/url-for :channel-type-select)}
     [:span.icon.is-small [:i.fa.fa-plus]]
     [:span "New Channel"]]])
 
@@ -83,6 +84,109 @@
         [:table.table.is-fullwidth.is-outlined
          [:tbody (map item-view channels)]])]]))
 
+(defn type-select-view
+  []
+  [views/breadcrumbs [["Channels" "/"]
+                      ["New"]]]
+  [views/section
+   [:p.subtitle "Select the type of the channel you want to use."]
+   [:p "I'll make this prettier, promise"]
+   [:p [:a {:href (routes/url-for :channel-create :type "slack")} "Slack"]]
+   [:p [:a {:href (routes/url-for :channel-create :type "webhook")} "Webhook"]]
+   [:p [:a {:href (routes/url-for :channel-create :type "email")} "Email"]]
+   ])
+
+(defn slack-config-form
+  []
+  [:p "slack config form"])
+
+(defn webhook-config-form
+  []
+  [:p "webhook config form"])
+
+(defn email-config-form
+  []
+  [:p "email config form"])
+
+(defn reminder-config-form
+  []
+  [:p "reminder config"])
+
+(defn holiday-source-form
+  []
+  [:p "holiday source"])
+
+(defn holiday-config
+  []
+  [:p "calendar"])
+
+(defn wizard-steps
+  [wizard-state step-n]
+  [:div.steps.is-small
+   (for [[i title] [[0 "Channel config"]
+                    [1 "Reminder config"]
+                    [2 "Holiday sources"]
+                    [3 "Calendar"]]]
+     (cond
+       (= i step-n)
+       [:div.step-item.is-active
+        [:div.step-marker]
+        [:div.step-content [:p.step-title title]]]
+
+       (< i step-n)
+       [:div.step-item.is-completed
+
+        [:a.step-marker
+         {:href "#" :on-click #(swap! wizard-state assoc :step-n i)}
+         [:span.icon [:i.fa.fa-check]]]
+        [:div.step-content [:p.step-title title]]]
+
+       (> i step-n)
+       [:div.step-item
+        [:div.step-marker]
+        [:div.step-content [:p.step-title title]]]))])
+
+(defn create-view
+  [type]
+  (let [step-keys    [:channel-config :reminder-config :holidays-source :holidays]
+        wizard-state (reagent/atom {:step-n 0})]
+    (fn []
+      (let [step-n (:step-n @wizard-state)
+            step   (get step-keys step-n)]
+        [:div
+         [views/section-size :is-half
+          [views/breadcrumbs [["Channels" "/"]
+                              ["New"]]]
+          [wizard-steps wizard-state step-n]
+          (case step
+            :channel-config  (case type
+                               "slack"   [slack-config-form]
+                               "webhook" [webhook-config-form]
+                               "email"   [email-config-form])
+            :reminder-config [reminder-config-form]
+            :holidays-source [holiday-source-form]
+            :holidays        [holiday-config])
+          [:nav.level
+           [:div.level-left
+            (when-not (= step :channel-config)
+              [:div.level-item
+               [:button.button
+                {:on-click #(swap! wizard-state update :step-n dec)}
+                [:span.icon.is-small
+                 [:i.fa.fa-chevron-left]]
+                [:span "Prev"]]])]
+           (when-not (= step :holidays)
+             [:div.level-right
+              [:div.level-item
+               [:button.button.is-right
+                {:on-click #(swap! wizard-state update :step-n inc)}
+                [:span "Next"]
+                [:span.icon.is-small
+                 [:i.fa.fa-chevron-right]]]]])]
+
+          ]]))))
+
+;; FIXME remove
 (defn add-view []
   [:div
    [views/section-size :is-half
