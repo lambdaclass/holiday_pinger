@@ -15,7 +15,8 @@
      [:div.card-content
       [:div.has-text-centered
        [:a.button.is-medium.is-primary.is-fullwidth
-        {:href "/oauth/github"}
+        {:data-pushy-ignore true ;; don't try to hadle this uri in the frontend
+         :href              "/oauth/github"}
         [:span.icon.is-medium [:i.fa.fa-github]]
         [:span " Login with GitHub"]]]
       [:hr]
