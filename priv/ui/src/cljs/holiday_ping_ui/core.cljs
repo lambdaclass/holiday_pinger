@@ -26,7 +26,7 @@
             :channel-create  [channels/add-view]
             :login           [auth/login-view]
             :register        [auth/register-view]
-            :github-loading  [auth/github-loading-view]
+            :github-callback [auth/github-loading-view]
             :github-register [auth/github-register-view]
             :holidays        [holidays/holidays-view]})
 
@@ -35,10 +35,13 @@
   []
   (let [current-view      @(re-frame/subscribe [:current-view])
         current-view-args @(re-frame/subscribe [:current-view-args])
+        loading?          @(re-frame/subscribe [:loading-view?])
         [view]            (get views current-view)]
     [:div
      [common/navbar-view]
-     (apply vector view current-view-args)
+     (if loading?
+       [common/loading-view]
+       (apply vector view current-view-args))
      [common/footer-view]]))
 
 (defn dev-setup []

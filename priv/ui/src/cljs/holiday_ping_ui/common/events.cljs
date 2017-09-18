@@ -51,6 +51,7 @@
        :else
        {:dispatch (apply vector :load-view new-view args)
         :db       (-> db
+                      (assoc :loading-view? true)
                       (assoc :current-view new-view)
                       (assoc :current-view-args args)
                       (dissoc :error-message)
@@ -65,13 +66,14 @@
 (defmulti load-view
   "Define an event handler to load data necessary for each specific view.
   This way each section can load its data without having a big handler that
-  knows about all of the."
+  knows about all of the views. The handler needs to set :loading-view? to
+  false when it finishes loading."
   (fn [cofx [view]]
     view))
 
 (defmethod load-view :default
-  [& args]
-  {})
+  [{:keys [db]} _]
+  {:db (assoc db :loading-view? false)})
 
 (re-frame/reg-event-fx
  :load-view

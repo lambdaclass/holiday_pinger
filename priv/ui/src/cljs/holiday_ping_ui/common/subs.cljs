@@ -13,3 +13,4 @@
 (db-subscription :success-message)
 (db-subscription :current-view)
 (db-subscription :current-view-args)
+(db-subscription :loading-view?)

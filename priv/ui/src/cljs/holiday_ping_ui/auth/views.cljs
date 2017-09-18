@@ -34,7 +34,7 @@
        [:a {:href (routes/url-for :register)} "Click here to register."]]]]]])
 
 (defn register-view []
-  (if-let [user-country @(re-frame/subscribe [:country])]
+  (let [user-country @(re-frame/subscribe [:country])]
     [:div
      [views/section-size :is-half
       [:p.subtitle "Please fill your profile information."]
@@ -63,12 +63,10 @@
                                        :required true}]}]
       [:br]
       [:p.has-text-centered "Already registered? "
-       [:a {:href (routes/url-for :login)} "Click here to login."]]]]
-    [views/loading-view]))
+       [:a {:href (routes/url-for :login)} "Click here to login."]]]]))
 
 (defn github-loading-view
-  []
-  [views/loading-view])
+  [])
 
 (defn github-register-view
   []

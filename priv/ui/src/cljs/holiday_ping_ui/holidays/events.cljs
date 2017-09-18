@@ -24,6 +24,7 @@
    (let [sorted   (sort-by :date response)
          holidays (map #(update % :date format/string-to-date) sorted)]
      (-> db
+         (assoc :loading-view? false)
          (assoc :holidays-saved holidays)
          (assoc :holidays-edited holidays)))))
 

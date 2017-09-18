@@ -4,6 +4,7 @@
 (def default-db
   {:current-view               :login
    :current-view-args          []
+   :loading-view?              false
    :error-message              nil
    :success-message            nil
    :access-token               nil

@@ -29,12 +29,16 @@
 (re-frame/reg-event-db
  :channel-list-success
  (fn [db [_ response]]
-   (assoc db :channels response)))
+   (-> db
+       (assoc :channels response)
+       (assoc :loading-view? false))))
 
 (re-frame/reg-event-db
  :channel-detail-success
  (fn [db [_ response]]
-   (assoc db :channel-to-edit response)))
+   (-> db
+       (assoc :channel-to-edit response)
+       (assoc :loading-view? false))))
 
 (re-frame/reg-event-fx
  :channel-delete

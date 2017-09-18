@@ -134,7 +134,7 @@
 
 (defn edit-view
   [channel-name]
-  (if-let [channel @(re-frame/subscribe [:channel-to-edit])]
+  (let [channel @(re-frame/subscribe [:channel-to-edit])]
     [:div
      [views/section-size :is-half
       [:p.subtitle "Fill the channel configuration"]

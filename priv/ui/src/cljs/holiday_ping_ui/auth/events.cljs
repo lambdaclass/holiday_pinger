@@ -135,16 +135,21 @@
   {:dispatch [:country-detect]})
 
 (defmethod events/load-view
-  :github-loading [_ _]
-  {:dispatch-n [[:github-code-submit]
-                [:country-detect]]})
+  :github-register [_ _]
+  {:dispatch [:country-detect]})
+
+(defmethod events/load-view
+  :github-callback [_ _]
+  {:dispatch [:github-code-submit]})
 
 (re-frame/reg-event-fx
  :country-detect
  [(re-frame/inject-cofx :local-store "country")]
  (fn [{:keys [db local-store]} _]
-   (if-not (string/blank? local-store)
-     {:db (assoc db :country local-store)}
+   (if local-store
+     {:db (-> db
+              (assoc :country local-store)
+              (assoc :loading-view? false))}
      {:http-xhrio {:method          :get
                    :uri             "https://freegeoip.net/json/"
                    :timeout         8000
@@ -156,10 +161,12 @@
  :country-detect-success
  (fn [{:keys [db]} [_ country-data]]
    (let [country (:country_name country-data)]
-     {:db (assoc db :country country)
+     {:db              (-> db
+                           (assoc :country country)
+                           (assoc :loading-view? false))
       :set-local-store ["country" country]})))
 
 (re-frame/reg-event-db
  :country-detect-failure
- ;; if request fails leave it empty (but not nil)
- (fn [db _] (assoc db :country "")))
+ (fn [db _]
+   (assoc db :loading-view? false)))

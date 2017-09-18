@@ -11,7 +11,7 @@
                       "login"                                    :login
                       "register"                                 :register
                       "github/profile"                           :github-register
-                      "oauth/github/callback"                    :github-loading
+                      "oauth/github/callback"                    :github-callback
                       }])
 
 (defn parse-url [url]
@@ -41,5 +41,5 @@
   (loging, register, etc.)."
   [view]
   (contains?
-   #{:login :register :github-loading :github-register :github-callback}
+   #{:login :register :github-callback :github-register}
    view))
