@@ -24,7 +24,7 @@
                 :headers         {:authorization (str "Bearer " (:access-token db))}
                 :response-format (ajax/json-response-format {:keywords? true})
                 :on-success      [:channel-detail-success]
-                :on-failure      [:error-message "Channel loading failed."]}})
+                :on-failure      [:switch-view :not-found]}})
 
 (re-frame/reg-event-db
  :channel-list-success
