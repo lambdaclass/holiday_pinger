@@ -83,3 +83,10 @@
        [:div.subtitle "Mining bitcoins…"]
        [:a.button.is-medium.is-primary.is-loading
         [:span "Mining bitcoins"]]]]]]])
+
+(defn not-found-view
+  []
+  [section
+   [:div.has-text-centered
+    [:div.subtitle "The page you are looking for was not found."]
+    [:div.subtitle [:a {:href "/"} "Take me some place safe."]]]])

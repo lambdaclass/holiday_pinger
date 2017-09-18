@@ -4,15 +4,15 @@
             [re-frame.core :as re-frame]))
 
 ;; maybe slugify names instead of having to put a regex here?
-(def app-routes ["/" {""                                         :channel-list
-                      "channels/new"                             :channel-create
-                      ["channels/" [#".+" :channel] "/edit"]     :channel-edit
-                      ["channels/" [#".+" :channel] "/holidays"] :holidays
-                      "login"                                    :login
-                      "register"                                 :register
-                      "github/profile"                           :github-register
-                      "oauth/github/callback"                    :github-callback
-                      }])
+(def app-routes ["/" [[""                                         :channel-list]
+                      ["channels/new"                             :channel-create]
+                      [["channels/" [#".+" :channel] "/edit"]     :channel-edit]
+                      [["channels/" [#".+" :channel] "/holidays"] :holidays]
+                      ["login"                                    :login]
+                      ["register"                                 :register]
+                      ["github/profile"                           :github-register]
+                      ["oauth/github/callback"                    :github-callback]
+                      [true                                       :not-found]]])
 
 (defn parse-url [url]
   (bidi/match-route app-routes url))

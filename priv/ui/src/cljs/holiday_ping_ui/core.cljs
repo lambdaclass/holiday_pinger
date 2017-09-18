@@ -28,7 +28,8 @@
             :register        [auth/register-view]
             :github-callback [auth/github-loading-view]
             :github-register [auth/github-register-view]
-            :holidays        [holidays/holidays-view]})
+            :holidays        [holidays/holidays-view]
+            :not-found       [common/not-found-view]})
 
 (defn app
   "Build the ui based on the current-view in the app-db."
