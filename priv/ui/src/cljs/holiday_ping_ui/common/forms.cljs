@@ -22,11 +22,12 @@
   (fn [form field] (:type field)))
 
 (defmethod input-view "select"
-  [form field]
+  [form {:keys [key disabled options]}]
   [:div.select
-   [:select {:on-change (field-handler form (:key field))
-             :value     (get field :value "")}
-    (for [option (:options field)
+   [:select {:on-change (field-handler form key)
+             :value     (get @form key "")
+             :disabled  disabled}
+    (for [option options
           :let   [value (get option :value option)
                   text  (get option :text option)]]
       [:option {:key value :value value} text])]])
@@ -62,16 +63,22 @@
    (when help-text
      [:p.help help-text])])
 
+(defn detached-form-view
+  "Generate the hiccup of a form based on a spec map, using an external state
+   atom."
+  [form {:keys [fields]}]
+  [:div
+   (for [{:keys [key] :as field} fields]
+     ^{:key key}[field-view form field])])
+
 (defn form-view
-  "Generate the hiccup of a form based on a spec map."
-  [{:keys [header-text submit-text submit-class on-submit on-cancel fields]}]
+  "Generate the hiccup of a form based on a spec map, with internally managed
+  state."
+  [{:keys [submit-text submit-class on-submit on-cancel fields] :as spec}]
   (let [form (reagent/atom (get-defaults fields))]
     (fn []
       [:form
-       [:div.content
-        [:p header-text]]
-       (for [{:keys [key] :as field} fields]
-         ^{:key key}[field-view form field])
+       [detached-form-view form spec]
        [:div.field.is-grouped.is-grouped-centered
         (when on-cancel
           [:div.control

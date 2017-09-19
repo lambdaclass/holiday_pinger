@@ -59,8 +59,7 @@
       [:button.button.is-danger.is-small.tooltip
        {:on-click     #(re-frame/dispatch [:channel-delete name])
         :data-tooltip "Delete"}
-       [:span.icon.is-small [:i.fa.fa-times]]]]
-     ]]])
+       [:span.icon.is-small [:i.fa.fa-times]]]]]]])
 
 (defn add-button
   []
@@ -84,6 +83,7 @@
         [:table.table.is-fullwidth.is-outlined
          [:tbody (map item-view channels)]])]]))
 
+;; FIXME make this the first step
 (defn type-select-view
   []
   [views/breadcrumbs [["Channels" "/"]
@@ -93,34 +93,131 @@
    [:p "I'll make this prettier, promise"]
    [:p [:a {:href (routes/url-for :channel-create :type "slack")} "Slack"]]
    [:p [:a {:href (routes/url-for :channel-create :type "webhook")} "Webhook"]]
-   [:p [:a {:href (routes/url-for :channel-create :type "email")} "Email"]]
-   ])
+   [:p [:a {:href (routes/url-for :channel-create :type "email")} "Email"]]])
 
 (defn slack-config-form
-  []
-  [:p "slack config form"])
+  [channel-state]
+  [:div
+   [:br]
+   [:p.subtitle.is-6 "Fill the configuration for the slack integration."]
+   [forms/detached-form-view channel-state
+    {:fields [{:key      :name
+               :type     "text"
+               :required true}
+              {:key       :url
+               :type      "text"
+               :label     "Slack hook url"
+               :help-text [:span "You can get the hook url "
+                           [:a {:href   "https://my.slack.com/services/new/incoming-webhook/"
+                                :target "blank"} "here."]]
+               :required  true}
+              {:key       :channels
+               :type      "text"
+               :label     "Targets"
+               :required  true
+               :help-text "Where to send the message. Space separated, use \"#name\" for channels and \"@name\" for users. If left empty, the channel configured in the Slack hook will be used."}
+              {:key       :username
+               :type      "text"
+               :label     "Bot username"
+               :help-text "Defaults to :calendar:"}
+              {:key       :emoji
+               :type      "text"
+               :label     "Bot emoji"
+               :help-text "Defaults to HolidayPing"}]}]])
 
 (defn webhook-config-form
-  []
-  [:p "webhook config form"])
+  [channel-state]
+  [:div
+   [:br]
+   [:p.subtitle.is-6 "Fill the configuration for the webhook integration."]
+   ])
 
 (defn email-config-form
-  []
-  [:p "email config form"])
+  [channel-state]
+  [:div
+   [:br]
+   [:p.subtitle.is-6 "Fill the configuration for the email integration."]
+   ])
 
 (defn reminder-config-form
-  []
-  [:p "reminder config"])
+  [reminder-state]
+  [:div
+   [:br]
+   [:p.subtitle.is-6 "When you want the reminders sent?"]
+   [forms/detached-form-view reminder-state
+    {:fields [{:key     :same-day
+               :label   "Send a reminder on the same day."
+               :type    "select"
+               :options [{:text "Yes" :value true}
+                         {:text "Don't send" :value false}]}
+              {:key     :days-before
+               :label   "Send a reminder before the holiday."
+               :type    "select"
+               :options [{:text "Don't send" :value 0}
+                         {:text "The day before" :value 1}
+                         {:text "Three days before" :value 3}
+                         {:text "A week before" :value 7}]}]}]])
 
 (defn holiday-source-form
-  []
-  [:p "holiday source"])
+  [source-state]
+  (let [channels @(re-frame/subscribe [:channels])
+        source   (:source @source-state)]
+    [:div
+     [:br]
+     [:p.subtitle.is-6 "What holidays do you want by default on your calendar?"]
+
+     [:form
+      [:div.field
+       [:div.control
+        [:label.radio
+         [:input {:type      "radio"
+                  :name      "from-country"
+                  :checked   (= source :country)
+                  :on-change #(swap! source-state assoc :source :country)}]
+         " Use country defaults"]]]
+      [:div.field
+       [:div.control
+        [forms/input-view source-state
+         {:key      :country
+          :type     "select"
+          :disabled (not= source :country)
+          :options  ["Argentina" "Brazil" "United States"]}]]]
+      [:br]
+
+      (when-not (empty? channels)
+        [:div
+         [:div.field
+          [:div.control
+           [:label.radio
+            [:input {:type      "radio"
+                     :name      "from-channel"
+                     :checked   (= source :channel)
+                     :on-change #(swap! source-state assoc :source :channel)}]
+            " Copy from another channel"]]]
+         [:div.field
+          [:div.control
+           [forms/input-view source-state
+            {:key      :channel
+             :type     "select"
+             :disabled (not= source :channel)
+             :options  (map :name channels)}]]]
+         [:br]])
+
+      [:div.field
+       [:div.control
+        [:label.radio
+         [:input {:type      "radio"
+                  :name      "empty"
+                  :checked   (= source :empty)
+                  :on-change #(swap! source-state assoc :source :empty)}]
+         " Start with an empty calendar"]]]]]))
 
 (defn holiday-config
   []
   [:p "calendar"])
 
 (defn wizard-steps
+  "Show the wizard steps and navigate on click."
   [wizard-state step-n]
   [:div.steps.is-small
    (for [[i title] [[0 "Channel config"]
@@ -130,114 +227,76 @@
      (cond
        (= i step-n)
        [:div.step-item.is-active
+        {:key i}
         [:div.step-marker]
         [:div.step-content [:p.step-title title]]]
 
        (< i step-n)
-       [:div.step-item.is-completed
-
+       [:div.step-item.is-completed {:key i}
         [:a.step-marker
          {:href "#" :on-click #(swap! wizard-state assoc :step-n i)}
          [:span.icon [:i.fa.fa-check]]]
         [:div.step-content [:p.step-title title]]]
 
        (> i step-n)
-       [:div.step-item
+       [:div.step-item {:key i}
         [:div.step-marker]
         [:div.step-content [:p.step-title title]]]))])
 
+(defn wizard-navigation
+  "Show next/prev buttons to navigate between steps."
+  [state step]
+  [:div
+   [:br]
+   [:br]
+   [:nav.level
+    [:div.level-left
+     (when-not (= step :channel-config)
+       [:div.level-item
+        [:button.button
+         {:on-click #(swap! state update :step-n dec)}
+         [:span.icon.is-small
+          [:i.fa.fa-chevron-left]]
+         [:span "Prev"]]])]
+    (when-not (= step :holidays)
+      [:div.level-right
+       [:div.level-item
+        [:button.button.is-right
+         {:on-click #(swap! state update :step-n inc)}
+         [:span "Next"]
+         [:span.icon.is-small
+          [:i.fa.fa-chevron-right]]]]])]])
+
 (defn create-view
   [type]
-  (let [step-keys    [:channel-config :reminder-config :holidays-source :holidays]
-        wizard-state (reagent/atom {:step-n 0})]
+  (let [wizard-state   (reagent/atom {:step-n          0
+                                      :channel-config  {}
+                                      :reminder-config {:same-day    true
+                                                        :days-before 0}
+                                      :source-config   {:source  :country
+                                                        :country "Argentina"}})
+        channel-state  (reagent/cursor wizard-state [:channel-config])
+        reminder-state (reagent/cursor wizard-state [:reminder-config])
+        source-state   (reagent/cursor wizard-state [:source-config])]
     (fn []
-      (let [step-n (:step-n @wizard-state)
-            step   (get step-keys step-n)]
+      (let [step-keys [:channel-config :reminder-config :holidays-source :holidays]
+            step-n    (:step-n @wizard-state)
+            step      (get step-keys step-n)]
         [:div
          [views/section-size :is-half
-          [views/breadcrumbs [["Channels" "/"]
-                              ["New"]]]
+          [views/breadcrumbs [["Channels" "/"] ["New"]]]
           [wizard-steps wizard-state step-n]
+
           (case step
             :channel-config  (case type
-                               "slack"   [slack-config-form]
-                               "webhook" [webhook-config-form]
-                               "email"   [email-config-form])
-            :reminder-config [reminder-config-form]
-            :holidays-source [holiday-source-form]
+                               "slack"   [slack-config-form channel-state]
+                               "webhook" [webhook-config-form channel-state]
+                               "email"   [email-config-form channel-state])
+            :reminder-config [reminder-config-form reminder-state]
+            :holidays-source [holiday-source-form source-state]
             :holidays        [holiday-config])
-          [:nav.level
-           [:div.level-left
-            (when-not (= step :channel-config)
-              [:div.level-item
-               [:button.button
-                {:on-click #(swap! wizard-state update :step-n dec)}
-                [:span.icon.is-small
-                 [:i.fa.fa-chevron-left]]
-                [:span "Prev"]]])]
-           (when-not (= step :holidays)
-             [:div.level-right
-              [:div.level-item
-               [:button.button.is-right
-                {:on-click #(swap! wizard-state update :step-n inc)}
-                [:span "Next"]
-                [:span.icon.is-small
-                 [:i.fa.fa-chevron-right]]]]])]
 
-          ]]))))
-
-;; FIXME remove
-(defn add-view []
-  [:div
-   [views/section-size :is-half
-    [views/breadcrumbs [["Channels" "/"]
-                        ["New"]]]
-    [:div
-     [:p.subtitle "Fill the channel configuration"]
-     [views/message-view]
-     [forms/form-view {:submit-text "Save"
-                       :on-submit   [:channel-submit]
-                       :on-cancel   [:navigate :channel-list]
-                       :fields      [{:key      :name
-                                      :type     "text"
-                                      :required true}
-                                     {:key      :type
-                                      :type     "select"
-                                      :options  ["slack"]
-                                      :value    "slack"
-                                      :required true}
-                                     {:key       :url
-                                      :type      "text"
-                                      :label     "Slack hook url"
-                                      :help-text [:span "You can get the hook url "
-                                                  [:a {:href   "https://my.slack.com/services/new/incoming-webhook/"
-                                                       :target "blank"} "here."]]
-                                      :required  true}
-                                     {:key       :channels
-                                      :type      "text"
-                                      :label     "Targets"
-                                      :required  true
-                                      :help-text "Space separated, use \"#name\" for channels and \"@name\" for users."}
-                                     {:key   :username
-                                      :type  "text"
-                                      :label "Bot username"}
-                                     {:key   :emoji
-                                      :type  "text"
-                                      :label "Bot emoji"}
-                                     {:key     :same-day
-                                      :label   "Send a reminder on the same day."
-                                      :type    "select"
-                                      :value   true
-                                      :options [{:text "Yes" :value true}
-                                                {:text "Don't send" :value false}]}
-                                     {:key     :days-before
-                                      :label   "Send a reminder before the holiday."
-                                      :type    "select"
-                                      :value   0
-                                      :options [{:text "Don't send" :value 0}
-                                                {:text "The day before" :value 1}
-                                                {:text "Three days before" :value 3}
-                                                {:text "A week before" :value 7}]}]}]]]])
+          [wizard-navigation wizard-state step]]]))))
 
 (defn edit-view
   [channel-name]
@@ -282,17 +341,4 @@
                                        :type  "text"
                                        :value (get-in channel [:configuration :emoji])
                                        :label "Bot emoji"}
-                                      {:key     :same-day
-                                       :label   "Send a reminder on the same day."
-                                       :type    "select"
-                                       :value   (:same_day channel)
-                                       :options [{:text "Yes" :value true}
-                                                 {:text "Don't send" :value false}]}
-                                      {:key     :days-before
-                                       :label   "Send a reminder before the holiday."
-                                       :type    "select"
-                                       :value   (or(:days_before channel) 0)
-                                       :options [{:text "Don't send" :value 0}
-                                                 {:text "The day before" :value 1}
-                                                 {:text "Three days before" :value 3}
-                                                 {:text "A week before" :value 7}]}]}]]]))
+                                      ]}]]]))
