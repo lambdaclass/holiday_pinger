@@ -1,26 +1,10 @@
 -module(hp_auth).
 
--export([access_token_encode/1,
-         access_token_decode/1,
-         registration_token_encode/1,
-         registration_token_decode/1,
+-export([token_encode/1,
+         token_decode/1,
          password_hash/1,
          password_match/2,
          authenticate/2]).
-
-access_token_encode(Data) ->
-  Expiration = hp_config:get(token_expiration),
-  token_encode(<<"access_token">>, Expiration, Data).
-
-access_token_decode(Token) ->
-  token_decode(<<"access_token">>, Token).
-
-registration_token_encode(Data) ->
-  Expiration = hp_config:get(registration_token_expiration),
-  token_encode(<<"registration_token">>, Expiration, Data).
-
-registration_token_decode(Token) ->
-  token_decode(<<"registration_token">>, Token).
 
 password_hash(Value) ->
   erlpass:hash(Value).
@@ -39,17 +23,11 @@ authenticate(Email, Password) ->
     _ -> {error, unauthorized}
   end.
 
-%%% internal
-token_encode(Type, Expiration, Data) ->
+token_encode(Data) ->
+  Expiration = hp_config:get(token_expiration),
   Secret = hp_config:get(token_secret),
-  ListData = maps:to_list(Data#{ <<"token_type">> => Type }),
-  jwt:encode(<<"HS256">>, ListData, Expiration, Secret).
+  jwt:encode(<<"HS256">>, maps:to_list(Data), Expiration, Secret).
 
-token_decode(Type, Token) ->
+token_decode(Token) ->
   Secret = hp_config:get(token_secret),
-  case jwt:decode(Token, Secret) of
-    {ok, #{<<"token_type">> := Type} = Data} ->
-      {ok, maps:remove(<<"token_type">>, Data)};
-    _ ->
-      {error, invalid_token}
-  end.
+  jwt:decode(Token, Secret).

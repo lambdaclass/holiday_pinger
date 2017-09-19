@@ -22,6 +22,6 @@ content_types_provided(Req, State) ->
 %% If auth was successful generate an access token with the user data,
 %% to be used to authenticate other API requests
 to_json(Req, State = #{user := User}) ->
-  {ok, Token} = hp_auth:access_token_encode(User),
+  {ok, Token} = hp_auth:token_encode(User),
   Body = hp_json:encode(#{access_token => Token}),
   {Body, Req, State}.

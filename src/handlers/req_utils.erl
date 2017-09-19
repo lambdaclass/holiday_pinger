@@ -22,7 +22,7 @@ is_authorized(bearer, Req, State) ->
   Fail = {false, <<"Bearer realm=\"holidayping\"">>},
   case cowboy_req:parse_header(<<"authorization">>, Req) of
     {ok, {<<"bearer">>, Token}, Req2} ->
-      case hp_auth:access_token_decode(Token) of
+      case hp_auth:token_decode(Token) of
         {ok, User} ->
           {true, Req2, State#{user => User, email => maps:get(<<"email">>, User)}};
         _ -> {Fail, Req2, State}
