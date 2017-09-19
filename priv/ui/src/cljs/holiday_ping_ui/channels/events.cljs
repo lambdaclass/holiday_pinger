@@ -59,16 +59,12 @@
            (fn [channels]
              (remove #(= (:name %) channel) channels)))))
 
-(defn valid-slack-target?
-  [value]
-  (or (string/starts-with? value "#")
-      (string/starts-with? value "@")))
-
+;; FIXME adapt this to new form
 (re-frame/reg-event-fx
  :channel-submit
  (fn [{db :db} [_ {:keys [name type url channels username emoji days-before
                           same-day]}]]
-   (let [channels    (string/split channels #"\s+")
+   (let [
          days-before (js/parseInt days-before)
          params      {:name          name
                       :type          type
@@ -79,14 +75,8 @@
                                       :username username
                                       :emoji    emoji}}]
      (cond
-       (some string/blank? [name type url])
+       (some string/blank? [name url])
        {:dispatch [:error-message "Please fill required fields."]}
-
-       (not (every? valid-slack-target? channels))
-       {:dispatch [:error-message "Slack targets must start with @ or #"]}
-
-       (not (string/starts-with? url "https://hooks.slack.com/"))
-       {:dispatch [:error-message "The url should be a valid slack hook url."]}
 
        :else {:http-xhrio {:method          :put
                            :uri             (str "/api/channels/" name)
