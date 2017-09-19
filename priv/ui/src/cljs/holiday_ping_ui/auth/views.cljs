@@ -8,6 +8,7 @@
 
 ;;; AUTH VIEWS
 
+;; FIXME use new style validations in this form
 (defn login-view []
   [:div
    [views/section-size :is-one-third
@@ -34,6 +35,7 @@
       [:p.has-text-centered "Don't have an account? "
        [:a {:href (routes/url-for :register)} "Click here to register."]]]]]])
 
+;; FIXME use new style validations in this form
 (defn register-view []
   (let [user-country @(re-frame/subscribe [:country])]
     [:div

@@ -83,6 +83,7 @@
         [:table.table.is-fullwidth.is-outlined
          [:tbody (map item-view channels)]])]]))
 
+;; FIXME use new style validations in this form
 (defn edit-view
   [channel-name]
   (let [channel @(re-frame/subscribe [:channel-to-edit])]
@@ -143,7 +144,7 @@
   [prev next]
   (let [show-prev?   (boolean prev)
         show-next?   (boolean next)
-        static-class (if (:static next) "is-static" "")
+        static-class (when (:static next) "is-static")
         on-prev      (get prev :event prev)
         on-next      (get next :event next)]
     [:div
@@ -193,6 +194,7 @@
                 {:key       :url
                  :type      "text"
                  :label     "Slack hook url"
+                 :validate  :valid-slack-hook?
                  :help-text [:span "You can get the hook url "
                              [:a {:href   "https://my.slack.com/services/new/incoming-webhook/"
                                   :target "blank"} "here."]]
@@ -200,7 +202,7 @@
                 {:key       :targets
                  :type      "text"
                  :label     "Targets"
-                 :required  true
+                 :validate  :valid-slack-targets?
                  :help-text "Where to send the message. Space separated, use \"#name\" for channels and \"@name\" for users. If left empty, the channel configured in the Slack hook will be used."}
                 {:key       :username
                  :type      "text"

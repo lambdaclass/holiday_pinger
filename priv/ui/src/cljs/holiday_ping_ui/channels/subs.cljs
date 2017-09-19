@@ -10,18 +10,21 @@
 
 (defn valid-slack-target?
   [value]
-  (and
-   (> (count value) 1)
-   (or (string/starts-with? value "#")
-       (string/starts-with? value "@"))))
+  (or (string/blank? value)
+      (and
+       (or (string/starts-with? value "#")
+           (string/starts-with? value "@"))
+       (> (count value) 1))))
 
 (re-frame/reg-sub
  :valid-slack-targets?
  (fn [db [_ targets]]
    (let [targets (string/split targets #"\s+")]
-     (if-not (every? valid-slack-target? targets)
-       [false "Slack targets must start with @ or #"]
-       [true]))))
+     (if (or
+          (empty? targets)
+          (every? valid-slack-target? targets))
+       [true]
+       [false "Slack targets must start with @ or #"]))))
 
 (re-frame/reg-sub
  :valid-slack-hook?

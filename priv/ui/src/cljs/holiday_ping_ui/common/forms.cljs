@@ -32,16 +32,30 @@
                   text  (get option :text option)]]
       [:option {:key value :value value} text])]])
 
+(defn validate
+  [form {:keys [key validate required]}]
+  (let [value (key @form)]
+    (cond
+      (nil? value)   [true] ;; dont validate before entering values
+      required       @(re-frame/subscribe [:valid-required? value])
+      (not validate) [true]
+      :else          @(re-frame/subscribe [validate value]))))
+
 (defmethod input-view :default
   [form {:keys [key type disabled] :as field}]
-  (let [attrs {:type        type
-               :name        (field-name field)
-               :placeholder (field-name field)
-               :value       (get @form key)
-               :on-change   (field-handler form key)}]
-    [:input.input (if disabled
-                    (assoc attrs :disabled true)
-                    attrs)]))
+  (let [[valid? message] (validate form field)
+        attrs            {:type        type
+                          :name        (field-name field)
+                          :placeholder (field-name field)
+                          :class       (when-not valid? "is-danger")
+                          :value       (get @form key)
+                          :on-change   (field-handler form key)}]
+    [:div
+     [:input.input (if disabled
+                     (assoc attrs :disabled true)
+                     attrs)]
+     (when-not valid?
+       [:p.help.is-danger message])]))
 
 (defn input-label
   [field]
