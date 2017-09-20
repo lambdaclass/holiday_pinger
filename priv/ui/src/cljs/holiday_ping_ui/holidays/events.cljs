@@ -97,3 +97,20 @@
    (let [edited  (:holidays-edited db)
          removed (remove #(time/= date (:date %)) edited)]
      (assoc db :holidays-edited removed))))
+
+;; For channel creation
+
+(re-frame/reg-event-fx
+ :load-base-holidays
+ (fn [{:keys [db]} [_ {:keys [source country channel]}]]
+   (if (= source :empty)
+     {:db (assoc db :holidays-saved [] :holidays-edited [])}
+     {:http-xhrio {:method          :get
+                   :uri             (case source
+                                      :country (str "/api/holidays/" country)
+                                      :channel (str "/api/channels/" channel "/holidays"))
+                   :timeout         8000
+                   :headers         {:authorization (str "Bearer " (:access-token db))}
+                   :response-format (ajax/json-response-format {:keywords? true})
+                   :on-success      [:holidays-load-success]
+                   :on-failure      [:error-message "Holidays loading failed."]}})))

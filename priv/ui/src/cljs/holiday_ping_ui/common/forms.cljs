@@ -36,10 +36,10 @@
   [form {:keys [key validate required]}]
   (let [value (key @form)]
     (cond
-      (nil? value)   [true] ;; dont validate before entering values
-      required       @(re-frame/subscribe [:valid-required? value])
-      (not validate) [true]
-      :else          @(re-frame/subscribe [validate value]))))
+      (nil? value)         [true] ;; dont validate before entering values
+      (and value validate) @(re-frame/subscribe [validate value])
+      required             @(re-frame/subscribe [:valid-required? value])
+      :else                [true])))
 
 (defmethod input-view :default
   [form {:keys [key type disabled] :as field}]

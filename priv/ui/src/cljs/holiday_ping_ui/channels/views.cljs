@@ -5,7 +5,9 @@
    [reagent.core  :as reagent]
    [holiday-ping-ui.routes :as routes]
    [holiday-ping-ui.common.forms :as forms]
-   [holiday-ping-ui.common.views :as views]))
+   [holiday-ping-ui.common.views :as views]
+   [holiday-ping-ui.holidays.views :as holidays]
+   [holiday-ping-ui.holidays.calendar :as calendar]))
 
 (defn test-modal
   []
@@ -188,6 +190,7 @@
      [:br]
      [:p.subtitle.is-6 "Fill the configuration for the slack integration."]
      [forms/detached-form-view channel-state
+      ;; TODO add a name already taken validation
       {:fields [{:key      :name
                  :type     "text"
                  :required true}
@@ -305,57 +308,97 @@
                   :on-change #(swap! source-state assoc :source :empty)}]
          " Start with an empty calendar"]]]]
 
-     [wizard-navigation (dec-step wizard-state) (inc-step wizard-state)]]))
+     [wizard-navigation
+      (dec-step wizard-state)
+      #(do (re-frame/dispatch [:load-base-holidays @source-state])
+           (swap! wizard-state update :step-n inc))]]))
+
+(defn holiday-controls
+  [wizard-state]
+  (let [current-year  @(re-frame/subscribe [:current-year])
+        next-year     (inc current-year)
+        selected-year @(re-frame/subscribe [:calendar-selected-year])]
+    [:nav.level
+     [:div.level-left
+      [:div.level-item
+       [:button.button
+        {:on-click (dec-step wizard-state)}
+        [:span.icon.is-small
+         [:i.fa.fa-chevron-left]]
+        [:span "Prev"]]]]
+     [:div.level-item.has-text-centered [holidays/holidays-year-switch current-year next-year selected-year]]
+     [:div.level-right
+      [:div.level-item
+       [:button.button.is-right.is-success
+        {:on-click #(re-frame/dispatch [:wizard-submit @wizard-state])}
+        [:span "Save channel"]
+        [:span.icon.is-small
+         [:i.fa.fa-check]]]]]]))
 
 (defn holiday-config
   [wizard-state]
-  [:div
-   [:p "calendar"]
-   [wizard-navigation (dec-step wizard-state) false]])
+  (let [current-year  @(re-frame/subscribe [:current-year])
+        next-year     (inc current-year)
+        selected-year @(re-frame/subscribe [:calendar-selected-year])]
+    [:div
+     [holidays/edit-holiday-modal]
+     [:p.subtitle.is-6 "Select the days of the year for which you want reminders."]
+     [holiday-controls wizard-state]
+     [:div (when-not (= selected-year current-year) {:hidden true})
+      [calendar/year-view current-year]]
+     [:div (when-not (= selected-year next-year) {:hidden true})
+      [calendar/year-view next-year]]
+     [:br]
+     [holiday-controls wizard-state]]))
 
 (defn wizard-steps
   "Show the wizard steps and navigate on click."
-  [wizard-state step-n]
-  [:div.steps.is-small
-   (for [[i title] [[0 "Channel config"]
-                    [1 "Reminder config"]
-                    [2 "Holiday sources"]
-                    [3 "Calendar"]]]
-     (cond
-       (= i step-n)
-       [:div.step-item.is-active
-        {:key i}
-        [:div.step-marker]
-        [:div.step-content [:p.step-title title]]]
+  [wizard-state step-n size]
+  [:div.columns.is-centered
+   [:div.column {:class (name size)}
+    [:div.steps.is-small
+     (for [[i title] [[0 "Channel config"]
+                      [1 "Reminder config"]
+                      [2 "Holiday sources"]
+                      [3 "Calendar"]]]
+       (cond
+         (= i step-n)
+         [:div.step-item.is-active
+          {:key i}
+          [:div.step-marker]
+          [:div.step-content [:p.step-title title]]]
 
-       (< i step-n)
-       [:div.step-item.is-completed {:key i}
-        [:a.step-marker
-         {:href "#" :on-click #(swap! wizard-state assoc :step-n i)}
-         [:span.icon [:i.fa.fa-check]]]
-        [:div.step-content [:p.step-title title]]]
+         (< i step-n)
+         [:div.step-item.is-completed {:key i}
+          [:a.step-marker
+           {:href "#" :on-click #(swap! wizard-state assoc :step-n i)}
+           [:span.icon [:i.fa.fa-check]]]
+          [:div.step-content [:p.step-title title]]]
 
-       (> i step-n)
-       [:div.step-item {:key i}
-        [:div.step-marker]
-        [:div.step-content [:p.step-title title]]]))])
+         (> i step-n)
+         [:div.step-item {:key i}
+          [:div.step-marker]
+          [:div.step-content [:p.step-title title]]]))]]])
 
 (defn create-view
   [type]
   (let [wizard-state (reagent/atom {:step-n          0
+                                    :type            type
                                     :channel-config  {}
                                     :reminder-config {:same-day    true
                                                       :days-before 0}
                                     :source-config   {:source  :country
                                                       :country "Argentina"}})]
     (fn []
-      (let [step-keys [:channel-config :reminder-config :holidays-source :holidays]
-            step-n    (:step-n @wizard-state)
-            step      (get step-keys step-n)]
+      (let [step-keys    [:channel-config :reminder-config :holidays-source :holidays]
+            step-n       (:step-n @wizard-state)
+            step         (get step-keys step-n)
+            section-size (if (= step :holidays) :is-full :is-half)
+            wizard-size  (if (= step :holidays) :is-half :is-full)]
         [:div
-         [views/section-size :is-half
+         [views/section-size section-size
           [views/breadcrumbs [["Channels" "/"] ["New"]]]
-          [wizard-steps wizard-state step-n]
+          [wizard-steps wizard-state step-n wizard-size]
 
           (case step
             :channel-config  (case type
