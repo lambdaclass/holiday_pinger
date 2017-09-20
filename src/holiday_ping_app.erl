@@ -12,6 +12,7 @@ start(_StartType, _StartArgs) ->
                                     {'_', [{"/favicon.ico", cowboy_static, {priv_file, holiday_ping, "/ui/resources/public/favicon.ico"}},
                                            {"/js/[...]", cowboy_static, {priv_dir, holiday_ping, "/ui/resources/public/js"}},
                                            {"/css/[...]", cowboy_static, {priv_dir, holiday_ping, "/ui/resources/public/css"}},
+                                           {"/img/[...]", cowboy_static, {priv_dir, holiday_ping, "/ui/resources/public/img"}},
                                            {"/oauth/github", github_redirect_handler, []},
                                            {"/api/auth/github/code", github_callback_handler, []},
                                            {"/api/users", user_handler, []},

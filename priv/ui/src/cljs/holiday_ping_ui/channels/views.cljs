@@ -177,19 +177,26 @@
   #(do (swap! state update :step-n inc)
        (swap! state assoc :type type)))
 
+(defn type-card
+  [state type title image]
+  [:div.column.is-one-quarter
+   [:div.card
+    [:a {:href "#" :on-click (select-type-event state type)}
+     [:header.card-header
+      [:p.card-header-title title]]
+     [:div.card-content
+      [:figure.image.is-2by1
+       [:img {:src image}]]]]]])
+
 (defn type-select
   [wizard-state]
   [:div
    [step-title "Select the type of the channel you want to use."]
-   [:p
-    [:a {:href "#" :on-click (select-type-event wizard-state :slack)}
-     "Slack"]]
-   [:p
-    [:a {:href "#" :on-click (select-type-event wizard-state :webhook)}
-     "Webhook"]]
-   [:p
-    [:a {:href "#" :on-click (select-type-event wizard-state :email)}
-     "Email"]]])
+   [:br]
+   [:div.columns.is-centered
+    [type-card wizard-state :slack "Slack" "/img/slack.png"]
+    [type-card wizard-state :email "Email" "/img/email.jpg"]
+    [type-card wizard-state :webhooks "Webhooks" "/img/webhooks.png"]]])
 
 (defn slack-config-form
   [wizard-state]
@@ -227,11 +234,11 @@
       [wizard-navigation (dec-step wizard-state) {:static (not valid-form?)
                                                   :event  (inc-step wizard-state)}]]]))
 
-(defn webhook-config-form
+(defn webhooks-config-form
   [wizard-state]
   [:div
    [:br]
-   [step-title "Fill the configuration for the webhook integration."]
+   [step-title "Fill the configuration for the webhooks integration."]
    ])
 
 (defn email-config-form
@@ -417,9 +424,9 @@
           (case step
             :type-select     [type-select wizard-state]
             :channel-config  (case (:type @wizard-state)
-                               :slack   [slack-config-form wizard-state]
-                               :webhook [webhook-config-form wizard-state]
-                               :email   [email-config-form wizard-state])
+                               :slack    [slack-config-form wizard-state]
+                               :webhooks [webhooks-config-form wizard-state]
+                               :email    [email-config-form wizard-state])
             :reminder-config [reminder-config-form wizard-state]
             :holidays-source [holiday-source-form wizard-state]
             :holidays        [holiday-config wizard-state])]]))))
