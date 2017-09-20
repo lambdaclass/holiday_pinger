@@ -23,7 +23,6 @@
 
 (def views {:channel-list        [channels/list-view]
             :channel-edit        [channels/edit-view]
-            :channel-type-select [channels/type-select-view]
             :channel-create      [channels/create-view]
             :login               [auth/login-view]
             :register            [auth/register-view]

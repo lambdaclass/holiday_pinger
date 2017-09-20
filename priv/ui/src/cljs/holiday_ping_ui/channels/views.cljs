@@ -66,7 +66,7 @@
 (defn add-button
   []
   [:div.has-text-centered
-   [:a.button.is-success {:href (routes/url-for :channel-type-select)}
+   [:a.button.is-success {:href (routes/url-for :channel-create)}
     [:span.icon.is-small [:i.fa.fa-plus]]
     [:span "New Channel"]]])
 
@@ -170,17 +170,24 @@
            [:span.icon.is-small
             [:i.fa.fa-chevron-right]]]]])]]))
 
-;; FIXME make this the first step
-(defn type-select-view
-  []
-  [views/breadcrumbs [["Channels" "/"]
-                      ["New"]]]
-  [views/section
-   [:p.subtitle "Select the type of the channel you want to use."]
-   [:p "I'll make this prettier, promise"]
-   [:p [:a {:href (routes/url-for :channel-create :type "slack")} "Slack"]]
-   [:p [:a {:href (routes/url-for :channel-create :type "webhook")} "Webhook"]]
-   [:p [:a {:href (routes/url-for :channel-create :type "email")} "Email"]]])
+(defn select-type-event
+  [state type]
+  #(do (swap! state update :step-n inc)
+       (swap! state assoc :type type)))
+
+(defn type-select
+  [wizard-state]
+  [:div
+   [:p.subtitle.is-6 "Select the type of the channel you want to use."]
+   [:p
+    [:a {:href "#" :on-click (select-type-event wizard-state :slack)}
+     "Slack"]]
+   [:p
+    [:a {:href "#" :on-click (select-type-event wizard-state :webhook)}
+     "Webhook"]]
+   [:p
+    [:a {:href "#" :on-click (select-type-event wizard-state :email)}
+     "Email"]]])
 
 (defn slack-config-form
   [wizard-state]
@@ -215,8 +222,8 @@
                  :type      "text"
                  :label     "Bot emoji"
                  :help-text "Defaults to HolidayPing"}]}]
-     [wizard-navigation false {:static (not valid-form?)
-                               :event  (inc-step wizard-state)}]]))
+     [wizard-navigation (dec-step wizard-state) {:static (not valid-form?)
+                                                 :event  (inc-step wizard-state)}]]))
 
 (defn webhook-config-form
   [wizard-state]
@@ -357,10 +364,11 @@
   [:div.columns.is-centered
    [:div.column {:class (name size)}
     [:div.steps.is-small
-     (for [[i title] [[0 "Channel config"]
-                      [1 "Reminder config"]
-                      [2 "Holiday sources"]
-                      [3 "Calendar"]]]
+     (for [[i title] [[0 "Channel type"]
+                      [1 "Channel config"]
+                      [2 "Reminder config"]
+                      [3 "Holiday sources"]
+                      [4 "Calendar"]]]
        (cond
          (= i step-n)
          [:div.step-item.is-active
@@ -381,30 +389,31 @@
           [:div.step-content [:p.step-title title]]]))]]])
 
 (defn create-view
-  [type]
+  []
   (let [wizard-state (reagent/atom {:step-n          0
-                                    :type            type
+                                    :type            :slack
                                     :channel-config  {}
                                     :reminder-config {:same-day    true
                                                       :days-before 0}
                                     :source-config   {:source  :country
                                                       :country "Argentina"}})]
     (fn []
-      (let [step-keys    [:channel-config :reminder-config :holidays-source :holidays]
+      (let [step-keys    [:type-select :channel-config :reminder-config :holidays-source :holidays]
             step-n       (:step-n @wizard-state)
             step         (get step-keys step-n)
-            section-size (if (= step :holidays) :is-full :is-half)
-            wizard-size  (if (= step :holidays) :is-half :is-full)]
+            wide?        (contains? #{:type-select :holidays} step)
+            section-size (if wide? :is-full :is-half)
+            wizard-size  (if wide? :is-half :is-full)]
         [:div
          [views/section-size section-size
           [views/breadcrumbs [["Channels" "/"] ["New"]]]
           [wizard-steps wizard-state step-n wizard-size]
-
           (case step
-            :channel-config  (case type
-                               "slack"   [slack-config-form wizard-state]
-                               "webhook" [webhook-config-form wizard-state]
-                               "email"   [email-config-form wizard-state])
+            :type-select     [type-select wizard-state]
+            :channel-config  (case (:type @wizard-state)
+                               :slack   [slack-config-form wizard-state]
+                               :webhook [webhook-config-form wizard-state]
+                               :email   [email-config-form wizard-state])
             :reminder-config [reminder-config-form wizard-state]
             :holidays-source [holiday-source-form wizard-state]
             :holidays        [holiday-config wizard-state])]]))))
