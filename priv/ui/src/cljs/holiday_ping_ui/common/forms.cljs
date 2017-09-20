@@ -65,7 +65,7 @@
   [fields]
   (reduce
    (fn [defaults field]
-     (assoc defaults (:key field) (get field :value "")))
+     (assoc defaults (:key field) (get field :value)))
    {} fields))
 
 (defn field-view
@@ -83,7 +83,8 @@
   [form {:keys [fields]}]
   [:div
    (for [{:keys [key] :as field} fields]
-     ^{:key key}[field-view form field])])
+     ^{:key key}[field-view form field])
+   [:div]]) ;; need this div to force a margin below last field
 
 (defn form-view
   "Generate the hiccup of a form based on a spec map, with internally managed

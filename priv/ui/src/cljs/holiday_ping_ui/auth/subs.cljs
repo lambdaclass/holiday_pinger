@@ -9,7 +9,6 @@
    [holiday-ping-ui.auth.token :as token]))
 
 (subs/db-subscription :access-token)
-(subs/db-subscription :country)
 
 (re-frame/reg-sub
  :user-info

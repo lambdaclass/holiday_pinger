@@ -27,8 +27,7 @@
             :channel-create      [channels/create-view]
             :login               [auth/login-view]
             :register            [auth/register-view]
-            :github-callback     [auth/github-loading-view]
-            :github-register     [auth/github-register-view]
+            :github-callback     [common/loading-view]
             :holidays            [holidays/holidays-view]
             :not-found           [common/not-found-view]})
 

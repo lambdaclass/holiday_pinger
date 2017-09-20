@@ -94,6 +94,10 @@
    {:dispatch [:auth-submit {:email    email
                              :password password}]}))
 
+(defmethod events/load-view
+  :github-callback [_ _]
+  {:dispatch [:github-code-submit]})
+
 (re-frame/reg-event-fx
  :github-code-submit
  [(re-frame/inject-cofx :location)]
@@ -105,68 +109,5 @@
                    :format          (ajax/json-request-format)
                    :params          {:code code}
                    :response-format (ajax/json-response-format {:keywords? true})
-                   :on-success      [:github-code-success]
+                   :on-success      [:login-success]
                    :on-failure      [:error-message "GitHub authentication failed"]}})))
-
-(re-frame/reg-event-fx
- :github-code-success
- (fn [{:keys [db]} [_ response]]
-   (if (:new_user response)
-     {:dispatch [:navigate :github-register]
-      :db       (assoc db :registration-token (:registration_token response))}
-     {:dispatch [:login-success response]})))
-
-(re-frame/reg-event-fx
- :github-register-submit
- (fn [{:keys [db]} [_ form]]
-   {:http-xhrio {:method          :post
-                 :uri             "/api/auth/github/registration"
-                 :timeout         8000
-                 :format          (ajax/json-request-format)
-                 :params          form
-                 :response-format (ajax/json-response-format {:keywords? true})
-                 :headers         {:authorization (str "Bearer " (:registration-token db))}
-                 :on-success      [:login-success]
-                 :on-failure      [:error-message "GitHub registration failed"]}
-    :db         (dissoc db :registration-token)}))
-
-(defmethod events/load-view
-  :register [_ _]
-  {:dispatch [:country-detect]})
-
-(defmethod events/load-view
-  :github-register [_ _]
-  {:dispatch [:country-detect]})
-
-(defmethod events/load-view
-  :github-callback [_ _]
-  {:dispatch [:github-code-submit]})
-
-(re-frame/reg-event-fx
- :country-detect
- [(re-frame/inject-cofx :local-store "country")]
- (fn [{:keys [db local-store]} _]
-   (if local-store
-     {:db (-> db
-              (assoc :country local-store)
-              (assoc :loading-view? false))}
-     {:http-xhrio {:method          :get
-                   :uri             "https://freegeoip.net/json/"
-                   :timeout         8000
-                   :response-format (ajax/json-response-format {:keywords? true})
-                   :on-failure      [:country-detect-failure]
-                   :on-success      [:country-detect-success]}})))
-
-(re-frame/reg-event-fx
- :country-detect-success
- (fn [{:keys [db]} [_ country-data]]
-   (let [country (:country_name country-data)]
-     {:db              (-> db
-                           (assoc :country country)
-                           (assoc :loading-view? false))
-      :set-local-store ["country" country]})))
-
-(re-frame/reg-event-db
- :country-detect-failure
- (fn [db _]
-   (assoc db :loading-view? false)))
