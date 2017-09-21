@@ -163,6 +163,7 @@
         on-prev      (get prev :event prev)
         on-next      (get next :event next)]
     [:div
+     [:br]
      [:nav.level
       [:div.level-left
        (when show-prev?
