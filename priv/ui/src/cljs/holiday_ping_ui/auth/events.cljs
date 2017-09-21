@@ -4,8 +4,6 @@
             [ajax.core :as ajax]
             [day8.re-frame.http-fx]
             [goog.crypt.base64 :as base64]
-            [bouncer.core :as bouncer]
-            [bouncer.validators :as validators]
             [holiday-ping-ui.db :as db]
             [holiday-ping-ui.common.events :as events]
             [holiday-ping-ui.auth.token :as token]))
@@ -66,26 +64,15 @@
 
 (re-frame/reg-event-fx
  :register-submit
- (fn [_ [_ {:keys [email password password-repeat] :as data}]]
-   ;; TODO handle validations generically
-   (cond
-     (some string/blank? (vals data))
-     {:dispatch [:error-message "All fields are required."]}
-
-     (not= password password-repeat)
-     {:dispatch [:error-message "Passwords must match."]}
-
-     (not (bouncer/valid? data :email validators/email))
-     {:dispatch [:error-message "Email is invalid."]}
-
-     :else {:http-xhrio {:method          :post
-                         :uri             "/api/users"
-                         :timeout         8000
-                         :format          (ajax/json-request-format)
-                         :params          data
-                         :response-format (ajax/text-response-format)
-                         :on-success      [:register-success email password]
-                         :on-failure      [:error-message "Registration failed"]}})))
+ (fn [_ [_ {:keys [email password] :as data}]]
+   {:http-xhrio {:method          :post
+                 :uri             "/api/users"
+                 :timeout         8000
+                 :format          (ajax/json-request-format)
+                 :params          data
+                 :response-format (ajax/text-response-format)
+                 :on-success      [:register-success email password]
+                 :on-failure      [:error-message "Registration failed"]}}))
 
 (re-frame/reg-event-fx
  :register-success

@@ -32,7 +32,7 @@
    (fn [acc {:keys [key required validate]}]
      (cond-> acc
        required (conj [:valid-required? (key form)])
-       validate (conj [validate (key form)])))
+       validate (conj [validate (key form) form])))
    [] fields))
 
 (re-frame/reg-sub

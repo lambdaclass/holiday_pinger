@@ -41,6 +41,7 @@
                       :on-submit   [:register-submit]
                       :fields      [{:key      :email
                                      :type     "email"
+                                     :validate :valid-email?
                                      :required true}
                                     {:key      :name
                                      :label    "Full name"
@@ -52,6 +53,7 @@
                                     {:key      :password-repeat
                                      :type     "password"
                                      :label    "Repeat password"
+                                     :validate :matching-passwords?
                                      :required true}]}]
     [:br]
     [:p.has-text-centered "Already registered? "

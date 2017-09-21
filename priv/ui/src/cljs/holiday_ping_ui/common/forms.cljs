@@ -37,7 +37,7 @@
   (let [value (key @form)]
     (cond
       (nil? value)         [true] ;; dont validate before entering values
-      (and value validate) @(re-frame/subscribe [validate value])
+      (and value validate) @(re-frame/subscribe [validate value @form])
       required             @(re-frame/subscribe [:valid-required? value])
       :else                [true])))
 
