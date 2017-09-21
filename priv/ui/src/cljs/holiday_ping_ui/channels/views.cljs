@@ -95,7 +95,7 @@
       [:p.subtitle "Fill the channel configuration"]
       [views/message-view]
       [forms/form-view {:submit-text "Save"
-                        :on-submit   [:channel-submit]
+                        :on-submit   [:channel-edit-submit]
                         :on-cancel   [:navigate :channel-list]
                         :fields      [{:key      :name
                                        :type     "text"
@@ -115,7 +115,7 @@
                                                    [:a {:href   "https://my.slack.com/services/new/incoming-webhook/"
                                                         :target "blank"} "here."]]
                                        :required  true}
-                                      {:key       :channels
+                                      {:key       :targets
                                        :type      "text"
                                        :label     "Targets"
                                        :value     (string/join " " (get-in channel [:configuration :channels]))

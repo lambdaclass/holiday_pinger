@@ -61,16 +61,16 @@
 
 ;; FIXME adapt this to new form
 (re-frame/reg-event-fx
- :channel-submit
- (fn [{db :db} [_ {:keys [name type url channels username emoji days-before
+ :channel-edit-submit
+ (fn [{db :db} [_ {:keys [name type url targets username emoji days-before
                           same-day]}]]
-   (let [
+   (let [targets     (string/split targets #"\s+")
          days-before (js/parseInt days-before)
          params      {:name          name
                       :type          type
                       :same_day      same-day
                       :days_before   (if (zero? days-before) nil days-before)
-                      :configuration {:channels channels
+                      :configuration {:channels targets
                                       :url      url
                                       :username username
                                       :emoji    emoji}}]
@@ -93,7 +93,7 @@
  (fn [{db :db} [_ {:keys [type channel-config reminder-config]}]]
    (let [days-before  (js/parseInt (:days-before reminder-config))
          channel-name (:name channel-config)
-         targets      (:targets channel-config)
+         targets      (string/split (:targets channel-config) #"\s+")
          params       {:name          channel-name
                        :type          type
                        :same_day      (:same-day reminder-config)
