@@ -8,10 +8,7 @@
 %% Will need to isolate somehow in the future
 
 all() ->
-  [send_reminders,
-   send_custom_holiday_reminder,
-   dont_send_removed_reminder,
-   send_custom_holiday_reminder,
+  [send_custom_holiday_reminder,
    dont_send_days_before_when_disabled,
    send_days_before_when_set].
 
@@ -23,49 +20,12 @@ end_per_suite(_Config) ->
   ok = application:stop(holiday_ping),
   ok = application:unload(holiday_ping).
 
-send_reminders(_Config) ->
-  #{email := Email, token := Token} = test_utils:create_user_with_token(),
-
-  TableId = ets_channel_table,
-  create_channel(Token, Email, <<"test_ets">>, TableId),
-
-  remind_checker:force_holidays({test_utils:current_year(), 1, 1}),
-  timer:sleep(100),
-  [{Email, Message}] = ets_channel:get_reminders(TableId, Email),
-
-  Expected = list_to_binary(
-               io_lib:format(<<"This is a holiday reminder: ~s will be out on ~2..0B/~2..0B/~B.">>,
-                             ["John Doe", 1, 1, 2017])),
-  Message = Expected,
-
-  ok = test_utils:delete_user(Email).
-
-dont_send_removed_reminder(_Config) ->
-  #{email := Email, token := Token} = test_utils:create_user_with_token(),
-
-  TableId = ets_channel_table2,
-  create_channel(Token, Email, <<"test_ets2">>, TableId),
-
-  {ok, 200, _, DefaultHolidays} = test_utils:api_request(get, Token, "/api/channels/test_ets2/holidays/"),
-
-  %% Remove a holiday and add another
-  Updated = lists:filter(fun (Holiday) ->
-                             not test_utils:is_same_holiday(Holiday, 1, 1)
-                         end, DefaultHolidays),
-  {ok, 200, _, _} = test_utils:api_request(put, Token, "/api/channels/test_ets2/holidays/", Updated),
-
-  remind_checker:force_holidays({test_utils:current_year(), 1, 1}),
-  timer:sleep(100),
-  [] = ets_channel:get_reminders(TableId, Email),
-
-  ok = test_utils:delete_user(Email).
-
 send_custom_holiday_reminder(_Config) ->
   #{email := Email, token := Token} = test_utils:create_user_with_token(),
 
   TableId = ets_channel_table3,
   create_channel(Token, Email, <<"test_ets3">>, TableId),
-  {ok, 200, _, DefaultHolidays} = test_utils:api_request(get, Token, "/api/channels/test_ets3/holidays/"),
+  {ok, 200, _, DefaultHolidays} = test_utils:api_request(get, Token, "/api/holidays/argentina"),
 
   %% Remove a holiday and add another
   CustomDay = <<"1998-03-03">>,
@@ -89,6 +49,10 @@ dont_send_days_before_when_disabled(_Config) ->
   TableId = ets_channel_table4,
   create_channel(Token, Email, <<"test_ets4">>, TableId),
 
+  %% copy holidays from argentina
+  {ok, 200, _, DefaultHolidays} = test_utils:api_request(get, Token, "/api/holidays/argentina"),
+  {ok, 200, _, _} = test_utils:api_request(put, Token, "/api/channels/test_ets4/holidays/", DefaultHolidays),
+
   %% force a holiday three days before new years
   remind_checker:force_holidays({test_utils:current_year() - 1, 12, 29}),
   timer:sleep(100),
@@ -101,6 +65,10 @@ send_days_before_when_set(_Config) ->
 
   TableId = ets_channel_table5,
   create_channel(Token, Email, <<"test_ets5">>, TableId, false, 3),
+
+  %% copy holidays from argentina
+  {ok, 200, _, DefaultHolidays} = test_utils:api_request(get, Token, "/api/holidays/argentina"),
+  {ok, 200, _, _} = test_utils:api_request(put, Token, "/api/channels/test_ets5/holidays/", DefaultHolidays),
 
   %% no reminder on new years
   remind_checker:force_holidays({test_utils:current_year(), 1, 1}),

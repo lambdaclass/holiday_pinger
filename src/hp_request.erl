@@ -24,4 +24,11 @@ request_json(Method, Url, Data, Headers) ->
               {<<"Accept">>, <<"application/json">>} | Headers],
   {ok, Status, ResHeaders, ResBody} =
     hackney:Method(Url, Headers2, Body, [with_body]),
-  {ok, Status, ResHeaders, hp_json:decode(ResBody)}.
+  lager:debug("Response ~p ~p ~p", [Status, ResBody, ResHeaders]),
+  Decoded = decode_response(proplists:get_value(<<"Content-Type">>, ResHeaders), ResBody),
+  {ok, Status, ResHeaders, Decoded}.
+
+decode_response(<<"application/json", _/binary>>, ResBody) ->
+  hp_json:decode(ResBody);
+decode_response(_, ResBody) ->
+  ResBody.

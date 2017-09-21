@@ -4,7 +4,7 @@
 -compile(export_all).
 
 all() ->
-  [get_default_holidays,
+  [get_country_holidays,
    update_holidays].
 
 init_per_suite(Config) ->
@@ -23,19 +23,15 @@ end_per_suite(Config) ->
   ok = test_utils:delete_user(?config(user2, Config)),
   ok = test_utils:delete_user(?config(user3, Config)).
 
-get_default_holidays(Config) ->
+get_country_holidays(Config) ->
   Token1 = ?config(token1, Config),
-  Token3 = ?config(token3, Config),
 
-  create_channel(Token1, "ch1"),
-  create_channel(Token3, "ch3"),
-
-  {ok, 200, _, ArgHolidays} = test_utils:api_request(get, Token1, "/api/channels/ch1/holidays"),
+  {ok, 200, _, ArgHolidays} = test_utils:api_request(get, Token1, "/api/holidays/argentina"),
   true = lists:any(fun (Holiday) ->
                        test_utils:is_same_holiday(Holiday, 7, 9, <<"Independence day">>)
                    end, ArgHolidays),
 
-  {ok, 200, _, UsHolidays} = test_utils:api_request(get, Token3, "/api/channels/ch3/holidays"),
+  {ok, 200, _, UsHolidays} = test_utils:api_request(get, Token1, "/api/holidays/united states"),
   true = lists:any(fun (Holiday) ->
                        test_utils:is_same_holiday(Holiday, 7, 4, <<"Independence day">>)
                    end, UsHolidays),
@@ -52,7 +48,8 @@ update_holidays(Config) ->
   CurrentYear = integer_to_binary(Y),
   CustomDay = <<CurrentYear/binary, "-03-03">>,
 
-  {ok, 200, _, ArgHolidays} = test_utils:api_request(get, Token1, "/api/channels/ch11/holidays/"),
+  %% use argentina holidays as base
+  {ok, 200, _, ArgHolidays} = test_utils:api_request(get, Token1, "/api/holidays/argentina"),
 
   %% Remove a holiday and add another
   ArgHolidays2 = lists:filter(fun (Holiday) ->
@@ -71,9 +68,8 @@ update_holidays(Config) ->
                    end, StoredHolidays),
 
   %% Check the changes dont affect another user of the same country
-  {ok, 200, _, ArgHolidays} = test_utils:api_request(get, Token2, "/api/channels/ch11/holidays/"),
+  {ok, 200, _, []} = test_utils:api_request(get, Token2, "/api/channels/ch11/holidays/"),
   ok.
-
 
 %%% internal
 create_channel(Token, Name) ->

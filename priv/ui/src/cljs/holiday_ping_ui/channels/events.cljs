@@ -59,44 +59,60 @@
            (fn [channels]
              (remove #(= (:name %) channel) channels)))))
 
-(defn valid-slack-target?
-  [value]
-  (or (string/starts-with? value "#")
-      (string/starts-with? value "@")))
-
 (re-frame/reg-event-fx
- :channel-submit
- (fn [{db :db} [_ {:keys [name type url channels username emoji days-before
+ :channel-edit-submit
+ (fn [{db :db} [_ {:keys [name type url targets username emoji days-before
                           same-day]}]]
-   (let [channels    (string/split channels #"\s+")
+   (let [targets     (string/split targets #"\s+")
          days-before (js/parseInt days-before)
          params      {:name          name
                       :type          type
                       :same_day      same-day
                       :days_before   (if (zero? days-before) nil days-before)
-                      :configuration {:channels channels
+                      :configuration {:channels targets
                                       :url      url
                                       :username username
                                       :emoji    emoji}}]
-     (cond
-       (some string/blank? [name type url])
-       {:dispatch [:error-message "Please fill required fields."]}
+     {:http-xhrio {:method          :put
+                   :uri             (str "/api/channels/" name)
+                   :headers         {:authorization (str "Bearer " (:access-token db))}
+                   :timeout         8000
+                   :format          (ajax/json-request-format)
+                   :params          params
+                   :response-format (ajax/text-response-format)
+                   :on-success      [:navigate :channel-list]
+                   :on-failure      [:error-message "Channel submission failed"]}})))
 
-       (not (every? valid-slack-target? channels))
-       {:dispatch [:error-message "Slack targets must start with @ or #"]}
+(re-frame/reg-event-fx
+ :wizard-submit
+ (fn [{db :db} [_ {:keys [type channel-config reminder-config]}]]
+   (let [days-before  (js/parseInt (:days-before reminder-config))
+         channel-name (:name channel-config)
+         targets      (string/split (:targets channel-config) #"\s+")
+         params       {:name          channel-name
+                       :type          type
+                       :same_day      (:same-day reminder-config)
+                       :days_before   (if (zero? days-before) nil days-before)
+                       :configuration (-> channel-config
+                                          (assoc :channels targets)
+                                          (dissoc :targets)
+                                          (dissoc :name))}]
+     {:db         (assoc db :loading-view? true)
+      :http-xhrio {:method          :put
+                   :uri             (str "/api/channels/" channel-name)
+                   :headers         {:authorization (str "Bearer " (:access-token db))}
+                   :timeout         8000
+                   :format          (ajax/json-request-format)
+                   :params          params
+                   :response-format (ajax/text-response-format)
+                   :on-success      [:wizard-submit-success channel-name]
+                   :on-failure      [:error-message "Channel submission failed"]}})))
 
-       (not (string/starts-with? url "https://hooks.slack.com/"))
-       {:dispatch [:error-message "The url should be a valid slack hook url."]}
-
-       :else {:http-xhrio {:method          :put
-                           :uri             (str "/api/channels/" name)
-                           :headers         {:authorization (str "Bearer " (:access-token db))}
-                           :timeout         8000
-                           :format          (ajax/json-request-format)
-                           :params          params
-                           :response-format (ajax/text-response-format)
-                           :on-success      [:navigate :channel-list]
-                           :on-failure      [:error-message "Channel submission failed"]}}))))
+(re-frame/reg-event-fx
+ :wizard-submit-success
+ (fn [_ [_ channel-name]]
+   {:dispatch-n [[:holidays-save channel-name]
+                 [:navigate :channel-list]]}))
 
 (re-frame/reg-event-db
  :channel-test-start

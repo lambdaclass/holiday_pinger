@@ -5,12 +5,11 @@
 
 ;; maybe slugify names instead of having to put a regex here?
 (def app-routes ["/" [[""                                         :channel-list]
-                      ["channels/new"                             :channel-create]
+                      ["channels/new/"                            :channel-create]
                       [["channels/" [#".+" :channel] "/edit"]     :channel-edit]
                       [["channels/" [#".+" :channel] "/holidays"] :holidays]
                       ["login"                                    :login]
                       ["register"                                 :register]
-                      ["github/profile"                           :github-register]
                       ["oauth/github/callback"                    :github-callback]
                       [true                                       :not-found]]])
 
@@ -41,5 +40,5 @@
   (loging, register, etc.)."
   [view]
   (contains?
-   #{:login :register :github-callback :github-register}
+   #{:login :register :github-callback}
    view))

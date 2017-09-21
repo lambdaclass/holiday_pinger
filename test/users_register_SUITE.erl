@@ -23,8 +23,7 @@ register_valid_user(_Config) ->
     Body = #{
       email => Email,
       name => <<"John Doe">>,
-      password => <<"S3cr3t!!">>,
-      country => <<"argentina">>
+      password => <<"S3cr3t!!">>
      },
 
     {ok, 201, _, _} = test_utils:api_request(post, public, "/api/users", Body),
@@ -36,8 +35,7 @@ fail_register_on_missing_fields(_Config) ->
     Body = #{
       email => Email,
       name => <<"John Doe">>,
-      password => <<"S3cr3t!!">>,
-      country => <<"argentina">>
+      password => <<"S3cr3t!!">>
      },
 
     {ok, 400, _, #{message := <<"Missing required fields">>}} =
@@ -46,8 +44,6 @@ fail_register_on_missing_fields(_Config) ->
         test_utils:api_request(post, public, "/api/users", maps:remove(name, Body)),
     {ok, 400, _, #{message := <<"Missing required fields">>}} =
         test_utils:api_request(post, public, "/api/users", maps:remove(password, Body)),
-    {ok, 400, _, #{message := <<"Missing required fields">>}} =
-        test_utils:api_request(post, public, "/api/users", maps:remove(country, Body)),
     ok.
 
 fail_register_on_invalid_fields(_Config) ->

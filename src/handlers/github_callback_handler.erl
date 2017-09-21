@@ -32,17 +32,10 @@ from_json(Req, State) ->
   Profile = get_public_profile(GithubToken),
   Email = get_primary_email(GithubToken),
 
-  %% return a different token according to the registration status of the user
-  RespBody = case db_user:get(Email) of
-               {ok, User} ->
-                 Token = build_holiday_access_token(User, Profile),
-                 #{new_user => false, access_token => Token};
-               {error, not_found} ->
-                 Token = build_registration_token(Email, Profile),
-                 #{new_user => true, registration_token => Token}
-             end,
+  ok = register_user(Email, Profile),
+  Token = build_holiday_access_token(Email, Profile),
 
-  Encoded = hp_json:encode(RespBody),
+  Encoded = hp_json:encode(#{access_token => Token}),
   Req3 = cowboy_req:set_resp_body(Encoded, Req2),
   {true, Req3, State}.
 
@@ -75,15 +68,21 @@ get_primary_email(GithubToken) ->
                                   end, Emails),
   maps:get(email, Primary).
 
-build_holiday_access_token(User, #{ avatar_url := Avatar}) ->
-  {ok, Token} = hp_auth:access_token_encode(User#{avatar => Avatar}),
-  Token.
+register_user(Email, #{name := Name}) ->
+  %% only attempt to create it if it's not already registered
+  case db_user:get(Email) of
+    {error, not_found} ->
+      {ok, _} = db_user:create_github_user(Email, Name),
+      ok;
+    {ok, _} ->
+      ok
+  end.
 
-build_registration_token(Email, GithubProfile) ->
-  UserData = #{
+build_holiday_access_token(Email, #{ avatar_url := Avatar, name := Name}) ->
+  Data = #{
     email => Email,
-    name => maps:get(name, GithubProfile),
-    avatar => maps:get(avatar_url, GithubProfile)
+    name => Name,
+    avatar => Avatar
    },
-  {ok, Token} = hp_auth:registration_token_encode(UserData),
+  {ok, Token} = hp_auth:token_encode(Data),
   Token.

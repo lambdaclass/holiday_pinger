@@ -17,5 +17,4 @@
    :calendar-selected-year     (time/year (time/today))
    :calendar-selected-day      nil
    :calendar-selected-day-name ""
-   :country                    nil
    })

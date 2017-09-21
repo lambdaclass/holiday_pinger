@@ -22,25 +22,40 @@
   (fn [form field] (:type field)))
 
 (defmethod input-view "select"
-  [form field]
+  [form {:keys [key disabled options]}]
   [:div.select
-   [:select {:on-change (field-handler form (:key field))
-             :value     (get field :value "")}
-    (for [option (:options field)
+   [:select {:on-change (field-handler form key)
+             :value     (get @form key "")
+             :disabled  disabled}
+    (for [option options
           :let   [value (get option :value option)
                   text  (get option :text option)]]
       [:option {:key value :value value} text])]])
 
+(defn validate
+  [form {:keys [key validate required]}]
+  (let [value (key @form)]
+    (cond
+      (nil? value)         [true] ;; dont validate before entering values
+      (and value validate) @(re-frame/subscribe [validate value @form])
+      required             @(re-frame/subscribe [:valid-required? value])
+      :else                [true])))
+
 (defmethod input-view :default
   [form {:keys [key type disabled] :as field}]
-  (let [attrs {:type        type
-               :name        (field-name field)
-               :placeholder (field-name field)
-               :value       (get @form key)
-               :on-change   (field-handler form key)}]
-    [:input.input (if disabled
-                    (assoc attrs :disabled true)
-                    attrs)]))
+  (let [[valid? message] (validate form field)
+        attrs            {:type        type
+                          :name        (field-name field)
+                          :placeholder (field-name field)
+                          :class       (when-not valid? "is-danger")
+                          :value       (get @form key)
+                          :on-change   (field-handler form key)}]
+    [:div
+     [:input.input (if disabled
+                     (assoc attrs :disabled true)
+                     attrs)]
+     (when-not valid?
+       [:p.help.is-danger message])]))
 
 (defn input-label
   [field]
@@ -50,7 +65,7 @@
   [fields]
   (reduce
    (fn [defaults field]
-     (assoc defaults (:key field) (get field :value "")))
+     (assoc defaults (:key field) (get field :value)))
    {} fields))
 
 (defn field-view
@@ -62,26 +77,43 @@
    (when help-text
      [:p.help help-text])])
 
+(defn detached-form-view
+  "Generate the hiccup of a form based on a spec map, using an external state
+   atom."
+  [form fields]
+  [:div
+   (for [{:keys [key] :as field} fields]
+     ^{:key key}[field-view form field])
+   [:div]]) ;; need this div to force a margin below last field
+
+(defn cancel-button
+  [{:keys [on-cancel]}]
+  (when on-cancel
+    [:div.control
+     [:button.button.is-medium {:type     "button"
+                                :on-click #(re-frame/dispatch on-cancel)}
+      "Cancel"]]))
+
+(defn submit-button
+  [form {:keys [on-submit submit-text fields submit-class]}]
+  (let [valid? @(re-frame/subscribe [:valid-form? @form fields])
+        class  (str submit-class " " (when-not valid? "is-static"))]
+    [:button.button.is-primary.is-medium
+     {:type     "submit"
+      :class    class
+      :on-click (fn [event]
+                  (re-frame/dispatch (conj on-submit @form))
+                  (.preventDefault event))}
+     submit-text]))
+
 (defn form-view
-  "Generate the hiccup of a form based on a spec map."
-  [{:keys [header-text submit-text submit-class on-submit on-cancel fields]}]
+  "Generate the hiccup of a form based on a spec map, with internally managed
+  state."
+  [{:keys [fields] :as spec}]
   (let [form (reagent/atom (get-defaults fields))]
     (fn []
       [:form
-       [:div.content
-        [:p header-text]]
-       (for [{:keys [key] :as field} fields]
-         ^{:key key}[field-view form field])
+       [detached-form-view form fields]
        [:div.field.is-grouped.is-grouped-centered
-        (when on-cancel
-          [:div.control
-           [:button.button.is-medium {:type     "button"
-                                      :on-click #(re-frame/dispatch on-cancel)}
-            "Cancel"]])
-        [:button.button.is-primary.is-medium
-         {:type     "submit"
-          :class    submit-class
-          :on-click (fn [event]
-                      (re-frame/dispatch (conj on-submit @form))
-                      (.preventDefault event))}
-         submit-text]]])))
+        [cancel-button spec]
+        [submit-button form spec]]])))

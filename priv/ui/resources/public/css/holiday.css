@@ -33,6 +33,10 @@ button.date-item {
 
 }
 
-.breadcrumb ul :first-child a {
-    padding: 0.5em 0.75em 0.5em 0em;
+.breadcrumb {
+    margin-top: -2rem
+}
+
+.steps.is-small .step-item .step-content .step-title {
+    font-size: 1rem
 }
