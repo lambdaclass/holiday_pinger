@@ -93,11 +93,15 @@
  (fn [{db :db} [_ {:keys [type channel-config reminder-config]}]]
    (let [days-before  (js/parseInt (:days-before reminder-config))
          channel-name (:name channel-config)
+         targets      (:targets channel-config)
          params       {:name          channel-name
                        :type          type
                        :same_day      (:same-day reminder-config)
                        :days_before   (if (zero? days-before) nil days-before)
-                       :configuration (dissoc  channel-config :name)}]
+                       :configuration (-> channel-config
+                                          (assoc :channels targets)
+                                          (dissoc :targets)
+                                          (dissoc :name))}]
      {:db         (assoc db :loading-view? true)
       :http-xhrio {:method          :put
                    :uri             (str "/api/channels/" channel-name)

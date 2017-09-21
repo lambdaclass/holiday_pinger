@@ -23,3 +23,25 @@
    (if (string/blank? value)
      [false "This field is required."]
      [true])))
+
+(defn get-validation-subs
+  "Build a list of validation subs based on the :required and :validate values
+  of each field spec."
+  [form fields]
+  (reduce
+   (fn [acc {:keys [key required validate]}]
+     (cond-> acc
+       required (conj [:valid-required? (key form)])
+       validate (conj [validate (key form)])))
+   [] fields))
+
+(re-frame/reg-sub
+ :valid-form?
+ (fn [[_ form fields]]
+   (->> fields
+        (get-validation-subs form)
+        (map re-frame/subscribe)
+        (doall)))
+
+ (fn [validations _]
+   (every? true? (map first validations))))

@@ -34,13 +34,3 @@
        (if-not (or (nil? url) (string/starts-with? url "https://hooks.slack.com/"))
          [false "The url should be a valid slack hook url."]
          [true])))))
-
-(re-frame/reg-sub
- :valid-slack-config?
- (fn [[_ form]]
-   [(re-frame/subscribe [:valid-required? (:name form)])
-    (re-frame/subscribe [:valid-required? (:url form)])
-    (re-frame/subscribe [:valid-slack-targets? (:targets form)])
-    (re-frame/subscribe [:valid-slack-hook? (:url form)])])
- (fn [validations _]
-   (every? true? (map first validations))))

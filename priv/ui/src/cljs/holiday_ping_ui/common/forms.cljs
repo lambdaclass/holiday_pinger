@@ -80,30 +80,40 @@
 (defn detached-form-view
   "Generate the hiccup of a form based on a spec map, using an external state
    atom."
-  [form {:keys [fields]}]
+  [form fields]
   [:div
    (for [{:keys [key] :as field} fields]
      ^{:key key}[field-view form field])
    [:div]]) ;; need this div to force a margin below last field
 
+(defn cancel-button
+  [{:keys [on-cancel]}]
+  (when on-cancel
+    [:div.control
+     [:button.button.is-medium {:type     "button"
+                                :on-click #(re-frame/dispatch on-cancel)}
+      "Cancel"]]))
+
+(defn submit-button
+  [form {:keys [on-submit submit-text fields]}]
+  (let [valid? @(re-frame/subscribe [:valid-form? @form fields])]
+    [:button.button.is-primary.is-medium
+     {:type     "submit"
+      :class    (when-not valid? "is-static")
+      :on-click (fn [event]
+                  (re-frame/dispatch (conj on-submit @form))
+                  (.preventDefault event))}
+     submit-text]))
+
 (defn form-view
   "Generate the hiccup of a form based on a spec map, with internally managed
   state."
-  [{:keys [submit-text submit-class on-submit on-cancel fields] :as spec}]
+  [{:keys [fields] :as spec}]
   (let [form (reagent/atom (get-defaults fields))]
     (fn []
       [:form
-       [detached-form-view form spec]
+       [detached-form-view form fields]
+       [:br]
        [:div.field.is-grouped.is-grouped-centered
-        (when on-cancel
-          [:div.control
-           [:button.button.is-medium {:type     "button"
-                                      :on-click #(re-frame/dispatch on-cancel)}
-            "Cancel"]])
-        [:button.button.is-primary.is-medium
-         {:type     "submit"
-          :class    submit-class
-          :on-click (fn [event]
-                      (re-frame/dispatch (conj on-submit @form))
-                      (.preventDefault event))}
-         submit-text]]])))
+        [cancel-button spec]
+        [submit-button form spec]]])))
