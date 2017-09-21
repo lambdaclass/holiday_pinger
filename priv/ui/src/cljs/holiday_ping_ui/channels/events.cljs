@@ -59,7 +59,6 @@
            (fn [channels]
              (remove #(= (:name %) channel) channels)))))
 
-;; FIXME adapt this to new form
 (re-frame/reg-event-fx
  :channel-edit-submit
  (fn [{db :db} [_ {:keys [name type url targets username emoji days-before
@@ -74,19 +73,15 @@
                                       :url      url
                                       :username username
                                       :emoji    emoji}}]
-     (cond
-       (some string/blank? [name url])
-       {:dispatch [:error-message "Please fill required fields."]}
-
-       :else {:http-xhrio {:method          :put
-                           :uri             (str "/api/channels/" name)
-                           :headers         {:authorization (str "Bearer " (:access-token db))}
-                           :timeout         8000
-                           :format          (ajax/json-request-format)
-                           :params          params
-                           :response-format (ajax/text-response-format)
-                           :on-success      [:navigate :channel-list]
-                           :on-failure      [:error-message "Channel submission failed"]}}))))
+     {:http-xhrio {:method          :put
+                   :uri             (str "/api/channels/" name)
+                   :headers         {:authorization (str "Bearer " (:access-token db))}
+                   :timeout         8000
+                   :format          (ajax/json-request-format)
+                   :params          params
+                   :response-format (ajax/text-response-format)
+                   :on-success      [:navigate :channel-list]
+                   :on-failure      [:error-message "Channel submission failed"]}})))
 
 (re-frame/reg-event-fx
  :wizard-submit
