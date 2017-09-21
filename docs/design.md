@@ -66,10 +66,13 @@ looks like an interesting structure/pattern to guarantee decoupling, but at time
 feels like too much for a small project.
 
 quote by re-frame author:
+
+```
 mikethompson [3:34 AM]
 @sandbags @gklijs I always have the same response :-)  You can absolutely use Reagent by itself if your application is simple enough.  BUT if  you just use Reagent by itself then you only have the V bit of an application.  As your application starts to get more complicated, you **will** start to create an architecture which adds `control logic` and `state management` - the M and C parts (even if you don't think you are, you are).  So then the question becomes:  is your architecture better than re-frame's or not?  And some people prefer their own architectures and would answer "yes" :-)   Fair enough.
 I think the only danger arises if this process is not conscious - if someone creates a dogs breakfast of an architecture and doesn;t even know they've done it.  I've had MANY people privately admit that's what happened to them ... and then they swapped to re-frame to get some structure back.
-So, my advice is .... if your application is a little more complicated, be sure to make a conscious choice around architecture, because one way or another you'll be using one. (edited)
+So, my advice is .... if your application is a little more complicated, be sure to make a conscious choice around architecture, because one way or another you'll be using one.
+```
 
 for a strongly structured and opinionated framework, it feels lacking
 a standarad for routing and handling the data loading associated with a
@@ -85,6 +88,10 @@ The same can be said about a models file or your REST URIs.
 Once we saw the UI, we knew we have to turn around the relations between our
 entities, and what's more when we did the code turned out to be simpler
 (a supervisor and gen server we had recently introduced became unnecessary)
+
+The same happened with country detection: after realizing channel creation demanded a wizard
+ui, country selection was an obvious candidate for a wizard step, thus removing the need to
+depend on an external source for country detection, dramatically simplifying github login flow, etc.
 
 - This is nothing new, but frontend takes way more time than backend.
 
