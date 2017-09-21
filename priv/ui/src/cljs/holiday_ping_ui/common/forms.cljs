@@ -95,11 +95,12 @@
       "Cancel"]]))
 
 (defn submit-button
-  [form {:keys [on-submit submit-text fields]}]
-  (let [valid? @(re-frame/subscribe [:valid-form? @form fields])]
+  [form {:keys [on-submit submit-text fields submit-class]}]
+  (let [valid? @(re-frame/subscribe [:valid-form? @form fields])
+        class  (str submit-class " " (when-not valid? "is-static"))]
     [:button.button.is-primary.is-medium
      {:type     "submit"
-      :class    (when-not valid? "is-static")
+      :class    class
       :on-click (fn [event]
                   (re-frame/dispatch (conj on-submit @form))
                   (.preventDefault event))}
@@ -113,7 +114,6 @@
     (fn []
       [:form
        [detached-form-view form fields]
-       [:br]
        [:div.field.is-grouped.is-grouped-centered
         [cancel-button spec]
         [submit-button form spec]]])))

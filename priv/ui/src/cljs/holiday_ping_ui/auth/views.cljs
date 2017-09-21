@@ -1,14 +1,11 @@
 (ns holiday-ping-ui.auth.views
   (:require
-   [re-frame.core :as re-frame]
    [holiday-ping-ui.routes :as routes]
    [holiday-ping-ui.common.views :as views]
-   [holiday-ping-ui.common.forms :as forms]
-   [holiday-ping-ui.auth.countries :as countries]))
+   [holiday-ping-ui.common.forms :as forms]))
 
 ;;; AUTH VIEWS
 
-;; FIXME use new style validations in this form
 (defn login-view []
   [:div
    [views/section-size :is-one-third
@@ -35,7 +32,6 @@
       [:p.has-text-centered "Don't have an account? "
        [:a {:href (routes/url-for :register)} "Click here to register."]]]]]])
 
-;; FIXME use new style validations in this form
 (defn register-view []
   [:div
    [views/section-size :is-half
