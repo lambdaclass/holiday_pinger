@@ -47,7 +47,7 @@
        [:p.help.is-danger message])]))
 
 (defmethod input-view "textarea"
-  [form {:keys [key type disabled read-only value] :as field}]
+  [form {:keys [key type disabled read-only rows value] :as field}]
   (let [[valid? message] (validate form field)
         attrs            {:type        type
                           :name        (field-name field)
@@ -56,11 +56,16 @@
                           :value       (get @form key value)
                           :on-change   (field-handler form key)
                           :read-only   read-only
+                          :rows        rows
                           :disabled    disabled}]
     [:div
      [:textarea.textarea attrs]
      (when-not valid?
        [:p.help.is-danger message])]))
+
+(defmethod input-view "code"
+  [form {:keys [value]}]
+  [:pre [:code value]])
 
 (defmethod input-view "select"
   [form {:keys [key disabled options]}]

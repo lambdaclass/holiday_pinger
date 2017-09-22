@@ -30,11 +30,10 @@
               {:key       :secret
                :type      "password"
                :help-text "If secret is provided, we will use it to generate the HMAC digest of the request payload, which we will send base64 encoded in the X-Holiday-Signature header. "}
-              {:key       :example-payload
-               :type      "textarea"
-               :label     "Example payload"
-               :value     "FIXME put here"
-               :read-only true}]})
+              {:key   :example-payload
+               :type  "code"
+               :label "Example payload"
+               :value "{\n  \"date\": \"2017-09-22\",\n  \"email\": \"john.doe@mail.com\",\n  \"message\" :\"This is a Holiday Ping test: John Doe will be out on holidays.\",\n  \"name\": \"Facundo Olano\"\n}"}]})
 
 (def reminders
   [{:key     :same-day
