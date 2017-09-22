@@ -59,7 +59,7 @@
            (fn [channels]
              (remove #(= (:name %) channel) channels)))))
 
-(defn clean-emoji
+(defn- clean-emoji
   [emoji]
   (when-not (string/blank? emoji)
     (let [emoji (string/trim emoji)]
@@ -67,25 +67,31 @@
            emoji
            (when-not (= (last emoji) ":") ":")))))
 
-(defn clean-slack-channel
+(defn- clean-slack-channel
   [channel]
   (let [channel (string/trim channel)]
     (str (when-not (= (first channel) "#") "#")
          channel)))
 
-(defn clean-slack-user
+(defn- clean-slack-user
   [user]
   (let [user (string/trim user)]
     (str (when-not (= (first user) "@") "@")
          user)))
+
+(defn- split-whitespace
+  [string]
+  (if (string/blank? string)
+    []
+    (string/split string #"\s+")))
 
 (defmulti clean-config
   (fn [type data] type))
 
 (defmethod clean-config "slack"
   [_ {:keys [url channels users username emoji]}]
-  (let [channels (map clean-slack-channel (string/split channels #"\s+"))
-        users    (map clean-slack-user (string/split users #"\s+"))]
+  (let [channels (->> channels split-whitespace (map clean-slack-channel))
+        users    (->> users split-whitespace (map clean-slack-user))]
     {:channels (concat channels users)
      :url      url
      :username username
