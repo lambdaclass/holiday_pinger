@@ -27,9 +27,9 @@ content_types_accepted(Req, State) ->
 from_json(Req, State = #{user := User, email := Email, name := Name}) ->
   case db_channel:get(Email, Name) of
     {ok, Channel} ->
-      Username = maps:get(<<"name">>, User),
+      Username = maps:get(name, User),
       Message = <<"This is a Holiday Ping test: ", Username/binary, " will be out on holidays.">>,
-      remind_router:send(Channel, Message),
+      remind_router:send(User, Channel, erlang:date(), Message),
       {true, Req, State};
     _ ->
       req_utils:error_response(404, <<"Channel not found.">>, Req)

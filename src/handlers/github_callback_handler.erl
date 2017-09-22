@@ -1,9 +1,8 @@
 -module(github_callback_handler).
 
 %%% REST handler that receives the authentication code set by GitHub in the OAuth callback.
-%%% If the user was registered before and it's Logging in, return an access_token.
-%%% If the user is new, return a registration callback that can be used to fill
-%%% the rest of the profile (i.e. the Country).
+%%% If the user is new, register it with the data from GitHub
+%%% In any case, respond with an access_token
 
 -export([init/3,
          allowed_methods/2,

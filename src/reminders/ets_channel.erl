@@ -1,6 +1,6 @@
 -module(ets_channel).
 
--export([handle/2,
+-export([handle/4,
          init_table/1,
          get_reminders/2]).
 
@@ -12,7 +12,7 @@ init_table(TableId) ->
 get_reminders(TableId, Email) ->
   ets:lookup(TableId, Email).
 
-handle(Config, Message) ->
+handle(_User, _Date, Config, Message) ->
   #{email := Email,
     table_id := TableId} = Config,
   ets:insert(erlang:binary_to_existing_atom(TableId, latin1), {Email, Message}),

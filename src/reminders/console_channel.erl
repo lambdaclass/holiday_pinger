@@ -1,6 +1,6 @@
 -module(console_channel).
 
--export([handle/2]).
+-export([handle/4]).
 
-handle(_Config, Message) ->
+handle(_User, _Date, _Config, Message) ->
   lager:info(Message).

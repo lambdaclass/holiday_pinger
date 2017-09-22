@@ -30,7 +30,6 @@ handle_cast(_Request, State) ->
   {noreply, State}.
 
 handle_info(check_holidays, State) ->
-  %% for now remind when we're already in the holiday
   HolidayDate = erlang:date(),
   check_holidays(HolidayDate),
   {noreply, State};

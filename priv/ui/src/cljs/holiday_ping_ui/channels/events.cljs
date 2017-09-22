@@ -66,21 +66,30 @@
       (str (when-not (= (first emoji) ":") ":")
            emoji
            (when-not (= (last emoji) ":") ":")))))
+(defmulti clean-config
+  (fn [type data] type))
+
+(defmethod clean-config "slack"
+  [_ {:keys [url targets username emoji]}]
+  {:channels (string/split targets #"\s+")
+   :url      url
+   :username username
+   :emoji    (clean-emoji emoji)})
+
+(defmethod clean-config "webhook"
+  [_ {:keys [url secret]}]
+  {:url    url
+   :secret secret})
 
 (re-frame/reg-event-fx
  :channel-edit-submit
- (fn [{db :db} [_ {:keys [name type url targets username emoji days-before
-                          same-day]}]]
-   (let [targets     (string/split targets #"\s+")
-         days-before (js/parseInt days-before)
+ (fn [{db :db} [_ {:keys [name type days-before same-day] :as data}]]
+   (let [days-before (js/parseInt days-before)
          params      {:name          name
                       :type          type
                       :same_day      same-day
                       :days_before   (if (zero? days-before) nil days-before)
-                      :configuration {:channels targets
-                                      :url      url
-                                      :username username
-                                      :emoji    (clean-emoji emoji)}}]
+                      :configuration (clean-config type data)}]
      {:http-xhrio {:method          :put
                    :uri             (str "/api/channels/" name)
                    :headers         {:authorization (str "Bearer " (:access-token db))}
@@ -96,16 +105,11 @@
  (fn [{db :db} [_ {:keys [type channel-config reminder-config]}]]
    (let [days-before  (js/parseInt (:days-before reminder-config))
          channel-name (:name channel-config)
-         targets      (string/split (:targets channel-config) #"\s+")
          params       {:name          channel-name
                        :type          type
                        :same_day      (:same-day reminder-config)
                        :days_before   (if (zero? days-before) nil days-before)
-                       :configuration (-> channel-config
-                                          (update :emoji clean-emoji)
-                                          (assoc :channels targets)
-                                          (dissoc :targets)
-                                          (dissoc :name))}]
+                       :configuration (clean-config type channel-config)}]
      {:db         (assoc db :loading-view? true)
       :http-xhrio {:method          :put
                    :uri             (str "/api/channels/" channel-name)
