@@ -5,6 +5,7 @@
    [reagent.core  :as reagent]
    [holiday-ping-ui.routes :as routes]
    [holiday-ping-ui.common.forms :as forms]
+   [holiday-ping-ui.channels.forms :as channel-forms]
    [holiday-ping-ui.common.views :as views]
    [holiday-ping-ui.holidays.views :as holidays]
    [holiday-ping-ui.holidays.calendar :as calendar]))
@@ -97,52 +98,15 @@
       [forms/form-view {:submit-text "Save"
                         :on-submit   [:channel-edit-submit]
                         :on-cancel   [:navigate :channel-list]
-                        :fields      [{:key      :name
-                                       :type     "text"
-                                       :value    (:name channel)
-                                       :disabled true}
-                                      {:key      :type
-                                       :type     "text"
-                                       :options  ["slack"]
-                                       :value    "slack"
-                                       :disabled true}
-                                      {:key       :url
-                                       :type      "text"
-                                       :label     "Slack hook url"
-                                       :value     (get-in channel [:configuration :url])
-                                       :validate  :valid-slack-hook?
-                                       :help-text [:span "You can get the hook url "
-                                                   [:a {:href   "https://my.slack.com/services/new/incoming-webhook/"
-                                                        :target "blank"} "here."]]
-                                       :required  true}
-                                      {:key       :targets
-                                       :type      "text"
-                                       :label     "Targets"
-                                       :value     (string/join " " (get-in channel [:configuration :channels]))
-                                       :validate  :valid-slack-targets?
-                                       :help-text "Space separated, use \"#name\" for channels and \"@name\" for users."}
-                                      {:key   :username
-                                       :type  "text"
-                                       :value (get-in channel [:configuration :username])
-                                       :label "Bot username"}
-                                      {:key   :emoji
-                                       :type  "text"
-                                       :value (get-in channel [:configuration :emoji])
-                                       :label "Bot emoji"}
-                                      {:key     :same-day
-                                       :label   "Send a reminder on the same day."
-                                       :type    "select"
-                                       :value   (:same_day channel)
-                                       :options [{:text "Yes" :value true}
-                                                 {:text "Don't send" :value false}]}
-                                      {:key     :days-before
-                                       :label   "Send a reminder before the holiday."
-                                       :type    "select"
-                                       :value   (or(:days_before channel) 0)
-                                       :options [{:text "Don't send" :value 0}
-                                                 {:text "The day before" :value 1}
-                                                 {:text "Three days before" :value 3}
-                                                 {:text "A week before" :value 7}]}]}]]]))
+                        :defaults    {:name        (:name channel)
+                                      :type        (:type channel)
+                                      :url         (get-in channel [:configuration :url])
+                                      :targets     (string/join " " (get-in channel [:configuration :channels]))
+                                      :username    (get-in channel [:configuration :username])
+                                      :emoji       (get-in channel [:configuration :emoji])
+                                      :same-day    (:same_day channel)
+                                      :days-before (or(:days_before channel) 0)}
+                        :fields      (channel-forms/edit-fields channel)}]]]))
 
 ;;; WIZARD VIEWS
 
@@ -212,77 +176,25 @@
     [type-card wizard-state :email "Email" "/img/email.jpg"]
     [type-card wizard-state :webhooks "Webhooks" "/img/webhooks.png"]]])
 
-(def slack-fields
-  ;; TODO add a name already taken validation
-  [{:key      :name
-    :type     "text"
-    :required true}
-   {:key       :url
-    :type      "text"
-    :label     "Slack hook url"
-    :validate  :valid-slack-hook?
-    :help-text [:span "You can get the hook url "
-                [:a {:href   "https://my.slack.com/services/new/incoming-webhook/"
-                     :target "blank"} "here."]]
-    :required  true}
-   {:key       :targets
-    :type      "text"
-    :label     "Targets"
-    :validate  :valid-slack-targets?
-    :help-text "Where to send the message. Space separated, use \"#name\" for channels and \"@name\" for users. If left empty, the channel configured in the Slack hook will be used."}
-   {:key       :username
-    :type      "text"
-    :label     "Bot username"
-    :help-text "Defaults to HolidayPing"}
-   {:key       :emoji
-    :type      "text"
-    :label     "Bot emoji"
-    :help-text "Defaults to :calendar:"}])
-
-(defn slack-config-form
-  [wizard-state]
-  (let [channel-state (reagent/cursor wizard-state [:channel-config])
-        valid-form?   @(re-frame/subscribe [:valid-form? @channel-state slack-fields])]
+(defn configuration-form
+  [wizard-state type]
+  (let [form-fields   (channel-forms/wizard-config-fields type)
+        channel-state (reagent/cursor wizard-state [:channel-config])
+        valid-form?   @(re-frame/subscribe [:valid-form? @channel-state form-fields])]
     [:div.columns.is-centered
      [:div.column.is-half
-      [step-title "Fill the configuration for the slack integration."]
-      [forms/detached-form-view channel-state slack-fields]
+      [step-title "Fill the configuration for the integration."]
+      [forms/detached-form-view channel-state form-fields]
       [wizard-navigation (dec-step wizard-state) {:static (not valid-form?)
                                                   :event  (inc-step wizard-state)}]]]))
-
-(defn webhooks-config-form
-  [wizard-state]
-  [:div
-   [:br]
-   [step-title "Fill the configuration for the webhooks integration."]
-   ])
-
-(defn email-config-form
-  [wizard-state]
-  [:div
-   [:br]
-   [step-title "Fill the configuration for the email integration."]
-   ])
 
 (defn reminder-config-form
   [wizard-state]
   (let [reminder-state (reagent/cursor wizard-state [:reminder-config])]
     [:div.columns.is-centered
      [:div.column.is-half
-      [step-title "When you want the reminders sent?"]
-      [forms/detached-form-view reminder-state
-       [{:key     :same-day
-         :label   "Send a reminder on the same day."
-         :type    "select"
-         :options [{:text "Yes" :value true}
-                   {:text "Don't send" :value false}]}
-        {:key     :days-before
-         :label   "Send a reminder before the holiday."
-         :type    "select"
-         :options [{:text "Don't send" :value 0}
-                   {:text "The day before" :value 1}
-                   {:text "Three days before" :value 3}
-                   {:text "A week before" :value 7}]}]]
+      [step-title "When do you want the reminders sent?"]
+      [forms/detached-form-view reminder-state channel-forms/reminders]
       [wizard-navigation (dec-step wizard-state) (inc-step wizard-state)]]]))
 
 (defn holiday-source-form
@@ -439,10 +351,7 @@
           [wizard-steps wizard-state step-n]
           (case step
             :type-select     [type-select wizard-state]
-            :channel-config  (case (:type @wizard-state)
-                               :slack    [slack-config-form wizard-state]
-                               :webhooks [webhooks-config-form wizard-state]
-                               :email    [email-config-form wizard-state])
+            :channel-config  [configuration-form wizard-state (:type @wizard-state)]
             :reminder-config [reminder-config-form wizard-state]
             :holidays-source [holiday-source-form wizard-state]
             :holidays        [holiday-config wizard-state])]]))))

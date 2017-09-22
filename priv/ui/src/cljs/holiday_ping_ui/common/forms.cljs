@@ -61,13 +61,6 @@
   [field]
   [:label.label [:b (field-name field) (when (:required field) "*") " "]])
 
-(defn- get-defaults
-  [fields]
-  (reduce
-   (fn [defaults field]
-     (assoc defaults (:key field) (get field :value)))
-   {} fields))
-
 (defn field-view
   [form {:keys [help-text] :as field}]
   [:div.field
@@ -109,8 +102,8 @@
 (defn form-view
   "Generate the hiccup of a form based on a spec map, with internally managed
   state."
-  [{:keys [fields] :as spec}]
-  (let [form (reagent/atom (get-defaults fields))]
+  [{:keys [fields defaults] :or {defaults {}} :as spec}]
+  (let [form (reagent/atom defaults)]
     (fn []
       [:form
        [detached-form-view form fields]
