@@ -24,7 +24,7 @@ is_authorized(bearer, Req, State) ->
     {ok, {<<"bearer">>, Token}, Req2} ->
       case hp_auth:token_decode(Token) of
         {ok, User} ->
-          {true, Req2, State#{user => User, email => maps:get(<<"email">>, User)}};
+          {true, Req2, State#{user => User, email => maps:get(email, User)}};
         _ -> {Fail, Req2, State}
       end;
     _ -> {Fail, Req, State}

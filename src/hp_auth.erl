@@ -30,4 +30,9 @@ token_encode(Data) ->
 
 token_decode(Token) ->
   Secret = hp_config:get(token_secret),
-  jwt:decode(Token, Secret).
+  {ok, Map} = jwt:decode(Token, Secret),
+  Map2 = maps:fold(fun (K, V, Acc) ->
+                       K2 = binary_to_existing_atom(K, latin1),
+                       Acc#{K2 => V}
+                   end, #{}, Map),
+  {ok, Map2}.
