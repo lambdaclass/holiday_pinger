@@ -1,27 +1,40 @@
 (ns holiday-ping-ui.channels.forms)
 
 (def channel-fields
-  {"slack" [{:key       :url
-             :type      "text"
-             :label     "Slack hook url"
-             :validate  :valid-slack-hook?
-             :help-text [:span "You can get the hook url "
-                         [:a {:href   "https://my.slack.com/services/new/incoming-webhook/"
-                              :target "blank"} "here."]]
-             :required  true}
-            {:key       :targets
-             :type      "text"
-             :label     "Targets"
-             :validate  :valid-slack-targets?
-             :help-text "Where to send the message. Space separated, use \"#name\" for channels and \"@name\" for users. If left empty, the channel configured in the Slack hook will be used."}
-            {:key       :username
-             :type      "text"
-             :label     "Bot username"
-             :help-text "Defaults to HolidayPing"}
-            {:key       :emoji
-             :type      "text"
-             :label     "Bot emoji"
-             :help-text "Defaults to :calendar:"}]})
+  {"slack"   [{:key       :url
+               :type      "text"
+               :label     "Slack hook url"
+               :validate  :valid-slack-hook?
+               :help-text [:span "You can get the hook url "
+                           [:a {:href   "https://my.slack.com/services/new/incoming-webhook/"
+                                :target "blank"} "here."]]
+               :required  true}
+              {:key       :targets
+               :type      "text"
+               :label     "Targets"
+               :validate  :valid-slack-targets?
+               :help-text "Where to send the message. Space separated, use \"#name\" for channels and \"@name\" for users. If left empty, the channel configured in the Slack hook will be used."}
+              {:key       :username
+               :type      "text"
+               :label     "Bot username"
+               :help-text "Defaults to HolidayPing"}
+              {:key       :emoji
+               :type      "text"
+               :label     "Bot emoji"
+               :help-text "Defaults to :calendar:"}]
+   "webhook" [{:key       :url
+               :type      "text"
+               :label     "Webhook url"
+               :help-text "The url where we will post the holiday payload."
+               :required  true}
+              {:key       :secret
+               :type      "password"
+               :help-text "If secret is provided, we will use it to generate the HMAC digest of the request payload, which we will send base64 encoded in the X-Holiday-Signature header. "}
+              {:key       :example-payload
+               :type      "textarea"
+               :label     "Example payload"
+               :value     "FIXME put here"
+               :read-only true}]})
 
 (def reminders
   [{:key     :same-day
@@ -49,8 +62,8 @@
   (concat [{:key      :name
             :type     "text"
             :disabled true}
-           {:key      :type
-            :type     "text"
-            :disabled true}]
+           {:key       :type
+            :type      "text"
+            :read-only true}]
           (get channel-fields (:type channel))
           reminders))

@@ -16,10 +16,51 @@
   (let [name_ (or label (name key))]
     (string/capitalize name_)))
 
+(defn- validate
+  [form {:keys [key validate required]}]
+  (let [value (key @form)]
+    (cond
+      (nil? value)         [true] ;; dont validate before entering values
+      (and value validate) @(re-frame/subscribe [validate value @form])
+      required             @(re-frame/subscribe [:valid-required? value])
+      :else                [true])))
+
 (defmulti input-view
   "Multimethod that returns the hiccup component for an input field
   based on the type of the spec map."
   (fn [form field] (:type field)))
+
+(defmethod input-view :default
+  [form {:keys [key type disabled read-only value] :as field}]
+  (let [[valid? message] (validate form field)
+        attrs            {:type        type
+                          :name        (field-name field)
+                          :placeholder (field-name field)
+                          :class       (when-not valid? "is-danger")
+                          :value       (get @form key value)
+                          :on-change   (field-handler form key)
+                          :read-only   read-only
+                          :disabled    disabled}]
+    [:div
+     [:input.input attrs]
+     (when-not valid?
+       [:p.help.is-danger message])]))
+
+(defmethod input-view "textarea"
+  [form {:keys [key type disabled read-only value] :as field}]
+  (let [[valid? message] (validate form field)
+        attrs            {:type        type
+                          :name        (field-name field)
+                          :placeholder (field-name field)
+                          :class       (when-not valid? "is-danger")
+                          :value       (get @form key value)
+                          :on-change   (field-handler form key)
+                          :read-only   read-only
+                          :disabled    disabled}]
+    [:div
+     [:textarea.textarea attrs]
+     (when-not valid?
+       [:p.help.is-danger message])]))
 
 (defmethod input-view "select"
   [form {:keys [key disabled options]}]
@@ -32,30 +73,7 @@
                   text  (get option :text option)]]
       [:option {:key value :value value} text])]])
 
-(defn validate
-  [form {:keys [key validate required]}]
-  (let [value (key @form)]
-    (cond
-      (nil? value)         [true] ;; dont validate before entering values
-      (and value validate) @(re-frame/subscribe [validate value @form])
-      required             @(re-frame/subscribe [:valid-required? value])
-      :else                [true])))
 
-(defmethod input-view :default
-  [form {:keys [key type disabled] :as field}]
-  (let [[valid? message] (validate form field)
-        attrs            {:type        type
-                          :name        (field-name field)
-                          :placeholder (field-name field)
-                          :class       (when-not valid? "is-danger")
-                          :value       (get @form key)
-                          :on-change   (field-handler form key)}]
-    [:div
-     [:input.input (if disabled
-                     (assoc attrs :disabled true)
-                     attrs)]
-     (when-not valid?
-       [:p.help.is-danger message])]))
 
 (defn input-label
   [field]
