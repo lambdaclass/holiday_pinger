@@ -9,11 +9,14 @@
                            [:a {:href   "https://my.slack.com/services/new/incoming-webhook/"
                                 :target "blank"} "here."]]
                :required  true}
-              {:key       :targets
+              {:key       :channels
                :type      "text"
-               :label     "Targets"
-               :validate  :valid-slack-targets?
-               :help-text "Where to send the message. Space separated, use \"#name\" for channels and \"@name\" for users. If left empty, the channel configured in the Slack hook will be used."}
+               :label     "Channels"
+               :help-text "Space separated list of slack channels to post the reminder to. If left empty, the channel configured in the Slack hook will be used."}
+              {:key       :users
+               :type      "text"
+               :label     "Users"
+               :help-text "Space separated list of slack users to send the reminder to."}
               {:key       :username
                :type      "text"
                :label     "Bot username"

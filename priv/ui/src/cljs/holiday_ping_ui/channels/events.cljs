@@ -61,20 +61,35 @@
 
 (defn clean-emoji
   [emoji]
-  (let [emoji (string/trim emoji)]
-    (when-not (string/blank? emoji)
+  (when-not (string/blank? emoji)
+    (let [emoji (string/trim emoji)]
       (str (when-not (= (first emoji) ":") ":")
            emoji
            (when-not (= (last emoji) ":") ":")))))
+
+(defn clean-slack-channel
+  [channel]
+  (let [channel (string/trim channel)]
+    (str (when-not (= (first channel) "#") "#")
+         channel)))
+
+(defn clean-slack-user
+  [user]
+  (let [user (string/trim user)]
+    (str (when-not (= (first user) "@") "@")
+         user)))
+
 (defmulti clean-config
   (fn [type data] type))
 
 (defmethod clean-config "slack"
-  [_ {:keys [url targets username emoji]}]
-  {:channels (string/split targets #"\s+")
-   :url      url
-   :username username
-   :emoji    (clean-emoji emoji)})
+  [_ {:keys [url channels users username emoji]}]
+  (let [channels (map clean-slack-channel (string/split channels #"\s+"))
+        users    (map clean-slack-user (string/split users #"\s+"))]
+    {:channels (concat channels users)
+     :url      url
+     :username username
+     :emoji    (clean-emoji emoji)}))
 
 (defmethod clean-config "webhook"
   [_ {:keys [url secret]}]

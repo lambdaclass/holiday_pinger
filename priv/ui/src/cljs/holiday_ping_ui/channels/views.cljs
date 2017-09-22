@@ -88,7 +88,9 @@
 
 (defn edit-view
   [channel-name]
-  (let [channel @(re-frame/subscribe [:channel-to-edit])]
+  (let [channel         @(re-frame/subscribe [:channel-to-edit])
+        target-channels @(re-frame/subscribe [:slack-channels channel])
+        target-users    @(re-frame/subscribe [:slack-users channel])]
     [:div
      [views/section-size :is-half
       [views/breadcrumbs [["Channels" "/"]
@@ -101,7 +103,8 @@
                         :defaults    {:name        (:name channel)
                                       :type        (:type channel)
                                       :url         (get-in channel [:configuration :url])
-                                      :targets     (string/join " " (get-in channel [:configuration :channels]))
+                                      :channels    target-channels
+                                      :users       target-users
                                       :username    (get-in channel [:configuration :username])
                                       :emoji       (get-in channel [:configuration :emoji])
                                       :same-day    (:same_day channel)
