@@ -326,7 +326,7 @@
 
 (def initial-wizard-state
   {:step-n          0
-   :type            :slack
+   :type            "slack"
    :channel-config  {}
    :reminder-config {:same-day    true
                      :days-before 0}
