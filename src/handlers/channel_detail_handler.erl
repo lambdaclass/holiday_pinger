@@ -94,6 +94,6 @@ delete_resource(Req, State = #{email := Email, name := Name}) ->
 
 %%% internal
 not_empty_value(_K, null) ->
-  true;
+  false;
 not_empty_value(_K, Value) ->
   re:replace(Value, "\\s+", "", [global,{return,binary}]) /= <<"">>.
