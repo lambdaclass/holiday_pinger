@@ -12,7 +12,7 @@
               {:key       :channels
                :type      "text"
                :label     "Channels"
-               :help-text "Space separated list of slack channels to post the reminder to. If left empty, the channel configured in the Slack hook will be used."}
+               :help-text "Space separated list of slack channels to post the reminder to."}
               {:key       :users
                :type      "text"
                :label     "Users"
@@ -33,24 +33,26 @@
               {:key       :secret
                :type      "password"
                :help-text "If secret is provided, we will use it to generate the HMAC digest of the request payload, which we will send base64 encoded in the X-Holiday-Signature header. "}
-              {:key   :example-payload
-               :type  "code"
-               :label "Example payload"
-               :value "{\n  \"date\": \"2017-09-22\",\n  \"email\": \"john.doe@mail.com\",\n  \"message\" :\"This is a Holiday Ping test: John Doe will be out on holidays.\",\n  \"name\": \"Facundo Olano\"\n}"}]})
+              {:key      :example-payload
+               :type     "code"
+               :label    "Example payload"
+               :value    "{\n  \"date\": \"2017-09-22\",\n  \"email\": \"john.doe@mail.com\",\n  \"message\" :\"This is a Holiday Ping test: John Doe will be out on holidays.\",\n  \"name\": \"Facundo Olano\"\n}"}]})
 
 (def reminders
-  [{:key     :same-day
-    :label   "Send a reminder on the same day."
-    :type    "select"
-    :options [{:text "Yes" :value true}
-              {:text "Don't send" :value false}]}
+  [{:key      :same-day
+    :label    "Send a reminder on the same day."
+    :type     "select"
+    :options  [{:text "Yes" :value true}
+               {:text "Don't send" :value false}]
+    :required true}
    {:key     :days-before
     :label   "Send a reminder before the holiday."
     :type    "select"
     :options [{:text "Don't send" :value 0}
               {:text "The day before" :value 1}
               {:text "Three days before" :value 3}
-              {:text "A week before" :value 7}]}])
+              {:text "A week before" :value 7}]
+    :required  true}])
 
 (defn wizard-config-fields
   [type]
@@ -63,9 +65,11 @@
   [channel]
   (concat [{:key      :name
             :type     "text"
-            :disabled true}
+            :disabled true
+            :required  true}
            {:key       :type
             :type      "text"
-            :read-only true}]
+            :read-only true
+            :required  true}]
           (get channel-fields (:type channel))
           reminders))

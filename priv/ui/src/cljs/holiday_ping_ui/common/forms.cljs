@@ -82,7 +82,10 @@
 
 (defn input-label
   [field]
-  [:label.label [:b (field-name field) (when (:required field) "*") " "]])
+  (let [optional? (and (not (:required field)) (not= (:type field) "code"))]
+    [:label.label
+     [:b (field-name field) " "]
+     (when optional? [:span.optional "  (optional)"])]))
 
 (defn field-view
   [form {:keys [help-text] :as field}]

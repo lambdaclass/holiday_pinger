@@ -40,3 +40,9 @@ button.date-item {
 .steps.is-small .step-item .step-content .step-title {
     font-size: 1rem
 }
+
+.optional {
+    font-size: 1rem;
+    font-weight: normal;
+    color: #4a4a4a
+}
