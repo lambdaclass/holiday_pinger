@@ -56,7 +56,8 @@ from_json(Req, State = #{is_new := true,
      days_before := DaysBefore
    } = hp_json:decode(Body),
 
-  {ok, _} = db_channel:create(Email, Name, Type, Config, SameDay, DaysBefore),
+  CleanConfig = maps:filter(fun not_empty_value/2, Config),
+  {ok, _} = db_channel:create(Email, Name, Type, CleanConfig, SameDay, DaysBefore),
 
   Req3 = cowboy_req:set_resp_body(Body, Req2),
   {true, Req3, State};
@@ -75,7 +76,8 @@ from_json(Req, State = #{is_new := false,
      days_before := DaysBefore
    } = hp_json:decode(Body),
 
-  ok = db_channel:update(Email, Name, Config, SameDay, DaysBefore),
+  CleanConfig = maps:filter(fun not_empty_value/2, Config),
+  ok = db_channel:update(Email, Name, CleanConfig, SameDay, DaysBefore),
 
   RespBody = Channel#{
                configuration := Config,
@@ -89,3 +91,9 @@ from_json(Req, State = #{is_new := false,
 delete_resource(Req, State = #{email := Email, name := Name}) ->
   ok = db_channel:delete(Email, Name),
   {true, Req, State}.
+
+%%% internal
+not_empty_value(_K, null) ->
+  true;
+not_empty_value(_K, Value) ->
+  re:replace(Value, "\\s+", "", [global,{return,binary}]) /= <<"">>.

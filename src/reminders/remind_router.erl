@@ -7,7 +7,7 @@
 -export([start_link/0,
 
          send/3,
-         send/2,
+         send/4,
 
          init/1,
          handle_call/3,
@@ -17,9 +17,9 @@ send(User, Channel, HolidayDate) ->
   {ok, Pid} = supervisor:start_child(remind_router_sup, []),
   gen_server:cast(Pid, {send_reminder, User, Channel, HolidayDate}).
 
-send(Channel, Message) ->
+send(User, Channel, HolidayDate, Message) ->
   {ok, Pid} = supervisor:start_child(remind_router_sup, []),
-  gen_server:cast(Pid, {send_message, Channel, Message}).
+  gen_server:cast(Pid, {send_message, User, Channel, HolidayDate, Message}).
 
 start_link() ->
   gen_server:start_link(?MODULE, [], []).
@@ -31,22 +31,16 @@ handle_call(_Request, _From, State) ->
   {noreply, State}.
 
 handle_cast({send_reminder, User, Channel, HolidayDate}, State) ->
+  Message = build_message(User, HolidayDate),
+  handle_cast({send_message, User, Channel, HolidayDate, Message}, State);
+
+handle_cast({send_message, User, Channel, HolidayDate, Message}, State) ->
   #{name := ChannelName, configuration := Config, type := Type} = Channel,
   lager:debug("Sending reminders for user ~p and channel ~p",
               [maps:get(name, User), ChannelName]),
 
-  Message = build_message(User, HolidayDate),
   Handler = get_handler(Type),
-  Handler:handle(Config, Message),
-
-  {noreply, State};
-
-handle_cast({send_message, Channel, Message}, State) ->
-  #{configuration := Config, type := Type} = Channel,
-  lager:debug("Sending reminders for channel ~p",[Channel]),
-
-  Handler = get_handler(Type),
-  Handler:handle(Config, Message),
+  Handler:handle(User, HolidayDate, Config, Message),
 
   {noreply, State};
 
@@ -63,4 +57,5 @@ build_message(#{name := UserName}, {Y, M, D}) ->
 
 get_handler(slack) -> slack_channel;
 get_handler(console) -> console_channel;
-get_handler(ets) -> ets_channel.
+get_handler(ets) -> ets_channel;
+get_handler(webhook) -> webhook_channel.

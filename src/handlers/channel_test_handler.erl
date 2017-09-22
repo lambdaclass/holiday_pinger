@@ -29,7 +29,7 @@ from_json(Req, State = #{user := User, email := Email, name := Name}) ->
     {ok, Channel} ->
       Username = maps:get(<<"name">>, User),
       Message = <<"This is a Holiday Ping test: ", Username/binary, " will be out on holidays.">>,
-      remind_router:send(Channel, Message),
+      remind_router:send(User, Channel, erlang:date(), Message),
       {true, Req, State};
     _ ->
       req_utils:error_response(404, <<"Channel not found.">>, Req)
