@@ -59,6 +59,14 @@
            (fn [channels]
              (remove #(= (:name %) channel) channels)))))
 
+(defn clean-emoji
+  [emoji]
+  (let [emoji (string/trim emoji)]
+    (when-not (string/blank? emoji)
+      (str (when-not (= (first emoji) ":") ":")
+           emoji
+           (when-not (= (last emoji) ":") ":")))))
+
 (re-frame/reg-event-fx
  :channel-edit-submit
  (fn [{db :db} [_ {:keys [name type url targets username emoji days-before
@@ -72,7 +80,7 @@
                       :configuration {:channels targets
                                       :url      url
                                       :username username
-                                      :emoji    emoji}}]
+                                      :emoji    (clean-emoji emoji)}}]
      {:http-xhrio {:method          :put
                    :uri             (str "/api/channels/" name)
                    :headers         {:authorization (str "Bearer " (:access-token db))}
@@ -94,6 +102,7 @@
                        :same_day      (:same-day reminder-config)
                        :days_before   (if (zero? days-before) nil days-before)
                        :configuration (-> channel-config
+                                          (update :emoji clean-emoji)
                                           (assoc :channels targets)
                                           (dissoc :targets)
                                           (dissoc :name))}]
