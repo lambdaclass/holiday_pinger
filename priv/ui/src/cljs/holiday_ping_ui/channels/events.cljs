@@ -102,6 +102,13 @@
   {:url    url
    :secret secret})
 
+(defmethod clean-config "email"
+  [_ config]
+  (update config :emails split-whitespace))
+
+(defmethod clean-config :default
+  [_ config] config)
+
 (re-frame/reg-event-fx
  :channel-edit-submit
  (fn [{db :db} [_ {:keys [name type days-before same-day] :as data}]]

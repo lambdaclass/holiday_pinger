@@ -27,20 +27,6 @@
        [false "Slack targets must start with @ or #"]))))
 
 (re-frame/reg-sub
- :slack-channels
- (fn [db [_ slack-channel]]
-   (->> (get-in slack-channel [:configuration :channels])
-        (filter #(string/starts-with? % "#"))
-        (string/join " "))))
-
-(re-frame/reg-sub
- :slack-users
- (fn [db [_ slack-channel]]
-   (->> (get-in slack-channel [:configuration :channels])
-        (filter #(string/starts-with? % "@"))
-        (string/join " "))))
-
-(re-frame/reg-sub
  :valid-slack-hook?
  (fn [db [_ url]]
    (when url
@@ -48,3 +34,15 @@
        (if-not (or (nil? url) (string/starts-with? url "https://hooks.slack.com/"))
          [false "The url should be a valid slack hook url."]
          [true])))))
+
+(re-frame/reg-sub
+ :valid-email-list?
+ (fn [[_ email-list]]
+   (if (string/blank? email-list)
+     []
+     (for [email (string/split email-list #"\s+")]
+       (re-frame/subscribe [:valid-email? email]))))
+ (fn [validations _]
+   (if-not (every? true? (map first validations))
+     [false "Email is invalid"]
+     [true])))

@@ -78,8 +78,6 @@
                   text  (get option :text option)]]
       [:option {:key value :value value} text])]])
 
-
-
 (defn input-label
   [field]
   (let [optional? (and (not (:required field)) (not= (:type field) "code"))]

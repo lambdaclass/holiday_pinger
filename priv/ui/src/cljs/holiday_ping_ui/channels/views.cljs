@@ -88,9 +88,7 @@
 
 (defn edit-view
   [channel-name]
-  (let [channel         @(re-frame/subscribe [:channel-to-edit])
-        target-channels @(re-frame/subscribe [:slack-channels channel])
-        target-users    @(re-frame/subscribe [:slack-users channel])]
+  (let [channel @(re-frame/subscribe [:channel-to-edit])]
     [:div
      [views/section-size :is-half
       [views/breadcrumbs [["Channels" "/"]
@@ -100,15 +98,7 @@
       [forms/form-view {:submit-text "Save"
                         :on-submit   [:channel-edit-submit]
                         :on-cancel   [:navigate :channel-list]
-                        :defaults    {:name        (:name channel)
-                                      :type        (:type channel)
-                                      :url         (get-in channel [:configuration :url])
-                                      :channels    target-channels
-                                      :users       target-users
-                                      :username    (get-in channel [:configuration :username])
-                                      :emoji       (get-in channel [:configuration :emoji])
-                                      :same-day    (:same_day channel)
-                                      :days-before (or(:days_before channel) 0)}
+                        :defaults    (channel-forms/edit-defaults channel)
                         :fields      (channel-forms/edit-fields channel)}]]]))
 
 ;;; WIZARD VIEWS

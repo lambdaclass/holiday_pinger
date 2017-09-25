@@ -1,6 +1,8 @@
 (ns holiday-ping-ui.common.subs
   (:require
    [clojure.string :as string]
+   [bouncer.core :as bouncer]
+   [bouncer.validators :as validators]
    [re-frame.core :as re-frame]))
 
 (defn db-subscription
@@ -45,3 +47,12 @@
 
  (fn [validations _]
    (every? true? (map first validations))))
+
+(re-frame/reg-sub
+ :valid-email?
+ (fn [db [_ email]]
+   (when email
+
+     (if-not (bouncer/valid? {:email email} :email validators/email)
+       [false "Email is invalid."]
+       [true]))))

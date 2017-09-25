@@ -1,4 +1,5 @@
-(ns holiday-ping-ui.channels.forms)
+(ns holiday-ping-ui.channels.forms
+  (:require [clojure.string :as string]))
 
 (def channel-fields
   {"slack"   [{:key       :url
@@ -33,10 +34,17 @@
               {:key       :secret
                :type      "password"
                :help-text "If secret is provided, we will use it to generate the HMAC digest of the request payload, which we will send base64 encoded in the X-Holiday-Signature header. "}
-              {:key      :example-payload
-               :type     "code"
-               :label    "Example payload"
-               :value    "{\n  \"date\": \"2017-09-22\",\n  \"email\": \"john.doe@mail.com\",\n  \"message\" :\"This is a Holiday Ping test: John Doe will be out on holidays.\",\n  \"name\": \"Facundo Olano\"\n}"}]})
+              {:key   :example-payload
+               :type  "code"
+               :label "Example payload"
+               :value "{\n  \"date\": \"2017-09-22\",\n  \"email\": \"john.doe@mail.com\",\n  \"message\" :\"This is a Holiday Ping test: John Doe will be out on holidays.\",\n  \"name\": \"Facundo Olano\"\n}"}]
+   "email"   [{:key       :emails
+               :type      "text"
+               :label     "Emails"
+               :validate  :valid-email-list?
+               :required  true
+               :help-text "Space separated list of email addresses to send the reminder to."}
+              ]})
 
 (def reminders
   [{:key      :same-day
@@ -66,10 +74,39 @@
   (concat [{:key      :name
             :type     "text"
             :disabled true
-            :required  true}
+            :required true}
            {:key       :type
             :type      "text"
             :read-only true
             :required  true}]
           (get channel-fields (:type channel))
           reminders))
+
+(defn base-edit-defaults
+  [channel]
+  (merge (select-keys channel [:type :name])
+         (:configuration channel)
+         {:same-day    (:same_day channel)
+          :days-before (or (:days_before channel) 0)}))
+
+(defmulti edit-defaults :type)
+(defmethod edit-defaults :default
+  [channel]
+  (base-edit-defaults channel))
+
+(defmethod edit-defaults "slack"
+  [slack-channel]
+  (let [channels (->> (get-in slack-channel [:configuration :channels])
+                      (filter #(string/starts-with? % "#"))
+                      (string/join " "))
+        users    (->> (get-in slack-channel [:configuration :channels])
+                      (filter #(string/starts-with? % "@"))
+                      (string/join " "))]
+    (-> (base-edit-defaults slack-channel)
+        (assoc :users users)
+        (assoc :channels channels))))
+
+(defmethod edit-defaults "email"
+  [email-channel]
+  (-> (base-edit-defaults email-channel)
+      (update :emails (partial string/join " "))))
