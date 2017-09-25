@@ -58,4 +58,5 @@ build_message(#{name := UserName}, {Y, M, D}) ->
 get_handler(slack) -> slack_channel;
 get_handler(console) -> console_channel;
 get_handler(ets) -> ets_channel;
-get_handler(webhook) -> webhook_channel.
+get_handler(webhook) -> webhook_channel;
+get_handler(email) -> email_channel.
