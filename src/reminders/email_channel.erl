@@ -13,4 +13,5 @@ handle(User, _Date, Config, Message) ->
                                             Message,
                                             Subject,
                                             <<UserName/binary, " <holidayping@lambdaclass.com>">>, [])
-                end, Targets).
+                end, Targets),
+  {ok, [Targets]}.

@@ -12,7 +12,8 @@ handle(_User, _Date, Config, Message) ->
     icon_emoji => maps:get(emoji, Config, <<":calendar:">>)
    },
 
-  send_to_slack(HookUrl, BasePayload, Targets).
+  send_to_slack(HookUrl, BasePayload, Targets),
+  {ok, [Targets]}.
 
 %%% internal
 send_to_slack(HookUrl, Payload, Targets) when is_list(Targets), length(Targets) > 0 ->

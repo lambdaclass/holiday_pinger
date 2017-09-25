@@ -15,7 +15,8 @@ handle(User, Date, Config, Message) ->
 
   Headers = get_headers(Config, Payload),
   lager:debug("Sending webhook request: ~p ~p", [HookUrl, Payload]),
-  {ok, 200, _, _} = hp_request:post_json(HookUrl, Payload, Headers).
+  {ok, 200, _, _} = hp_request:post_json(HookUrl, Payload, Headers),
+  {ok, [HookUrl]}.
 
 %%% internal
 get_headers(#{secret := Secret}, Payload) ->
