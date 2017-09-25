@@ -35,6 +35,15 @@ CREATE TABLE channel_holidays (
   UNIQUE ("channel", "date")
 );
 
+CREATE TABLE sent_reminders (
+  "id" serial PRIMARY KEY,
+  "user" serial REFERENCES users ON DELETE CASCADE,
+  "channel" serial REFERENCES channels ON DELETE SET NULL,
+  "channel_type" character varying(20) NOT NULL,
+  "target" character varying(100),
+  "timestamp" timestamp without time zone default (now() at time zone 'utc')
+);
+
 INSERT INTO "holidays" ("country", "date", "name") VALUES
 ('argentina', make_date(date_part('year', now())::int, 1, 1), 'New year'),
 ('argentina', make_date(date_part('year', now())::int, 2, 27), 'Carnival'),
