@@ -1,5 +1,5 @@
 (ns holiday-ping-ui.common.tags
-  "Input component that generates a list of tags when a valid one is entered."
+  "Input component that populates a list of tags when a valid value is entered."
   (:require
    [clojure.string :as string]
    [reagent.core  :as reagent]
@@ -18,6 +18,8 @@
     value))
 
 (defn on-change
+  "If a separator value (whitespace or comma) is entered, and the input is
+   valid, push it to the state array, otherwise keep filling the input."
   [state input-state valid?]
   (fn [event]
     (let [value (-> event .-target .-value)]
@@ -28,6 +30,8 @@
         (reset! input-state value)))))
 
 (defn on-blur
+  "If the input valie is valid, push it to the state array when focus moves out
+  of the field."
   [state input-state valid?]
   (fn [event]
     (let [value (string/trim (-> event .-target .-value))]
@@ -36,6 +40,7 @@
         (reset! input-state "")))))
 
 (defn on-key-press
+  "Attempt to push a valid value to the state array when enter is pressed."
   [state input-state valid?]
   (fn [event]
     (let [value  (-> event .-target .-value)
@@ -59,6 +64,8 @@
     [true]))
 
 (defn input
+  "Component that renders a text input and a list of tags whenever a valid
+  item is entered."
   [state {:keys [validate help-text name label]}]
   (let [input-state (reagent/atom "")]
     (fn [state spec]
