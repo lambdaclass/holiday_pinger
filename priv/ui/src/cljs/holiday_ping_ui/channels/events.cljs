@@ -79,19 +79,13 @@
     (str (when-not (= (first user) "@") "@")
          user)))
 
-(defn- split-whitespace
-  [string]
-  (if (string/blank? string)
-    []
-    (string/split string #"\s+")))
-
 (defmulti clean-config
   (fn [type data] type))
 
 (defmethod clean-config "slack"
   [_ {:keys [url channels users username emoji]}]
-  (let [channels (->> channels split-whitespace (map clean-slack-channel))
-        users    (->> users split-whitespace (map clean-slack-user))]
+  (let [channels (map clean-slack-channel channels)
+        users    (map clean-slack-user users)]
     {:channels (concat channels users)
      :url      url
      :username username
@@ -101,10 +95,6 @@
   [_ {:keys [url secret]}]
   {:url    url
    :secret secret})
-
-(defmethod clean-config "email"
-  [_ config]
-  (update config :emails split-whitespace))
 
 (defmethod clean-config :default
   [_ config] config)

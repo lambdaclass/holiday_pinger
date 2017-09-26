@@ -1,8 +1,7 @@
 (ns holiday-ping-ui.common.subs
   (:require
    [clojure.string :as string]
-   [bouncer.core :as bouncer]
-   [bouncer.validators :as validators]
+   [clova.core :as clova]
    [re-frame.core :as re-frame]))
 
 (defn db-subscription
@@ -51,8 +50,7 @@
 (re-frame/reg-sub
  :valid-email?
  (fn [db [_ email]]
-   (when email
-
-     (if-not (bouncer/valid? {:email email} :email validators/email)
+   (when-not (string/blank? email)
+     (if-not (clova/email? email)
        [false "Email is invalid."]
        [true]))))

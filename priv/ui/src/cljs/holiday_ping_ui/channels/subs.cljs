@@ -34,15 +34,3 @@
        (if-not (or (nil? url) (string/starts-with? url "https://hooks.slack.com/"))
          [false "The url should be a valid slack hook url."]
          [true])))))
-
-(re-frame/reg-sub
- :valid-email-list?
- (fn [[_ email-list]]
-   (if (string/blank? email-list)
-     []
-     (for [email (string/split email-list #"\s+")]
-       (re-frame/subscribe [:valid-email? email]))))
- (fn [validations _]
-   (if-not (every? true? (map first validations))
-     [false "Email is invalid"]
-     [true])))

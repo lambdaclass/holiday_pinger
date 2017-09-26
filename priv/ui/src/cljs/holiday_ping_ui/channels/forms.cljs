@@ -11,13 +11,13 @@
                                 :target "blank"} "here."]]
                :required  true}
               {:key       :channels
-               :type      "text"
+               :type      "tags"
                :label     "Channels"
-               :help-text "Space separated list of slack channels to post the reminder to."}
+               :help-text "List of slack channels to post the reminder to."}
               {:key       :users
-               :type      "text"
+               :type      "tags"
                :label     "Users"
-               :help-text "Space separated list of slack users to send the reminder to."}
+               :help-text "List of slack users to send the reminder to."}
               {:key       :username
                :type      "text"
                :label     "Bot username"
@@ -38,12 +38,12 @@
                :type  "code"
                :label "Example payload"
                :value "{\n  \"date\": \"2017-09-22\",\n  \"email\": \"john.doe@mail.com\",\n  \"message\" :\"This is a Holiday Ping test: John Doe will be out on holidays.\",\n  \"name\": \"Facundo Olano\"\n}"}]
-   "email"   [{:key       :emails
-               :type      "text"
-               :label     "Emails"
-               :validate  :valid-email-list?
-               :required  true
-               :help-text "Space separated list of email addresses to send the reminder to."}
+   "email"   [{:key           :emails
+               :type          "tags"
+               :label         "Emails"
+               :item-validate :valid-email?
+               :required      true
+               :help-text     "List of email addresses to send the reminder to."}
               ]})
 
 (def reminders
@@ -96,17 +96,9 @@
 
 (defmethod edit-defaults "slack"
   [slack-channel]
-  (let [channels (->> (get-in slack-channel [:configuration :channels])
-                      (filter #(string/starts-with? % "#"))
-                      (string/join " "))
-        users    (->> (get-in slack-channel [:configuration :channels])
-                      (filter #(string/starts-with? % "@"))
-                      (string/join " "))]
+  (let [targets  (get-in slack-channel [:configuration :channels])
+        channels (filter #(string/starts-with? % "#") targets)
+        users    (filter #(string/starts-with? % "@") targets)]
     (-> (base-edit-defaults slack-channel)
         (assoc :users users)
         (assoc :channels channels))))
-
-(defmethod edit-defaults "email"
-  [email-channel]
-  (-> (base-edit-defaults email-channel)
-      (update :emails (partial string/join " "))))
