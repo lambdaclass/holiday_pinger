@@ -37,10 +37,11 @@ handle_cast({send_reminder, User, Channel, HolidayDate}, State) ->
 handle_cast({send_message, User, Channel, HolidayDate, Message}, State) ->
   #{name := ChannelName, configuration := Config, type := Type} = Channel,
   UserName = maps:get(name, User),
+  Email = maps:get(email, User),
   lager:debug("Sending reminders for user ~p and channel ~p",
               [UserName, ChannelName]),
 
-  case check_limit(User, Type) of
+  case check_limit(Email, Type) of
     ok ->
       Handler = get_handler(Type),
       case Handler:handle(User, HolidayDate, Config, Message) of
@@ -71,7 +72,7 @@ get_handler(ets) -> ets_channel;
 get_handler(webhook) -> webhook_channel;
 get_handler(email) -> email_channel.
 
-check_limit(#{email := Email}, Type) ->
+check_limit(Email, Type) ->
   ChannelLimits = hp_config:get(monthly_limits),
   case maps:get(Type, ChannelLimits, undefined) of
     Limit when is_integer(Limit), Limit > 0 ->
