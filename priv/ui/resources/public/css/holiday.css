@@ -47,3 +47,9 @@ button.date-item {
     font-weight: normal;
     color: #4a4a4a
 }
+
+@media (max-width: 400px) {
+    .step-title {
+        font-size: 0.6rem!important;
+    }
+}

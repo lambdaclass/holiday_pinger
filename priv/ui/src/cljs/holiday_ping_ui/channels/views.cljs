@@ -293,10 +293,10 @@
   [:div.columns.is-centered
    [:div.column.is-two-thirds
     [:div.steps.is-small
-     (for [[i title] [[0 "Channel type"]
-                      [1 "Channel config"]
-                      [2 "Reminder config"]
-                      [3 "Holiday sources"]
+     (for [[i title] [[0 "Type"]
+                      [1 "Config"]
+                      [2 "Reminders"]
+                      [3 "Holidays"]
                       [4 "Calendar"]]]
        (cond
          (= i step-n)
