@@ -35,22 +35,21 @@
      [:div.navbar-dropdown
       [:div.navbar-item.has-text-grey name]
       [:hr.navbar-divider]
-      [:a.navbar-item "Settings"]
-      [:a.navbar-item {:href "#" :on-click #(re-frame/dispatch [:logout])} "Logout"]]
-     ]))
+      [:a.navbar-item {:href "#" :on-click #(re-frame/dispatch [:logout])} "Logout"]]]))
 
 (defn navbar-view
   []
   (let [authenticated? @(re-frame/subscribe [:access-token])]
-    [:nav.navbar.has-shadow
+    [:nav.navbar.is-dark
      [:div.container
 
       [:div.navbar-brand
        [:a.navbar-item.is-size-3.app-title {:href "/"} "HolidayPing"]
-       [:div.navbar-burger.burger {:data-target "navMenubd"}]]
+       [:a.navbar-item.is-hidden-desktop
+        {:href "https://notamonadtutorial.com" :target "_blank"} "Logout"]]
 
       (when authenticated?
-        [:div#navMenubd.navbar-menu
+        [:div.navbar-menu
          [:div.navbar-start
           [:a.navbar-item
            {:href   "https://notamonadtutorial.com"
