@@ -2,7 +2,8 @@
   (:require
    [clojure.string :as string]
    [reagent.core  :as reagent]
-   [re-frame.core :as re-frame]))
+   [re-frame.core :as re-frame]
+   [holiday-ping-ui.common.tags :as tags]))
 
 (defn- field-handler
   "Return an event handler that updates the given key of the form atom."
@@ -31,7 +32,7 @@
   (fn [form field] (:type field)))
 
 (defmethod input-view :default
-  [form {:keys [key type disabled read-only value] :as field}]
+  [form {:keys [key type disabled read-only value help-text] :as field}]
   (let [[valid? message] (validate form field)
         attrs            {:type        type
                           :name        (field-name field)
@@ -44,10 +45,12 @@
     [:div
      [:input.input attrs]
      (when-not valid?
-       [:p.help.is-danger message])]))
+       [:p.help.is-danger message])
+     (when help-text
+       [:p.help help-text])]))
 
 (defmethod input-view "textarea"
-  [form {:keys [key type disabled read-only rows value] :as field}]
+  [form {:keys [key type disabled read-only rows value help-text] :as field}]
   (let [[valid? message] (validate form field)
         attrs            {:type        type
                           :name        (field-name field)
@@ -61,14 +64,16 @@
     [:div
      [:textarea.textarea attrs]
      (when-not valid?
-       [:p.help.is-danger message])]))
+       [:p.help.is-danger message])
+     (when help-text
+       [:p.help help-text])]))
 
 (defmethod input-view "code"
-  [form {:keys [value]}]
+  [form {:keys [value help-text]}]
   [:pre [:code value]])
 
 (defmethod input-view "select"
-  [form {:keys [key disabled options]}]
+  [form {:keys [key disabled options help-text]}]
   [:div.select
    [:select {:on-change (field-handler form key)
              :value     (get @form key "")
@@ -76,9 +81,16 @@
     (for [option options
           :let   [value (get option :value option)
                   text  (get option :text option)]]
-      [:option {:key value :value value} text])]])
+      [:option {:key value :value value} text])]
+   (when help-text
+     [:p.help help-text])])
 
-
+(defmethod input-view "tags"
+  [form {:keys [key value help-text item-validate] :as field}]
+  [tags/input (reagent/cursor form [key]) {:name      (field-name field)
+                                           :label     (field-name field)
+                                           :help-text help-text
+                                           :validate  item-validate}])
 
 (defn input-label
   [field]
@@ -88,13 +100,11 @@
      (when optional? [:span.optional "  (optional)"])]))
 
 (defn field-view
-  [form {:keys [help-text] :as field}]
+  [form field]
   [:div.field
    [input-label field]
    [:div.control
-    [input-view form field]]
-   (when help-text
-     [:p.help help-text])])
+    [input-view form field]]])
 
 (defn detached-form-view
   "Generate the hiccup of a form based on a spec map, using an external state

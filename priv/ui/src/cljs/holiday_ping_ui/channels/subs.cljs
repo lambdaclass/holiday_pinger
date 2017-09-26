@@ -27,20 +27,6 @@
        [false "Slack targets must start with @ or #"]))))
 
 (re-frame/reg-sub
- :slack-channels
- (fn [db [_ slack-channel]]
-   (->> (get-in slack-channel [:configuration :channels])
-        (filter #(string/starts-with? % "#"))
-        (string/join " "))))
-
-(re-frame/reg-sub
- :slack-users
- (fn [db [_ slack-channel]]
-   (->> (get-in slack-channel [:configuration :channels])
-        (filter #(string/starts-with? % "@"))
-        (string/join " "))))
-
-(re-frame/reg-sub
  :valid-slack-hook?
  (fn [db [_ url]]
    (when url

@@ -1,6 +1,7 @@
 (ns holiday-ping-ui.common.subs
   (:require
    [clojure.string :as string]
+   [clova.core :as clova]
    [re-frame.core :as re-frame]))
 
 (defn db-subscription
@@ -45,3 +46,11 @@
 
  (fn [validations _]
    (every? true? (map first validations))))
+
+(re-frame/reg-sub
+ :valid-email?
+ (fn [db [_ email]]
+   (when-not (string/blank? email)
+     (if-not (clova/email? email)
+       [false "Email is invalid."]
+       [true]))))

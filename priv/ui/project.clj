@@ -8,7 +8,7 @@
                  [com.andrewmcveigh/cljs-time "0.5.0"]
                  [bidi "2.1.2"]
                  [kibu/pushy "0.3.8"]
-                 [bouncer "1.0.1"]]
+                 [clova "0.20.0"]]
 
   :plugins [[lein-cljsbuild "1.1.4"]]
 

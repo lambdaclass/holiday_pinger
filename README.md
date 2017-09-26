@@ -38,10 +38,17 @@ For UI development, run a dev shell and then:
 
 Which uses figwheel to provide a REPL and hot-reload of the code changes.
 
-### GitHub login configuration
+### Credentials
+#### GitHub login configuration
 
 For the GitHub login option to work, [OAuth cretentials](https://github.com/settings/applications/new)
-need to be generated and set as `GITHUB_CLIENTID` and `GITHUB_SECRET`.
+need to be generated and set as `GITHUB_CLIENTID` and `GITHUB_SECRET`
+environment variables.
+
+#### Amazon SES
+
+To send emails with amazon, set `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`
+environment variables.
 
 ## Rest API Reference
 

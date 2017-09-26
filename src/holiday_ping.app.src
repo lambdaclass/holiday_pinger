@@ -12,7 +12,7 @@
     pgapp,
     hackney,
     erlpass,
-    jiffy
+    erlcloud
    ]},
   {env,[]},
   {modules, []},

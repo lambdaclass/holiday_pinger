@@ -5,8 +5,6 @@
    [goog.string :as gstring]
    [goog.crypt :as crypt]
    [goog.crypt.Md5]
-   [bouncer.core :as bouncer]
-   [bouncer.validators :as validators]
    [holiday-ping-ui.common.subs :as subs]
    [holiday-ping-ui.auth.token :as token]))
 
@@ -37,14 +35,6 @@
    (if avatar
      avatar
      (gravatar email))))
-
-(re-frame/reg-sub
- :valid-email?
- (fn [db [_ email]]
-   (when email
-     (if-not (bouncer/valid? {:email email} :email validators/email)
-       [false "Email is invalid."]
-       [true]))))
 
 (re-frame/reg-sub
  :matching-passwords?

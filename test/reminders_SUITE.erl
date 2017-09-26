@@ -10,7 +10,8 @@
 all() ->
   [send_custom_holiday_reminder,
    dont_send_days_before_when_disabled,
-   send_days_before_when_set].
+   send_days_before_when_set,
+   reminder_limit_enforced].
 
 init_per_suite(Config) ->
   {ok, _Apps} = application:ensure_all_started(holiday_ping),
@@ -86,6 +87,36 @@ send_days_before_when_set(_Config) ->
   Message = Expected,
 
   ok = test_utils:delete_user(Email).
+
+reminder_limit_enforced(_Config) ->
+  {ok, CurrentLimits} = application:get_env(holiday_ping, monthly_limits),
+  application:set_env(holiday_ping, monthly_limits, CurrentLimits#{ets => 1}),
+
+  #{email := Email, token := Token} = test_utils:create_user_with_token(),
+
+  %% create ets channel with argentina holidays
+  TableId = ets_channel_table6,
+  create_channel(Token, Email, <<"test_ets6">>, TableId),
+  {ok, 200, _, DefaultHolidays} = test_utils:api_request(get, Token, "/api/holidays/argentina"),
+  {ok, 200, _, _} = test_utils:api_request(put, Token, "/api/channels/test_ets6/holidays/", DefaultHolidays),
+
+  %% get one reminder
+  remind_checker:force_holidays({test_utils:current_year(), 1, 1}),
+  timer:sleep(100),
+  [{Email, _Message}] = ets_channel:get_reminders(TableId, Email),
+
+  % create a second channel of the same type
+  TableId2 = ets_channel_table7,
+  create_channel(Token, Email, <<"test_ets7">>, TableId2),
+  {ok, 200, _, _} = test_utils:api_request(put, Token, "/api/channels/test_ets7/holidays/", DefaultHolidays),
+
+  %% holidays not sent on new channel
+  remind_checker:force_holidays({test_utils:current_year(), 1, 1}),
+  timer:sleep(100),
+  [] = ets_channel:get_reminders(TableId2, Email),
+
+  application:set_env(holiday_ping, monthly_limits, CurrentLimits),
+  ok.
 
 %%% internal
 create_channel(Token, Email, Name, TableId) ->
