@@ -165,8 +165,8 @@
    [step-title "Select the type of the channel you want to use."]
    [:br]
    [:div.columns.is-centered
-    [type-card wizard-state "slack" "Slack" "/img/slack.png"]
     [type-card wizard-state "email" "Email" "/img/email.png"]
+    [type-card wizard-state "slack" "Slack" "/img/slack.png"]
     [type-card wizard-state "webhook" "Webhooks" "/img/webhooks.png"]]])
 
 (defn configuration-form
