@@ -1,6 +1,5 @@
 (ns holiday-ping-ui.channels.views
   (:require
-   [clojure.string :as string]
    [re-frame.core :as re-frame]
    [reagent.core  :as reagent]
    [holiday-ping-ui.routes :as routes]
@@ -37,32 +36,22 @@
 
 (defn item-view
   [{:keys [name type] :as channel}]
-  [:tr {:key name}
-   [:td
-    [:div.title.is-5 name]
-    [:div.subtitle.is-6 (str type " channel")]]
-   [:td
-    [:div.field.is-pulled-right.has-addons
-     [:p.control
-      [:button.button.is-small.tooltip
-       {:on-click     #(re-frame/dispatch [:channel-test-start channel])
-        :data-tooltip "Test channel"}
-       [:span.icon.is-small [:i.fa.fa-cogs]]]]
-     [:p.control
-      [:a.button.is-small.tooltip
-       {:href         (routes/url-for :holidays :channel name)
-        :data-tooltip "Select holidays"}
-       [:span.icon.is-small [:i.fa.fa-calendar]]]]
-     [:p.control
-      [:a.button.is-info.is-small.tooltip
-       {:href         (routes/url-for :channel-edit :channel name)
-        :data-tooltip "Edit"}
-       [:span.icon.is-small [:i.fa.fa-edit]]]]
-     [:p.control
-      [:button.button.is-danger.is-small.tooltip
-       {:on-click     #(re-frame/dispatch [:channel-delete name])
-        :data-tooltip "Delete"}
-       [:span.icon.is-small [:i.fa.fa-times]]]]]]])
+  [:div.card.channel-card
+   [:header.card-header
+    [:a.card-header-title
+     {:href (routes/url-for :channel-edit :channel name)}
+     [:p name [:span.card-header-subtitle  type " channel"]]]
+    [:div.card-header-icon
+     [:button.button.is-small
+      {:on-click #(re-frame/dispatch [:channel-test-start channel])}
+      [:span.icon.is-small [:i.fa.fa-cogs]]
+      [:span "Test reminder"]]]]
+   [:div.card-content
+    [:p
+     [:i.fa.fa-calendar] " Next holiday: "
+     [:a {:href (routes/url-for :holidays :channel name)}
+      " 25/12 - Christmas"]]
+    [:p [:i.fa.fa-bell-o] " Last reminder: 10 days ago"]]])
 
 (defn add-button
   []
@@ -83,8 +72,8 @@
       [add-button]
       [:br]
       (when-not (empty? channels)
-        [:table.table.is-fullwidth.is-outlined
-         [:tbody (map item-view channels)]])]]))
+        [:div
+         (map item-view channels)])]]))
 
 (defn edit-view
   [channel-name]

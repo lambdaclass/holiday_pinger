@@ -53,3 +53,28 @@ button.date-item {
         font-size: 0.6rem!important;
     }
 }
+
+.channel-card {
+    margin-bottom: 1rem;
+
+}
+
+.channel-card .card-content {
+    padding: 1rem;
+}
+
+.channel-card .card-content  p {
+    padding-bottom: .25rem;
+}
+
+.channel-card .card-header-title,
+.channel-card .card-header-icon {
+    padding: 0.5rem .75rem
+}
+
+.card-header-subtitle {
+    padding-left: .5rem;
+    color: #4a4a4a;
+    font-weight: normal;
+    font-size: 1rem
+}
