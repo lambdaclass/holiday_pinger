@@ -2,6 +2,7 @@
 
 -export([save/3,
          get_current_count/2,
+         get_recent/2,
          reminder_keys/0]).
 
 %% needed so atoms exist.
@@ -15,6 +16,13 @@ get_current_count(Email, ChannelType) ->
   {_, MM, _} = erlang:date(),
   {ok, [#{count := Count}]} = db:query(Q, [Email, ChannelType, MM]),
   {ok, Count}.
+
+get_recent(Email, ChannelName) ->
+  Q = <<"SELECT timestamp FROM sent_reminders "
+        "WHERE channel = (SELECT id from channels WHERE name = $1 "
+        "AND \"user\" = (SELECT id from \"users\" WHERE email = $2))"
+        "ORDER BY timestamp DESC LIMIT 10">>,
+  db:query(Q, [ChannelName, Email]).
 
 save(Email, ChannelName, Targets) ->
   IdQ = <<"SELECT id FROM \"users\" WHERE email = $1">>,

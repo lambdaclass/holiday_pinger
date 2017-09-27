@@ -8,7 +8,7 @@
   :channel-list
   [{:keys [db]} _]
   {:http-xhrio {:method          :get
-                :uri             "/api/channels"
+                :uri             "/api/channels_detail"
                 :timeout         8000
                 :headers         {:authorization (str "Bearer " (:access-token db))}
                 :response-format (ajax/json-response-format {:keywords? true})
