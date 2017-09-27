@@ -34,18 +34,22 @@ get_channel_holidays(Email, Channel) ->
 set_channel_holidays(Email, Channel, Holidays) ->
   case db_channel:get_id(Email, Channel) of
     {ok, ChannelId} ->
-      Values = [io_lib:format(<<"(~p, '~s', '~s')">>, [ChannelId, Date, db:escape_string(Name)])
-              || #{date := Date, name := Name} <- Holidays],
-      Values2 = lists:join(<<", ">>, Values),
-
-      Q = [<<"INSERT INTO channel_holidays(channel, date, name) VALUES ">>,
-           Values2,
-           <<" RETURNING date, name">>],
-      Q2 = iolist_to_binary(Q),
-
       DeleteQ = <<"DELETE FROM channel_holidays WHERE channel = $1">>,
-      case db:query(DeleteQ, [ChannelId]) of
-        ok -> db:query(Q2, [])
-      end;
+      ok = db:query(DeleteQ, [ChannelId]),
+      set_holidays(ChannelId, Holidays);
     Error -> Error
   end.
+
+%%% internal
+set_holidays(_ChannelId, []) ->
+  {ok, []};
+set_holidays(ChannelId, Holidays) ->
+  Values = [io_lib:format(<<"(~p, '~s', '~s')">>, [ChannelId, Date, db:escape_string(Name)])
+            || #{date := Date, name := Name} <- Holidays],
+  Values2 = lists:join(<<", ">>, Values),
+
+  Q = [<<"INSERT INTO channel_holidays(channel, date, name) VALUES ">>,
+       Values2,
+       <<" RETURNING date, name">>],
+  Q2 = iolist_to_binary(Q),
+  db:query(Q2, []).
