@@ -78,10 +78,6 @@ button.date-item {
     padding: 1rem;
 }
 
-.channel-card .card-content  p {
-    padding-bottom: .25rem;
-}
-
 .channel-card .card-header-title,
 .channel-card .card-header-icon {
     padding: 0.5rem .75rem
@@ -92,4 +88,9 @@ button.date-item {
     color: #4a4a4a;
     font-weight: normal;
     font-size: 1rem
+}
+
+.channel-card .card-header {
+    background-color: hsl(0, 0%, 96%);
+    box-shadow: none
 }

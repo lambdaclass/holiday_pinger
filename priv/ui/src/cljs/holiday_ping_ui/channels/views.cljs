@@ -42,16 +42,26 @@
      {:href (routes/url-for :channel-edit :channel name)}
      [:p name [:span.card-header-subtitle  type " channel"]]]
     [:div.card-header-icon
-     [:button.button.is-small
-      {:on-click #(re-frame/dispatch [:channel-test-start channel])}
-      [:span.icon.is-small [:i.fa.fa-cogs]]
-      [:span "Test reminder"]]]]
+     [:div.field.is-grouped
+      [:p.control
+       [:a.button.is-small
+        {:href (routes/url-for :channel-edit :channel name)}
+        [:span.icon.is-small [:i.fa.fa-edit]]
+        [:span "Edit"]]]
+      [:p.control
+       [:button.button.is-small
+        {:on-click #(re-frame/dispatch [:channel-test-start channel])}
+        [:span.icon.is-small [:i.fa.fa-cogs]]
+        [:span "Test"]]]]]]
    [:div.card-content
-    [:p
-     [:i.fa.fa-calendar] " Next holiday: "
-     [:a {:href (routes/url-for :holidays :channel name)}
-      " 25/12 - Christmas"]]
-    [:p [:i.fa.fa-bell-o] " Last reminder: 10 days ago"]]])
+    [:div.columns
+     [:div.column.is-half
+      [:p
+       [:i.fa.fa-calendar] " Next holiday: "
+       [:a {:href (routes/url-for :holidays :channel name)}
+        " 25/12 - Christmas"]]]
+     [:div.column
+      [:p [:i.fa.fa-bell-o] " Last reminder: 10 days ago"]]]]])
 
 (defn add-button
   []
