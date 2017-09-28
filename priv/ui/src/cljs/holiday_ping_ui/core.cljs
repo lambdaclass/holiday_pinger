@@ -41,8 +41,7 @@
      [common/navbar-view]
      (if loading?
        [common/loading-view]
-       (apply vector view current-view-args))
-     [common/footer-view]]))
+       (apply vector view current-view-args))]))
 
 (defn dev-setup []
   (when config/debug?

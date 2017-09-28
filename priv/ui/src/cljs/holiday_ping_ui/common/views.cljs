@@ -29,7 +29,7 @@
 (defn user-info-view []
   (let [{name :name} @(re-frame/subscribe [:user-info])
         avatar       @(re-frame/subscribe [:avatar])]
-    [:div.navbar-item.is-hoverable.has-dropdown
+    [:header.navbar-item.is-hoverable.has-dropdown
      [:a.navbar-link
       [:img {:src avatar}]]
      [:div.navbar-dropdown

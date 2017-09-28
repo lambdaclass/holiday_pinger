@@ -1,3 +1,18 @@
+body {
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+}
+
+.site-content {
+    flex: 1;
+}
+
+footer {
+    max-height: 20vh;
+
+}
+
 .navbar-item img {
     border-radius: 5px;
     max-height: 2.5rem;
@@ -38,6 +53,11 @@ button.date-item {
     margin-top: -2rem
 }
 
+article.message {
+    margin-bottom: 1rem
+
+}
+
 .steps.is-small .step-item .step-content .step-title {
     font-size: 1rem
 }
@@ -52,4 +72,34 @@ button.date-item {
     .step-title {
         font-size: 0.6rem!important;
     }
+}
+
+.channel-card {
+    margin-bottom: 1rem;
+
+}
+
+.channel-card .card-content {
+    padding: 1rem;
+}
+
+.channel-card .card-header-title,
+.channel-card .card-header-icon {
+    padding: 0.5rem .75rem
+}
+
+.card-header-subtitle {
+    padding-left: .5rem;
+    color: #4a4a4a;
+    font-weight: normal;
+    font-size: 1rem
+}
+
+.channel-card .card-header {
+    background-color: hsl(0, 0%, 96%);
+    box-shadow: none
+}
+
+.channel-card .card-content p:last-of-type {
+    padding-top: .5rem;
 }

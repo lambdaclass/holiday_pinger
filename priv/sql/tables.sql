@@ -10,7 +10,7 @@ CREATE TABLE "public"."users" (
 
 CREATE TABLE channels (
   "id" serial PRIMARY KEY,
-  "user" serial REFERENCES users ON DELETE CASCADE,
+  "user" integer REFERENCES users ON DELETE CASCADE,
   "name" character varying(50) NOT NULL,
   "type" character varying(20) NOT NULL,
   "configuration" jsonb NOT NULL,
@@ -29,7 +29,7 @@ CREATE TABLE holidays (
 
 CREATE TABLE channel_holidays (
   "id" serial PRIMARY KEY,
-  "channel" serial REFERENCES channels ON DELETE CASCADE,
+  "channel" integer REFERENCES channels ON DELETE CASCADE,
   "date" date NOT NULL,
   "name" character varying(50) NOT NULL,
   UNIQUE ("channel", "date")
@@ -37,10 +37,11 @@ CREATE TABLE channel_holidays (
 
 CREATE TABLE sent_reminders (
   "id" serial PRIMARY KEY,
-  "user" serial REFERENCES users ON DELETE CASCADE,
-  "channel" serial REFERENCES channels ON DELETE SET NULL,
+  "user" integer REFERENCES users ON DELETE CASCADE,
+  "channel" integer REFERENCES channels ON DELETE SET NULL,
   "channel_type" character varying(20) NOT NULL,
   "target" character varying(100),
+  "test" boolean NOT NULL DEFAULT FALSE,
   "timestamp" timestamp without time zone default (now() at time zone 'utc')
 );
 

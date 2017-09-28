@@ -2,6 +2,9 @@
   (:require
    [clojure.string :as string]
    [re-frame.core :as re-frame]
+   [cljs-time.core :as time]
+   [clojure.contrib.humanize :as humanize]
+   [holiday-ping-ui.holidays.format :as format]
    [holiday-ping-ui.common.subs :as subs]))
 
 (subs/db-subscription :channels)
@@ -34,3 +37,24 @@
        (if-not (or (nil? url) (string/starts-with? url "https://hooks.slack.com/"))
          [false "The url should be a valid slack hook url."]
          [true])))))
+
+(defn- next-holiday
+  [holidays]
+  (let [today     (format/date-to-string (time/today))
+        upcoming? #(> (:date %) today)]
+    (first (filter upcoming? holidays))))
+
+(re-frame/reg-sub
+ :next-holiday
+ (fn [db [_ {:keys [holidays]}]]
+   (if-let [{:keys [date name]} (next-holiday holidays)]
+     (str (format/dd-mm-string date) " - " name))))
+
+(re-frame/reg-sub
+ :last-reminder
+ (fn [db [_ {:keys [reminders]}]]
+   (if-let [{:keys [date]} (first reminders)]
+     (let [date (format/string-to-date date)]
+       (if (time/= date (time/today))
+         "today"
+         (humanize/datetime date))))))

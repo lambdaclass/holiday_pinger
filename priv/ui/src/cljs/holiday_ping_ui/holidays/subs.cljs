@@ -8,11 +8,6 @@
 (subs/db-subscription :calendar-selected-year)
 (subs/db-subscription :calendar-selected-day-name)
 
-(defn- next-holiday
-  [holidays]
-  (let [upcoming? #(time/after? (:date %) (time/today))]
-    (first (filter upcoming? holidays))))
-
 (defn- find-holiday
   [holidays date]
   (first (filter #(time/= date (:date %)) holidays)))
@@ -46,8 +41,9 @@
 
 (re-frame/reg-sub
  :calendar-empty?
- (fn [{edited :holidays-edited} _]
-   (empty? (next-holiday edited))))
+ (fn [{holidays :holidays-edited} _]
+   (let [upcoming? #(time/after? (:date %) (time/today))]
+     (empty? (filter upcoming? holidays)))))
 
 ;; Return a range of month numbers for the given year.
 ;; If it's current year, return the range starting with the current month.

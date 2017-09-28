@@ -15,6 +15,11 @@ why not pools
 ### identifiers
 db id vs names vs uuid
 
+### nested resources
+query separately in the ui
+vs include in parent, optionally include it
+vs separate resource that includes details
+
 ## Database decisions
 
 ### Database Inheritance

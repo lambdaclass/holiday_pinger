@@ -1,4 +1,4 @@
--module(channel_detail_handler).
+-module(channel_item_handler).
 
 -export([init/3,
          rest_init/2,

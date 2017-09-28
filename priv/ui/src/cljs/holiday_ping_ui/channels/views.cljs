@@ -1,6 +1,5 @@
 (ns holiday-ping-ui.channels.views
   (:require
-   [clojure.string :as string]
    [re-frame.core :as re-frame]
    [reagent.core  :as reagent]
    [holiday-ping-ui.routes :as routes]
@@ -35,34 +34,43 @@
          [:span.icon.is-small [:i.fa.fa-cogs]]
          [:span "Test"]]]]]]))
 
+(defn item-stats
+  [{:keys [name] :as channel}]
+  (let [next-holiday  @(re-frame/subscribe [:next-holiday channel])
+        last-reminder @(re-frame/subscribe [:last-reminder channel])]
+    [:div
+     [:p
+      [:a {:href (routes/url-for :holidays :channel name)}
+       [:i.fa.fa-calendar]
+       (if next-holiday
+         (str " Next holiday: " next-holiday)
+         " No upcoming holidays")]]
+     [:p [:i.fa.fa-bell-o]
+      (if last-reminder
+        (str " Last reminder: " last-reminder)
+        " No reminders sent yet")]]))
+
 (defn item-view
   [{:keys [name type] :as channel}]
-  [:tr {:key name}
-   [:td
-    [:div.title.is-5 name]
-    [:div.subtitle.is-6 (str type " channel")]]
-   [:td
-    [:div.field.is-pulled-right.has-addons
-     [:p.control
-      [:button.button.is-small.tooltip
-       {:on-click     #(re-frame/dispatch [:channel-test-start channel])
-        :data-tooltip "Test channel"}
-       [:span.icon.is-small [:i.fa.fa-cogs]]]]
-     [:p.control
-      [:a.button.is-small.tooltip
-       {:href         (routes/url-for :holidays :channel name)
-        :data-tooltip "Select holidays"}
-       [:span.icon.is-small [:i.fa.fa-calendar]]]]
-     [:p.control
-      [:a.button.is-info.is-small.tooltip
-       {:href         (routes/url-for :channel-edit :channel name)
-        :data-tooltip "Edit"}
-       [:span.icon.is-small [:i.fa.fa-edit]]]]
-     [:p.control
-      [:button.button.is-danger.is-small.tooltip
-       {:on-click     #(re-frame/dispatch [:channel-delete name])
-        :data-tooltip "Delete"}
-       [:span.icon.is-small [:i.fa.fa-times]]]]]]])
+  [:div.card.channel-card {:key name}
+   [:header.card-header
+    [:a.card-header-title
+     {:href (routes/url-for :channel-edit :channel name)}
+     [:p name [:span.card-header-subtitle  type " channel"]]]
+    [:div.card-header-icon
+     [:div.field.is-grouped
+      [:p.control
+       [:a.button.is-small
+        {:href (routes/url-for :channel-edit :channel name)}
+        [:span.icon.is-small [:i.fa.fa-edit]]
+        [:span "Edit"]]]
+      [:p.control
+       [:button.button.is-small
+        {:on-click #(re-frame/dispatch [:channel-test-start channel])}
+        [:span.icon.is-small [:i.fa.fa-cogs]]
+        [:span "Test"]]]]]]
+   [:div.card-content
+    [item-stats channel]]])
 
 (defn add-button
   []
@@ -77,23 +85,45 @@
     [:div
      [test-modal]
      [views/section-size :is-two-thirds
-      [views/message-view]
       [:p.subtitle.has-text-centered
        "Setup the channels to send your holiday reminders."]
+      [views/message-view]
       [add-button]
       [:br]
       (when-not (empty? channels)
-        [:table.table.is-fullwidth.is-outlined
-         [:tbody (map item-view channels)]])]]))
+        [:div
+         (map item-view channels)])]]))
+
+(defn edit-controls
+  [{:keys [name] :as channel}]
+  [:div.field.is-grouped.is-grouped-centered
+
+   [:p.control
+    [:a.button.is-small
+     {:href (routes/url-for :holidays :channel name)}
+     [:span.icon.is-small [:i.fa.fa-calendar]]
+     [:span "Holidays"]]]
+   [:p.control
+    [:button.button.is-small
+     {:on-click #(re-frame/dispatch [:channel-test-start channel])}
+     [:span.icon.is-small [:i.fa.fa-cogs]]
+     [:span "Test"]]]
+   [:p.control
+    [:button.button.is-small.is-danger
+     {:on-click #(re-frame/dispatch [:channel-delete name])}
+     [:span.icon.is-small [:i.fa.fa-times]]
+     [:span "Delete"]]]])
 
 (defn edit-view
   [channel-name]
   (let [channel @(re-frame/subscribe [:channel-to-edit])]
     [:div
+     [test-modal]
      [views/section-size :is-half
       [views/breadcrumbs [["Channels" "/"]
                           [channel-name (routes/url-for :channel-edit :channel channel-name)]]]
-      [:p.subtitle "Fill the channel configuration"]
+      [:p.subtitle.has-text-centered "Channel configuration"]
+      [edit-controls channel]
       [views/message-view]
       [forms/form-view {:submit-text "Save"
                         :on-submit   [:channel-edit-submit]

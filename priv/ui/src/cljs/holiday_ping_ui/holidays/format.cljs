@@ -18,3 +18,9 @@
   (let [date      (time/local-date year month 1)
         formatter (format/formatter "MMMM yyyy")]
     (format/unparse formatter date)))
+
+(defn dd-mm-string
+  [s]
+  (let [date      (string-to-date s)
+        formatter (format/formatter "dd/MM")]
+    (format/unparse-local-date formatter date)))

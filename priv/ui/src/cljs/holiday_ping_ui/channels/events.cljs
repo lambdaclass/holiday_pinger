@@ -8,7 +8,7 @@
   :channel-list
   [{:keys [db]} _]
   {:http-xhrio {:method          :get
-                :uri             "/api/channels"
+                :uri             "/api/channels_detail"
                 :timeout         8000
                 :headers         {:authorization (str "Bearer " (:access-token db))}
                 :response-format (ajax/json-response-format {:keywords? true})
@@ -49,15 +49,8 @@
                  :headers         {:authorization (str "Bearer " (:access-token db))}
                  :format          (ajax/json-request-format)
                  :response-format (ajax/json-response-format {:keywords? true})
-                 :on-success      [:channel-delete-success channel]
+                 :on-success      [:navigate :channel-list]
                  :on-failure      [:error-message "Channel deleting failed."]}}))
-
-(re-frame/reg-event-db
- :channel-delete-success
- (fn [db [_ channel]]
-   (update db :channels
-           (fn [channels]
-             (remove #(= (:name %) channel) channels)))))
 
 (defn- clean-emoji
   [emoji]
