@@ -1,6 +1,6 @@
 # holiday-ping-ui
 
-A [re-frame](https://github.com/Day8/re-frame) application designed to ... well, that part is up to you.
+The [re-frame](https://github.com/Day8/re-frame) application that sits in front of the HolidayPing server.
 
 ## Development Mode
 
