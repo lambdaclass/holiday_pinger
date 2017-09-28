@@ -85,23 +85,45 @@
     [:div
      [test-modal]
      [views/section-size :is-two-thirds
-      [views/message-view]
       [:p.subtitle.has-text-centered
        "Setup the channels to send your holiday reminders."]
+      [views/message-view]
       [add-button]
       [:br]
       (when-not (empty? channels)
         [:div
          (map item-view channels)])]]))
 
+(defn edit-controls
+  [{:keys [name] :as channel}]
+  [:div.field.is-grouped.is-grouped-centered
+
+   [:p.control
+    [:a.button.is-small
+     {:href (routes/url-for :holidays :channel name)}
+     [:span.icon.is-small [:i.fa.fa-calendar]]
+     [:span "Holidays"]]]
+   [:p.control
+    [:button.button.is-small
+     {:on-click #(re-frame/dispatch [:channel-test-start channel])}
+     [:span.icon.is-small [:i.fa.fa-cogs]]
+     [:span "Test"]]]
+   [:p.control
+    [:button.button.is-small.is-danger
+     {:on-click #(re-frame/dispatch [:channel-delete name])}
+     [:span.icon.is-small [:i.fa.fa-times]]
+     [:span "Delete"]]]])
+
 (defn edit-view
   [channel-name]
   (let [channel @(re-frame/subscribe [:channel-to-edit])]
     [:div
+     [test-modal]
      [views/section-size :is-half
       [views/breadcrumbs [["Channels" "/"]
                           [channel-name (routes/url-for :channel-edit :channel channel-name)]]]
-      [:p.subtitle "Fill the channel configuration"]
+      [:p.subtitle.has-text-centered "Channel configuration"]
+      [edit-controls channel]
       [views/message-view]
       [forms/form-view {:submit-text "Save"
                         :on-submit   [:channel-edit-submit]
