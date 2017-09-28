@@ -7,7 +7,7 @@
 -export([start_link/0,
 
          send/3,
-         send/4,
+         send_test/3,
 
          init/1,
          handle_call/3,
@@ -15,11 +15,14 @@
 
 send(User, Channel, HolidayDate) ->
   {ok, Pid} = supervisor:start_child(remind_router_sup, []),
-  gen_server:cast(Pid, {send_reminder, User, Channel, HolidayDate}).
+  Message = build_message(User, HolidayDate),
+  gen_server:cast(Pid, {send_reminder, User, Channel, HolidayDate, Message, false}).
 
-send(User, Channel, HolidayDate, Message) ->
+send_test(User, Channel, HolidayDate) ->
+  Username = maps:get(name, User),
+  Message = <<"This is a Holiday Ping test: ", Username/binary, " will be out on holidays.">>,
   {ok, Pid} = supervisor:start_child(remind_router_sup, []),
-  gen_server:cast(Pid, {send_message, User, Channel, HolidayDate, Message}).
+  gen_server:cast(Pid, {send_reminder, User, Channel, HolidayDate, Message, true}).
 
 start_link() ->
   gen_server:start_link(?MODULE, [], []).
@@ -30,11 +33,7 @@ init([]) ->
 handle_call(_Request, _From, State) ->
   {noreply, State}.
 
-handle_cast({send_reminder, User, Channel, HolidayDate}, State) ->
-  Message = build_message(User, HolidayDate),
-  handle_cast({send_message, User, Channel, HolidayDate, Message}, State);
-
-handle_cast({send_message, User, Channel, HolidayDate, Message}, State) ->
+handle_cast({send_reminder, User, Channel, HolidayDate, Message, IsTest}, State) ->
   #{name := ChannelName, configuration := Config, type := Type} = Channel,
   UserName = maps:get(name, User),
   Email = maps:get(email, User),
@@ -45,7 +44,7 @@ handle_cast({send_message, User, Channel, HolidayDate, Message}, State) ->
     ok ->
       Handler = get_handler(Type),
       case Handler:handle(User, HolidayDate, Config, Message) of
-        {ok, SentReminders} -> save_reminders(User, Channel, SentReminders);
+        {ok, SentReminders} -> save_reminders(User, Channel, SentReminders, IsTest);
         Error -> lager:warning(<<"Error sending reminders ~p">>, [Error])
       end;
     limit_exceeded ->
@@ -83,5 +82,5 @@ check_limit(Email, Type) ->
     _ -> ok
   end.
 
-save_reminders(#{email := Email}, #{name := ChannelName}, Targets) ->
-  db_reminder:save(Email, ChannelName, Targets).
+save_reminders(#{email := Email}, #{name := ChannelName}, Targets, IsTest) ->
+  db_reminder:save(Email, ChannelName, Targets, IsTest).

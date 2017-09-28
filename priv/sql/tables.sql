@@ -41,6 +41,7 @@ CREATE TABLE sent_reminders (
   "channel" serial REFERENCES channels ON DELETE SET NULL,
   "channel_type" character varying(20) NOT NULL,
   "target" character varying(100),
+  "test" boolean NOT NULL DEFAULT FALSE,
   "timestamp" timestamp without time zone default (now() at time zone 'utc')
 );
 
