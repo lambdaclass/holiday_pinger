@@ -18,7 +18,7 @@ get_current_count(Email, ChannelType) ->
   {ok, Count}.
 
 get_recent(Email, ChannelName) ->
-  Q = <<"SELECT timestamp FROM sent_reminders "
+  Q = <<"SELECT to_char(timestamp::date, 'YYYY-MM-DD') as date FROM sent_reminders "
         "WHERE channel = (SELECT id from channels WHERE name = $1 "
         "AND \"user\" = (SELECT id from \"users\" WHERE email = $2))"
         "ORDER BY timestamp DESC LIMIT 10">>,

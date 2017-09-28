@@ -94,3 +94,7 @@ button.date-item {
     background-color: hsl(0, 0%, 96%);
     box-shadow: none
 }
+
+.channel-card .card-content p:last-of-type {
+    padding-top: .5rem;
+}

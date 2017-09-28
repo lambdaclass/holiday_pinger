@@ -34,9 +34,25 @@
          [:span.icon.is-small [:i.fa.fa-cogs]]
          [:span "Test"]]]]]]))
 
+(defn item-stats
+  [{:keys [name] :as channel}]
+  (let [next-holiday  @(re-frame/subscribe [:next-holiday channel])
+        last-reminder @(re-frame/subscribe [:last-reminder channel])]
+    [:div
+     [:p
+      [:a {:href (routes/url-for :holidays :channel name)}
+       [:i.fa.fa-calendar]
+       (if next-holiday
+         (str " Next holiday: " next-holiday)
+         " No upcoming holidays")]]
+     [:p [:i.fa.fa-bell-o]
+      (if last-reminder
+        (str " Last reminder: " last-reminder)
+        " No reminders sent yet")]]))
+
 (defn item-view
   [{:keys [name type] :as channel}]
-  [:div.card.channel-card
+  [:div.card.channel-card {:key name}
    [:header.card-header
     [:a.card-header-title
      {:href (routes/url-for :channel-edit :channel name)}
@@ -54,14 +70,7 @@
         [:span.icon.is-small [:i.fa.fa-cogs]]
         [:span "Test"]]]]]]
    [:div.card-content
-    [:div.columns
-     [:div.column.is-half
-      [:p
-       [:i.fa.fa-calendar] " Next holiday: "
-       [:a {:href (routes/url-for :holidays :channel name)}
-        " 25/12 - Christmas"]]]
-     [:div.column
-      [:p [:i.fa.fa-bell-o] " Last reminder: 10 days ago"]]]]])
+    [item-stats channel]]])
 
 (defn add-button
   []
