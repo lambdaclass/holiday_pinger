@@ -27,40 +27,38 @@
 
 ;; APP VIEWS
 (defn user-info-view []
-  (let [{name :name} @(re-frame/subscribe [:user-info])
-        avatar       @(re-frame/subscribe [:avatar])]
-    [:header.navbar-item.is-hoverable.has-dropdown
-     [:a.navbar-link
-      [:img {:src avatar}]]
-     [:div.navbar-dropdown
-      [:div.navbar-item.has-text-grey name]
-      [:hr.navbar-divider]
-      [:a.navbar-item {:href "#" :on-click #(re-frame/dispatch [:logout])} "Logout"]]]))
+  (when @(re-frame/subscribe [:access-token])
+    (let [{name :name} @(re-frame/subscribe [:user-info])
+          avatar       @(re-frame/subscribe [:avatar])]
+      [:header.navbar-item.is-hoverable.has-dropdown
+       [:a.navbar-link
+        [:img {:src avatar}]]
+       [:div.navbar-dropdown
+        [:div.navbar-item.has-text-grey name]
+        [:hr.navbar-divider]
+        [:a.navbar-item {:href "#" :on-click #(re-frame/dispatch [:logout])} "Logout"]]])))
 
 (defn navbar-view
   []
-  (let [authenticated? @(re-frame/subscribe [:access-token])]
-    [:nav.navbar.is-dark
-     [:div.container
+  [:nav.navbar.is-dark
+   [:div.container
 
-      [:div.navbar-brand
-       [:a.navbar-item.is-size-3.app-title {:href "/"} "HolidayPing"]
-       [:a.navbar-item.is-hidden-desktop
-        {:href "https://notamonadtutorial.com" :target "_blank"} "Logout"]]
+    [:div.navbar-brand
+     [:a.navbar-item.is-size-3.app-title {:href "/"} "HolidayPing"]
+     [:a.navbar-item.is-hidden-desktop
+      {:href "https://notamonadtutorial.com" :target "_blank"} "Logout"]]
 
-      (when authenticated?
-        [:div.navbar-menu
-         [:div.navbar-start
-          [:a.navbar-item
-           {:href   "https://notamonadtutorial.com"
-            :target "_blank"}
-           "Blog"]
-          [:a.navbar-item
-           {:href   "https://github.com/lambdaclass/holiday_ping"
-            :target "_blank"}
-           "GitHub"]]
-         [:div.navbar-end
-          [user-info-view]]])]]))
+    [:div.navbar-menu
+     [:div.navbar-start
+      [:a.navbar-item
+       {:href   "https://notamonadtutorial.com"
+        :target "_blank"}
+       "Blog"]
+      [:a.navbar-item
+       {:href   "https://github.com/lambdaclass/holiday_ping"
+        :target "_blank"}
+       "GitHub"]]
+     [:div.navbar-end [user-info-view]]]]])
 
 (defn footer-view
   []
