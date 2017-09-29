@@ -15,7 +15,8 @@ error_response(Message, Req) ->
 error_response(Status, Message, Req) ->
   Body = hp_json:encode(#{message => Message}),
   Req2 = cowboy_req:set_resp_body(Body, Req),
-  {ok, Req3} = cowboy_req:reply(Status, [], Body, Req2),
+  Headers = [{<<"Content-Type">>, <<"application/json">>}],
+  {ok, Req3} = cowboy_req:reply(Status, Headers, Body, Req2),
   {halt, Req3, []}.
 
 is_authorized(bearer, Req, State) ->
@@ -25,9 +26,11 @@ is_authorized(bearer, Req, State) ->
       case hp_auth:token_decode(Token) of
         {ok, User} ->
           {true, Req2, State#{user => User, email => maps:get(email, User)}};
-        _ -> {Fail, Req2, State}
+        _ ->
+          {Fail, Req2, State}
       end;
-    _ -> {Fail, Req, State}
+    _ ->
+      {Fail, Req, State}
   end;
 
 is_authorized(basic, Req, State) ->
@@ -38,7 +41,11 @@ is_authorized(basic, Req, State) ->
       case hp_auth:authenticate(Email, Password) of
         {ok, User} ->
           {true, Req2, State#{user => User, email => Email}};
-        _ -> {Fail, Req2, State}
+        {error, not_verified} ->
+          error_response(401, <<"Email not verified">>, Req2);
+        _ ->
+          {Fail, Req2, State}
       end;
-    _ -> {Fail, Req, State}
+    _ ->
+      {Fail, Req, State}
   end.

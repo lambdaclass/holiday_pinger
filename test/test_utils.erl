@@ -53,6 +53,13 @@ create_user(Overrides) ->
                      }, Overrides),
 
   {ok, 201, _, _} = api_request(post, public, "/api/users", Body),
+
+  %% verify user
+  Email2 = maps:get(email, Body),
+  {ok, #{verification_code:= Code}} = db_user:get_verification(Email2),
+  VerifyBody = #{code => Code, email => Email2},
+  {ok, 204, _, _} =  api_request(put, public, "/api/users/code", VerifyBody),
+
   Body.
 
 create_user_with_token() ->
