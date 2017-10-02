@@ -10,7 +10,7 @@ init(_Transport, _Req, []) ->
   {upgrade, protocol, cowboy_rest}.
 
 allowed_methods(Req, State) ->
-  {[<<"HEAD">>, <<"OPTIONS">>, <<"PUT">>],
+  {[<<"POST">>],
    Req, State}.
 
 content_types_provided(Req, State) ->

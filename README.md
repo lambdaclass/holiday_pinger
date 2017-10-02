@@ -48,7 +48,8 @@ environment variables.
 #### Amazon SES
 
 To send emails with amazon, set `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`
-environment variables.
+environment variables. Also, make sure `email_enabled` is set to true in the
+application environment (e.g. in conf/dev.config).
 
 ## Rest API Reference
 
