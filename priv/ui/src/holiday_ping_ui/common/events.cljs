@@ -1,6 +1,7 @@
 (ns holiday-ping-ui.common.events
   (:require [re-frame.core :as re-frame]
-            [holiday-ping-ui.routes :as routes]))
+            [holiday-ping-ui.routes :as routes]
+            [cemerick.url :as url]))
 
 ;;; EFFECTS/COEFFECTS
 
@@ -28,12 +29,7 @@
 (re-frame/reg-cofx
  :location
  (fn [coeffects]
-   (assoc coeffects :location {:href     (aget js/location "href")
-                               :query    (aget js/location "search")
-                               :host     (aget js/location "host")
-                               :hostname (aget js/location "hostname")
-                               :origin   (aget js/location "origin")
-                               :path     (aget js/location "pathname")})))
+   (assoc coeffects :location (url/url (aget js/location "href")))))
 
 ;;; GENERAL EVENTS
 (re-frame/reg-event-fx

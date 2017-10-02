@@ -20,15 +20,17 @@
 
             [holiday-ping-ui.config :as config]))
 
-
-(def views {:channel-list        [channels/list-view]
-            :channel-edit        [channels/edit-view]
-            :channel-create      [channels/create-view]
-            :login               [auth/login-view]
-            :register            [auth/register-view]
-            :github-callback     [common/loading-view]
-            :holidays            [holidays/holidays-view]
-            :not-found           [common/not-found-view]})
+(def views {:channel-list           [channels/list-view]
+            :channel-edit           [channels/edit-view]
+            :channel-create         [channels/create-view]
+            :login                  [auth/login-view]
+            :register               [auth/register-view]
+            :register-confirm       [auth/register-confirm]
+            :register-confirm-error [auth/register-confirm-error]
+            :email-sent             [auth/email-sent-view]
+            :github-callback        [common/loading-view]
+            :holidays               [holidays/holidays-view]
+            :not-found              [common/not-found-view]})
 
 (defn app
   "Build the ui based on the current-view in the app-db."

@@ -9,6 +9,7 @@
                  [bidi "2.1.2"]
                  [kibu/pushy "0.3.8"]
                  [clova "0.20.0"]
+                 [com.cemerick/url "0.1.1"]
                  [clojure-humanize "0.2.2"]]
 
   :plugins [[lein-cljsbuild "1.1.4"]]

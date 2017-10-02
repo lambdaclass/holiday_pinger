@@ -33,28 +33,46 @@
        [:a {:href (routes/url-for :register)} "Click here to register."]]]]]])
 
 (defn register-view []
-  [:div
-   [views/section-size :is-half
-    [:p.subtitle "Please fill your profile information."]
-    [views/message-view]
-    [forms/form-view {:submit-text "Register"
-                      :on-submit   [:register-submit]
-                      :fields      [{:key      :email
-                                     :type     "email"
-                                     :validate :valid-email?
-                                     :required true}
-                                    {:key      :name
-                                     :label    "Full name"
-                                     :type     "text"
-                                     :required true}
-                                    {:key      :password
-                                     :type     "password"
-                                     :required true}
-                                    {:key      :password-repeat
-                                     :type     "password"
-                                     :label    "Repeat password"
-                                     :validate :matching-passwords?
-                                     :required true}]}]
-    [:br]
-    [:p.has-text-centered "Already registered? "
-     [:a {:href (routes/url-for :login)} "Click here to login."]]]])
+  [views/section-size :is-half
+   [:p.subtitle "Please fill your profile information."]
+   [views/message-view]
+   [forms/form-view {:submit-text "Register"
+                     :on-submit   [:register-submit]
+                     :fields      [{:key      :email
+                                    :type     "email"
+                                    :validate :valid-email?
+                                    :required true}
+                                   {:key      :name
+                                    :label    "Full name"
+                                    :type     "text"
+                                    :required true}
+                                   {:key      :password
+                                    :type     "password"
+                                    :required true}
+                                   {:key      :password-repeat
+                                    :type     "password"
+                                    :label    "Repeat password"
+                                    :validate :matching-passwords?
+                                    :required true}]}]
+   [:br]
+   [:p.has-text-centered "Already registered? "
+    [:a {:href (routes/url-for :login)} "Click here to login."]]])
+
+(defn email-sent-view
+  []
+  [views/section-size :is-half
+   [:p.subtitle "Email verification sent."]
+   [:p "We just sent a confirmation link to the address you provided, please check your email to finish the registration process."]])
+
+(defn register-confirm
+  []
+  [views/section-size :is-half
+   [:p.subtitle "Email verified."]
+   [:p "Your account has been verified, "
+    [:a {:href (routes/url-for :login)} "click here to login."]]])
+
+(defn register-confirm-error
+  []
+  [views/section-size :is-half
+   [:p.subtitle "Verification error."]
+   [:p "There was an error verifying your email, please try again."]])

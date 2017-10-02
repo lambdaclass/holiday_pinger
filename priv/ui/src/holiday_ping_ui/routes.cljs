@@ -10,6 +10,7 @@
                       [["channels/" [#".+" :channel] "/holidays"] :holidays]
                       ["login"                                    :login]
                       ["register"                                 :register]
+                      ["register/confirm"                         :register-confirm]
                       ["oauth/github/callback"                    :github-callback]
                       [true                                       :not-found]]])
 
@@ -40,5 +41,5 @@
   (loging, register, etc.)."
   [view]
   (contains?
-   #{:login :register :github-callback}
+   #{:login :register :github-callback :register-confirm :email-sent :register-confirm-error}
    view))
