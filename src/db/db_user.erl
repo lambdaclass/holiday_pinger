@@ -6,6 +6,7 @@
          delete/1,
          get_with_password/1,
          get_verification/1,
+         reset_verification/2,
          set_verified/1,
          user_keys/0]).
 
@@ -52,6 +53,11 @@ get_verification(Email) ->
     {ok, []} -> {error, not_found};
     {ok, [User | []]} -> {ok, User}
   end.
+
+reset_verification(Email, VerificationCode) ->
+  Q = <<"UPDATE users SET verification_code = $1, verification_sent_at = (now() at time zone 'utc') "
+        "WHERE email = $2 ">>,
+  db:query(Q, [VerificationCode, Email]).
 
 set_verified(Email) ->
   Q = <<"UPDATE \"users\" SET verified = true WHERE email = $1">>,

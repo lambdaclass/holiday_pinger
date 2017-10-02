@@ -23,7 +23,7 @@ send_email_verification(Email, Code) ->
   Body = <<"Hey there!\n\n"
            "Thanks for choosing at HolidayPing, "
            "please click on the link below to finish the registration process:\n\n"
-           "https://holidayping.lambdaclass.com/register/confirm?code=", Code/binary,
+           "https://holidayping.lambdaclass.com/register/confirm/code?code=", Code/binary,
            "&email=", Email/binary,
            "\n\nThanks,\nThe HolidayPing team.">>,
 

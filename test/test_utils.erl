@@ -58,7 +58,7 @@ create_user(Overrides) ->
   Email2 = maps:get(email, Body),
   {ok, #{verification_code:= Code}} = db_user:get_verification(Email2),
   VerifyBody = #{code => Code, email => Email2},
-  {ok, 204, _, _} =  api_request(post, public, "/api/users/code", VerifyBody),
+  {ok, 204, _, _} =  api_request(post, public, "/api/users/confirmation/code", VerifyBody),
 
   Body.
 

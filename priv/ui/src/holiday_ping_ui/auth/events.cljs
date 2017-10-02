@@ -101,7 +101,7 @@
  (fn [{:keys [location]} _]
    (let [{code "code" email "email"} (:query location)]
      {:http-xhrio {:method          :post
-                   :uri             "/api/users/code"
+                   :uri             "/api/users/confirmation/code"
                    :timeout         8000
                    :format          (ajax/json-request-format)
                    :params          {:email email :code code}
