@@ -1,6 +1,6 @@
 -module(db_user).
 
--export([create_holiday_user/4,
+-export([create_holiday_user/3,
          create_github_user/2,
          get/1,
          delete/1,
@@ -13,11 +13,10 @@
 %% needed so atoms exist.
 user_keys () -> [email, password, name].
 
-create_holiday_user(Email, Name, Password, VerificationCode) ->
-  Q = <<"INSERT INTO users(email, name, password, auth_type, verification_code, verification_sent_at) "
-        "VALUES($1, $2, $3, 'holiday', $4, (now() at time zone 'utc')) "
-        "RETURNING email, name ">>,
-  case db:query(Q, [Email, Name, Password, VerificationCode]) of
+create_holiday_user(Email, Name, Password) ->
+  Q = <<"INSERT INTO users(email, name, password, auth_type) "
+        "VALUES($1, $2, $3, 'holiday') RETURNING email, name ">>,
+  case db:query(Q, [Email, Name, Password]) of
     {ok, [Result | []]} -> {ok, Result};
     {error, unique_violation} -> {error, user_already_exists}
   end.

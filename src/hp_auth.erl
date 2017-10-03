@@ -5,7 +5,7 @@
          password_hash/1,
          password_match/2,
          authenticate/2,
-         verification_code/1]).
+         reset_verification/1]).
 
 password_hash(Value) ->
   erlpass:hash(Value).
@@ -42,10 +42,7 @@ token_decode(Token) ->
                    end, #{}, Map),
   {ok, Map2}.
 
-%% remove?
-verification_code(Email) ->
-  {YY, MM, DD} = erlang:date(),
-  Date = io_lib:format(<<"~B-~2..0B-~2..0B">>, [YY, MM, DD]),
-  Value = <<Email/binary,Date/binary>>,
-  Secret = hp_config:get(token_secret),
-  base64:encode(crypto:hmac(sha256, Secret, Value)).
+reset_verification(Email) ->
+  VerificationCode = base64url:encode(crypto:strong_rand_bytes(20)),
+  db_user:reset_verification(Email, VerificationCode),
+  hp_email:send_email_verification(Email, VerificationCode).

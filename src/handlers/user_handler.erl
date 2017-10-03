@@ -33,10 +33,9 @@ from_json(Req, _State) ->
        password := Password
      } ->
       PasswordHash = hp_auth:password_hash(Password),
-      VerificationCode = base64url:encode(crypto:strong_rand_bytes(20)),
-      case db_user:create_holiday_user(Email, Name, PasswordHash, VerificationCode) of
+      case db_user:create_holiday_user(Email, Name, PasswordHash) of
         {ok, _User} ->
-          hp_email:send_email_verification(Email, VerificationCode),
+          hp_auth:reset_verification(Email),
           {{true, "/api/channels"}, Req2, []};
         {error, user_already_exists} ->
           req_utils:error_response(409, <<"User already exists">>, Req2)
