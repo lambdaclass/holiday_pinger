@@ -4,14 +4,9 @@
 
 handle(User, _Date, Config, Message) ->
   UserName = maps:get(name, User),
+  FromEmail = <<UserName/binary, " <holidayping@lambdaclass.com>">>,
   Subject = <<"Holiday reminder">>,
   Targets = maps:get(emails, Config),
 
-  lager:debug(<<"Sending amazon SES emails to ~p">>, [Targets]),
-  lists:foreach(fun(Email) ->
-                    erlcloud_ses:send_email(Email,
-                                            Message,
-                                            Subject,
-                                            <<UserName/binary, " <holidayping@lambdaclass.com>">>, [])
-                end, Targets),
+  hp_email:send(Targets, FromEmail, Subject, Message),
   {ok, [Targets]}.

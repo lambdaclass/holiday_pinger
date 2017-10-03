@@ -4,7 +4,8 @@
          token_decode/1,
          password_hash/1,
          password_match/2,
-         authenticate/2]).
+         authenticate/2,
+         reset_verification/1]).
 
 password_hash(Value) ->
   erlpass:hash(Value).
@@ -15,10 +16,14 @@ password_match(Value, Hash) ->
 %% Return the user data if exits and password match.
 authenticate(Email, Password) ->
   case db_user:get_with_password(Email) of
+    {ok, #{verified := false}} ->
+      {error, not_verified};
     {ok, User = #{password := Hash}} ->
       case password_match(Password, Hash) of
-        true -> {ok, maps:remove(password, User)};
-        false -> {error, unauthorized}
+        true ->
+          {ok, maps:remove(password, User)};
+        false ->
+          {error, unauthorized}
       end;
     _ -> {error, unauthorized}
   end.
@@ -36,3 +41,8 @@ token_decode(Token) ->
                        Acc#{K2 => V}
                    end, #{}, Map),
   {ok, Map2}.
+
+reset_verification(Email) ->
+  VerificationCode = base64url:encode(crypto:strong_rand_bytes(20)),
+  db_user:reset_verification(Email, VerificationCode),
+  hp_email:send_email_verification(Email, VerificationCode).

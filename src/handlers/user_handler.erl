@@ -25,7 +25,7 @@ content_types_provided(Req, State) ->
 from_json(Req, _State) ->
   {ok, Body, Req2} = cowboy_req:body(Req),
 
-  %% FIXME add stronger validations (email is email, password strong enough, valid country, etc)
+  %% FIXME add stronger validations (email is email, password strong enough)
   case hp_json:decode(Body) of
     #{
        email := Email,
@@ -35,6 +35,7 @@ from_json(Req, _State) ->
       PasswordHash = hp_auth:password_hash(Password),
       case db_user:create_holiday_user(Email, Name, PasswordHash) of
         {ok, _User} ->
+          hp_auth:reset_verification(Email),
           {{true, "/api/channels"}, Req2, []};
         {error, user_already_exists} ->
           req_utils:error_response(409, <<"User already exists">>, Req2)

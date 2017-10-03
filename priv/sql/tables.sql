@@ -5,7 +5,10 @@ CREATE TABLE "public"."users" (
   "email" character varying(100) UNIQUE NOT NULL,
   "name" character varying(200) NOT NULL,
   "password" character varying(100),
-  "auth_type" character varying(20)
+  "auth_type" character varying(20),
+  "verified" boolean NOT NULL DEFAULT FALSE,
+  "verification_code" character varying(30),
+  "verification_sent_at" timestamp without time zone
 );
 
 CREATE TABLE channels (

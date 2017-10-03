@@ -1,6 +1,5 @@
 (ns holiday-ping-ui.auth.events
-  (:require [clojure.string :as string]
-            [re-frame.core :as re-frame]
+  (:require [re-frame.core :as re-frame]
             [ajax.core :as ajax]
             [day8.re-frame.http-fx]
             [goog.crypt.base64 :as base64]
@@ -11,8 +10,7 @@
 ;;; AUTH EVENTS
 (re-frame/reg-event-fx
  :initialize-db
- [(re-frame/inject-cofx :local-store "access_token")
-  (re-frame/inject-cofx :location)]
+ [(re-frame/inject-cofx :local-store "access_token")]
  (fn [cofx _]
    (let [stored-token (:local-store cofx)
          expired-db   (-> db/default-db
@@ -45,7 +43,15 @@
                  :headers         {:authorization (basic-auth-header email password)}
                  :response-format (ajax/json-response-format {:keywords? true})
                  :on-success      [:login-success]
-                 :on-failure      [:error-message "Authentication failed"]}}))
+                 :on-failure      [:login-failure]}}))
+
+(re-frame/reg-event-fx
+ :login-failure
+ (fn [_ [_ response]]
+   ;; not the best to branch based on an error message, maybe use some sort of error code?
+   (if (= (get-in response [:response :message]) "Email not verified")
+     {:dispatch [:navigate :not-verified]}
+     {:dispatch [:error-message "Authentication failed"]})))
 
 (re-frame/reg-event-fx
  :login-success
@@ -64,22 +70,16 @@
 
 (re-frame/reg-event-fx
  :register-submit
- (fn [_ [_ {:keys [email password] :as data}]]
-   {:http-xhrio {:method          :post
+ (fn [_ [_ data]]
+   {:db         {:loading-view? true}
+    :http-xhrio {:method          :post
                  :uri             "/api/users"
                  :timeout         8000
                  :format          (ajax/json-request-format)
                  :params          data
                  :response-format (ajax/text-response-format)
-                 :on-success      [:register-success email password]
+                 :on-success      [:navigate :email-sent]
                  :on-failure      [:error-message "Registration failed"]}}))
-
-(re-frame/reg-event-fx
- :register-success
- (fn
-   [_ [_ email password _]]
-   {:dispatch [:auth-submit {:email    email
-                             :password password}]}))
 
 (defmethod events/load-view
   :github-callback [_ _]
@@ -89,7 +89,7 @@
  :github-code-submit
  [(re-frame/inject-cofx :location)]
  (fn [{:keys [location]} _]
-   (let [code (-> location :query (string/split #"=") last)]
+   (let [code (get-in location [:query "code"])]
      {:http-xhrio {:method          :post
                    :uri             "/api/auth/github/code"
                    :timeout         8000
@@ -98,3 +98,39 @@
                    :response-format (ajax/json-response-format {:keywords? true})
                    :on-success      [:login-success]
                    :on-failure      [:error-message "GitHub authentication failed"]}})))
+
+(defmethod events/load-view
+  :register-confirm [_ _]
+  {:dispatch [:register-code-submit]})
+
+(re-frame/reg-event-fx
+ :register-code-submit
+ [(re-frame/inject-cofx :location)]
+ (fn [{:keys [location]} _]
+   (let [{code "code" email "email"} (:query location)]
+     {:http-xhrio {:method          :post
+                   :uri             "/api/users/confirmation/code"
+                   :timeout         8000
+                   :format          (ajax/json-request-format)
+                   :params          {:email email :code code}
+                   :response-format (ajax/json-response-format {:keywords? true})
+                   :on-success      [:register-code-success]
+                   :on-failure      [:navigate :register-confirm-error]}})))
+
+(re-frame/reg-event-db
+ :register-code-success
+ (fn [db _]
+   (assoc db :loading-view? false)))
+
+(re-frame/reg-event-fx
+ :resend-confirmation-submit
+ (fn [_ [_ params]]
+   {:db         {:loading-view? true}
+    :http-xhrio {:method          :post
+                 :uri             "/api/users/confirmation"
+                 :timeout         8000
+                 :format          (ajax/json-request-format)
+                 :params          params
+                 :response-format (ajax/json-response-format {:keywords? true})
+                 :on-success      [:navigate :email-sent]
+                 :on-failure      [:error-message "Mail confirmation failed."]}}))
