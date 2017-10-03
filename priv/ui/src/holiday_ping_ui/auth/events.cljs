@@ -43,7 +43,15 @@
                  :headers         {:authorization (basic-auth-header email password)}
                  :response-format (ajax/json-response-format {:keywords? true})
                  :on-success      [:login-success]
-                 :on-failure      [:error-message "Authentication failed"]}}))
+                 :on-failure      [:login-failure]}}))
+
+(re-frame/reg-event-fx
+ :login-failure
+ (fn [_ [_ response]]
+   ;; not the best to branch based on an error message, maybe use some sort of error code?
+   (if (= (get-in response [:response :message]) "Email not verified")
+     {:dispatch [:navigate :not-verified]}
+     {:dispatch [:error-message "Authentication failed"]})))
 
 (re-frame/reg-event-fx
  :login-success
@@ -113,3 +121,16 @@
  :register-code-success
  (fn [db _]
    (assoc db :loading-view? false)))
+
+(re-frame/reg-event-fx
+ :resend-confirmation-submit
+ (fn [_ [_ params]]
+   {:db         {:loading-view? true}
+    :http-xhrio {:method          :post
+                 :uri             "/api/users/confirmation"
+                 :timeout         8000
+                 :format          (ajax/json-request-format)
+                 :params          params
+                 :response-format (ajax/json-response-format {:keywords? true})
+                 :on-success      [:navigate :email-sent]
+                 :on-failure      [:error-message "Mail confirmation failed."]}}))

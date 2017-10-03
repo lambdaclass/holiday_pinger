@@ -27,6 +27,8 @@
             :register               [auth/register-view]
             :register-confirm       [auth/register-confirm]
             :register-confirm-error [auth/register-confirm-error]
+            :not-verified           [auth/not-verified-view]
+            :resend-confirmation    [auth/resend-confirmation-view]
             :email-sent             [auth/email-sent-view]
             :github-callback        [common/loading-view]
             :holidays               [holidays/holidays-view]
