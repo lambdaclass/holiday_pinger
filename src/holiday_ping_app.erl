@@ -18,6 +18,8 @@ start(_StartType, _StartArgs) ->
                                            {"/api/users", user_handler, []},
                                            {"/api/users/confirmation", confirmation_handler, []},
                                            {"/api/users/confirmation/code", confirmation_code_handler, []},
+                                           {"/api/users/password", password_reset_handler, []},
+                                           {"/api/users/password/code", password_reset_code_handler, []},
                                            {"/api/auth/token", token_handler, []},
                                            {"/api/channels", channel_list_handler, []},
                                            {"/api/channels/:name", channel_item_handler, []},

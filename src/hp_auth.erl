@@ -5,7 +5,8 @@
          password_hash/1,
          password_match/2,
          authenticate/2,
-         reset_verification/1]).
+         reset_verification/1,
+         reset_password/1]).
 
 password_hash(Value) ->
   erlpass:hash(Value).
@@ -46,3 +47,8 @@ reset_verification(Email) ->
   VerificationCode = base64url:encode(crypto:strong_rand_bytes(20)),
   db_user:reset_verification(Email, VerificationCode),
   hp_email:send_email_verification(Email, VerificationCode).
+
+reset_password(Email) ->
+  VerificationCode = base64url:encode(crypto:strong_rand_bytes(20)),
+  db_user:reset_password(Email, VerificationCode),
+  hp_email:send_password_reset(Email, VerificationCode).

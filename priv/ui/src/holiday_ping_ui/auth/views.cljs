@@ -29,8 +29,10 @@
                                         :type     "password"
                                         :required true}]}]
       [:br]
-      [:p.has-text-centered "Don't have an account? "
-       [:a {:href (routes/url-for :register)} "Click here to register."]]]]]])
+      [:p.has-text-centered
+       [:a {:href (routes/url-for :request-password-reset)} "Forgot your password?"]]
+      [:p.has-text-centered
+       [:a {:href (routes/url-for :register)} "Don't have an account?"]]]]]])
 
 (defn register-view []
   [views/section-size :is-half
@@ -58,31 +60,34 @@
    [:p.has-text-centered "Already registered? "
     [:a {:href (routes/url-for :login)} "Click here to login."]]])
 
+(defn auth-message-view
+  [subtitle & views]
+  [views/section-size :is-two-thirds
+   [:p.subtitle subtitle]
+   (apply vector :div.container views)])
+
+;; EMAIL VERIFICATION VIEWS
 (defn email-sent-view
   []
-  [views/section-size :is-two-thirds
-   [:p.subtitle "Email verification sent."]
+  [auth-message-view "Email verification sent."
    [:p "We just sent a confirmation link to the address you provided, please check your email to finish the registration process."]])
 
 (defn register-confirm
   []
-  [views/section-size :is-two-thirds
-   [:p.subtitle "Email verified."]
+  [auth-message-view "Email verified."
    [:p "Your account has been verified, "
     [:a {:href (routes/url-for :login)} "click here to login."]]])
 
 (defn register-confirm-error
   []
-  [views/section-size :is-two-thirds
-   [:p.subtitle "Verification error."]
+  [auth-message-view "Verification error."
    [:p "This verification link is wrong or expired, "
     [:a {:href (routes/url-for :resend-confirmation)}
      "click here to send the verification again."]]])
 
 (defn not-verified-view
   []
-  [views/section-size :is-two-thirds
-   [:p.subtitle "Email not verified."]
+  [auth-message-view "Email not verified."
    [:p "You need to verify your email address before signing in. Check the verification link sent to your email."]
    [:br]
    [:p "If you didn't receive a verification email, "
@@ -100,3 +105,45 @@
                                     :label    ""
                                     :validate :valid-email?
                                     :required true}]}]])
+
+;; PASSWORD RESET VIEWS
+(defn request-password-reset-view
+  []
+  [views/section-size :is-half
+   [:p.subtitle.has-text-centered "Enter your email to receive a password reset link."]
+   [views/message-view]
+   [forms/form-view {:submit-text "Send"
+                     :on-submit   [:password-reset-request]
+                     :fields      [{:key      :email
+                                    :type     "email"
+                                    :label    ""
+                                    :validate :valid-email?
+                                    :required true}]}]])
+
+(defn password-reset-sent-view
+  []
+  [auth-message-view "Password reset sent."
+   [:p "We just sent a password reset link to your email."]])
+
+(defn submit-password-reset-view
+  []
+  [views/section-size :is-half
+   [:p.subtitle.has-text-centered "Enter your new password."]
+   [views/message-view]
+   [forms/form-view {:submit-text "Reset"
+                     :on-submit   [:password-reset-submit]
+                     :fields      [{:key      :password
+                                    :type     "password"
+                                    :required true}
+                                   {:key      :password-repeat
+                                    :type     "password"
+                                    :label    "Repeat password"
+                                    :validate :matching-passwords?
+                                    :required true}]}]])
+
+(defn password-reset-error
+  []
+  [auth-message-view "Password reset error."
+   [:p "This password reset link is wrong or expired, "
+    [:a {:href (routes/url-for :request-password-reset)}
+     "click here to send it again."]]])

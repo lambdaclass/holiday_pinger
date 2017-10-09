@@ -70,8 +70,8 @@
 
 (re-frame/reg-event-fx
  :register-submit
- (fn [_ [_ data]]
-   {:db         {:loading-view? true}
+ (fn [{:keys [db]} [_ data]]
+   {:db         (assoc db :loading-view? true)
     :http-xhrio {:method          :post
                  :uri             "/api/users"
                  :timeout         8000
@@ -124,8 +124,8 @@
 
 (re-frame/reg-event-fx
  :resend-confirmation-submit
- (fn [_ [_ params]]
-   {:db         {:loading-view? true}
+ (fn [{:keys [db]} [_ params]]
+   {:db         (assoc db :loading-view? true)
     :http-xhrio {:method          :post
                  :uri             "/api/users/confirmation"
                  :timeout         8000
@@ -133,4 +133,49 @@
                  :params          params
                  :response-format (ajax/json-response-format {:keywords? true})
                  :on-success      [:navigate :email-sent]
-                 :on-failure      [:error-message "Mail confirmation failed."]}}))
+                 :on-failure      [:resend-confirmation-error]}}))
+
+(re-frame/reg-event-db
+ :resend-confirmation-error
+ (fn [db _]
+   (assoc db
+          :error-message "Mail confirmation failed."
+          :loading-view? false)))
+
+(re-frame/reg-event-fx
+ :password-reset-request
+ (fn [{:keys [db]} [_ params]]
+   {:db         (assoc db :loading-view? true)
+    :http-xhrio {:method          :post
+                 :uri             "/api/users/password"
+                 :timeout         8000
+                 :format          (ajax/json-request-format)
+                 :params          params
+                 :response-format (ajax/json-response-format {:keywords? true})
+                 :on-success      [:navigate :password-reset-sent]
+                 :on-failure      [:password-reset-request-error]}}))
+
+(re-frame/reg-event-db
+ :password-reset-request-error
+ (fn [db _]
+   (assoc db
+          :error-message "Password reset failed."
+          :loading-view? false)))
+
+(re-frame/reg-event-fx
+ :password-reset-submit
+ [(re-frame/inject-cofx :location)]
+ (fn [{:keys [location db]} [_ form]]
+   (let [{code "code" email "email"} (:query location)
+         params                      {:email    email
+                                      :code     code
+                                      :password (:password form)}]
+     {:db         (assoc db :loading-view? true)
+      :http-xhrio {:method          :post
+                   :uri             "/api/users/password/code"
+                   :timeout         8000
+                   :format          (ajax/json-request-format)
+                   :params          params
+                   :response-format (ajax/json-response-format {:keywords? true})
+                   :on-success      [:auth-submit params]
+                   :on-failure      [:navigate :password-reset-error]}})))

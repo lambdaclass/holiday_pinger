@@ -7,6 +7,9 @@
          get_with_password/1,
          get_verification/1,
          reset_verification/2,
+         get_password_reset/1,
+         reset_password/2,
+         set_password/2,
          set_verified/1,
          user_keys/0]).
 
@@ -61,6 +64,25 @@ reset_verification(Email, VerificationCode) ->
 set_verified(Email) ->
   Q = <<"UPDATE \"users\" SET verified = true WHERE email = $1">>,
   db:query(Q, [Email]).
+
+reset_password(Email, VerificationCode) ->
+  Q = <<"UPDATE users SET password_reset_code = $1, password_reset_sent_at = (now() at time zone 'utc') "
+        "WHERE email = $2 ">>,
+  db:query(Q, [VerificationCode, Email]).
+
+get_password_reset(Email) ->
+  Q = <<"SELECT password_reset_code, "
+        "EXTRACT (EPOCH FROM (now() at time zone 'utc')) - EXTRACT (EPOCH FROM password_reset_sent_at) as sent_seconds_ago "
+        "FROM users WHERE email = $1 AND auth_type = 'holiday'">>,
+  case db:query(Q, [Email]) of
+    {ok, []} -> {error, not_found};
+    {ok, [User | []]} -> {ok, User}
+  end.
+
+set_password(Email, Password) ->
+  Q = <<"UPDATE users SET password_reset_code = NULL, password = $1 "
+        "WHERE email = $2 ">>,
+  db:query(Q, [Password, Email]).
 
 delete(Email) ->
   Q = <<"DELETE FROM users WHERE email = $1">>,

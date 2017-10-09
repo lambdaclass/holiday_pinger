@@ -8,7 +8,9 @@ CREATE TABLE "public"."users" (
   "auth_type" character varying(20),
   "verified" boolean NOT NULL DEFAULT FALSE,
   "verification_code" character varying(30),
-  "verification_sent_at" timestamp without time zone
+  "verification_sent_at" timestamp without time zone,
+  "password_reset_code" character varying(30),
+  "password_reset_sent_at" timestamp without time zone
 );
 
 CREATE TABLE channels (
