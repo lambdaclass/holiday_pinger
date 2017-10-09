@@ -46,7 +46,7 @@
     [:div.navbar-brand
      [:a.navbar-item.is-size-3.app-title {:href "/"} "HolidayPing"]
      [:a.navbar-item.is-hidden-desktop
-      {:href "https://notamonadtutorial.com" :target "_blank"} "Logout"]]
+      {:href "#" :on-click #(re-frame/dispatch [:logout])} "Logout"]]
 
     [:div.navbar-menu
      [:div.navbar-start
