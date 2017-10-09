@@ -1,7 +1,8 @@
 -module(hp_email).
 
 -export([send/4,
-         send_email_verification/2]).
+         send_email_verification/2,
+         send_password_reset/2]).
 
 send(ToEmails, FromEmail, Subject, Body) when not is_list(ToEmails)->
   send([ToEmails], FromEmail, Subject, Body);
@@ -19,11 +20,22 @@ send(ToEmails, FromEmail, Subject, Body) ->
 
 send_email_verification(Email, Code) ->
   From = <<"HolidayPing <holidayping@lambdaclass.com>">>,
-  Subject = <<"HolidayPing email confirmation.">>,
+  Subject = <<"HolidayPing email confirmation">>,
   Body = <<"Hey there!\n\n"
            "Thanks for choosing at HolidayPing, "
            "please click on the link below to finish the registration process:\n\n"
            "https://holidayping.lambdaclass.com/register/confirm/code?code=", Code/binary,
+           "&email=", Email/binary,
+           "\n\nThanks,\nThe HolidayPing team.">>,
+
+  send(Email, From, Subject, Body).
+
+send_password_reset(Email, Code) ->
+  From = <<"HolidayPing <holidayping@lambdaclass.com>">>,
+  Subject = <<"HolidayPing password reset">>,
+  Body = <<"Hey there!\n\n"
+           "Please click on the link below to reset your password:\n\n"
+           "https://holidayping.lambdaclass.com/password/code?code=", Code/binary,
            "&email=", Email/binary,
            "\n\nThanks,\nThe HolidayPing team.">>,
 
