@@ -60,13 +60,13 @@
    [:p.has-text-centered "Already registered? "
     [:a {:href (routes/url-for :login)} "Click here to login."]]])
 
-;; EMAIL VERIFICATION VIEWS
 (defn auth-message-view
   [subtitle & views]
   [views/section-size :is-two-thirds
    [:p.subtitle subtitle]
    (apply vector :div.container views)])
 
+;; EMAIL VERIFICATION VIEWS
 (defn email-sent-view
   []
   [auth-message-view "Email verification sent."
@@ -144,6 +144,6 @@
 (defn password-reset-error
   []
   [auth-message-view "Password reset error."
-   [:p "This password rest link is wrong or expired, "
+   [:p "This password reset link is wrong or expired, "
     [:a {:href (routes/url-for :request-password-reset)}
      "click here to send it again."]]])
