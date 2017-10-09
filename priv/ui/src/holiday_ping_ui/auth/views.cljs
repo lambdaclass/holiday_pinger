@@ -61,31 +61,33 @@
     [:a {:href (routes/url-for :login)} "Click here to login."]]])
 
 ;; EMAIL VERIFICATION VIEWS
+(defn auth-message-view
+  [subtitle & views]
+  [views/section-size :is-two-thirds
+   [:p.subtitle subtitle]
+   (apply vector :div.container views)])
+
 (defn email-sent-view
   []
-  [views/section-size :is-two-thirds
-   [:p.subtitle "Email verification sent."]
+  [auth-message-view "Email verification sent."
    [:p "We just sent a confirmation link to the address you provided, please check your email to finish the registration process."]])
 
 (defn register-confirm
   []
-  [views/section-size :is-two-thirds
-   [:p.subtitle "Email verified."]
+  [auth-message-view "Email verified."
    [:p "Your account has been verified, "
     [:a {:href (routes/url-for :login)} "click here to login."]]])
 
 (defn register-confirm-error
   []
-  [views/section-size :is-two-thirds
-   [:p.subtitle "Verification error."]
+  [auth-message-view "Verification error."
    [:p "This verification link is wrong or expired, "
     [:a {:href (routes/url-for :resend-confirmation)}
      "click here to send the verification again."]]])
 
 (defn not-verified-view
   []
-  [views/section-size :is-two-thirds
-   [:p.subtitle "Email not verified."]
+  [auth-message-view "Email not verified."
    [:p "You need to verify your email address before signing in. Check the verification link sent to your email."]
    [:br]
    [:p "If you didn't receive a verification email, "
@@ -120,8 +122,7 @@
 
 (defn password-reset-sent-view
   []
-  [views/section-size :is-two-thirds
-   [:p.subtitle "Password reset sent."]
+  [auth-message-view "Password reset sent."
    [:p "We just sent a password reset link to your email."]])
 
 (defn submit-password-reset-view
@@ -139,3 +140,10 @@
                                     :label    "Repeat password"
                                     :validate :matching-passwords?
                                     :required true}]}]])
+
+(defn password-reset-error
+  []
+  [auth-message-view "Password reset error."
+   [:p "This password rest link is wrong or expired, "
+    [:a {:href (routes/url-for :request-password-reset)}
+     "click here to send it again."]]])

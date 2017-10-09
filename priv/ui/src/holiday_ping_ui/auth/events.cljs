@@ -164,4 +164,4 @@
                    :params          params
                    :response-format (ajax/json-response-format {:keywords? true})
                    :on-success      [:auth-submit params]
-                   :on-failure      [:navigate :register-confirm-error]}})))
+                   :on-failure      [:navigate :password-reset-error]}})))
