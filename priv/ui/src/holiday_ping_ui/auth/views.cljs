@@ -29,8 +29,10 @@
                                         :type     "password"
                                         :required true}]}]
       [:br]
-      [:p.has-text-centered "Don't have an account? "
-       [:a {:href (routes/url-for :register)} "Click here to register."]]]]]])
+      [:p.has-text-centered
+       [:a {:href (routes/url-for :request-password-reset)} "Forgot your password?"]]
+      [:p.has-text-centered
+       [:a {:href (routes/url-for :register)} "Don't have an account?"]]]]]])
 
 (defn register-view []
   [views/section-size :is-half
@@ -58,6 +60,7 @@
    [:p.has-text-centered "Already registered? "
     [:a {:href (routes/url-for :login)} "Click here to login."]]])
 
+;; EMAIL VERIFICATION VIEWS
 (defn email-sent-view
   []
   [views/section-size :is-two-thirds
@@ -99,4 +102,40 @@
                                     :type     "email"
                                     :label    ""
                                     :validate :valid-email?
+                                    :required true}]}]])
+
+;; PASSWORD RESET VIEWS
+(defn request-password-reset-view
+  []
+  [views/section-size :is-half
+   [:p.subtitle.has-text-centered "Enter your email to receive a password reset link."]
+   [views/message-view]
+   [forms/form-view {:submit-text "Send"
+                     :on-submit   [:password-reset-request]
+                     :fields      [{:key      :email
+                                    :type     "email"
+                                    :label    ""
+                                    :validate :valid-email?
+                                    :required true}]}]])
+
+(defn password-reset-sent-view
+  []
+  [views/section-size :is-two-thirds
+   [:p.subtitle "Password reset sent."]
+   [:p "We just sent a password reset link to your email."]])
+
+(defn submit-password-reset-view
+  []
+  [views/section-size :is-half
+   [:p.subtitle.has-text-centered "Enter your new password."]
+   [views/message-view]
+   [forms/form-view {:submit-text "Reset"
+                     :on-submit   [:password-reset-submit]
+                     :fields      [{:key      :password
+                                    :type     "password"
+                                    :required true}
+                                   {:key      :password-repeat
+                                    :type     "password"
+                                    :label    "Repeat password"
+                                    :validate :matching-passwords?
                                     :required true}]}]])

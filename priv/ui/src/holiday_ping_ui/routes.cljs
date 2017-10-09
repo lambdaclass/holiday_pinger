@@ -12,6 +12,8 @@
                       ["register"                                 :register]
                       ["register/confirm/code"                    :register-confirm]
                       ["register/confirm"                         :resend-confirmation]
+                      ["password"                                 :request-password-reset]
+                      ["password/code"                            :submit-password-reset]
                       ["oauth/github/callback"                    :github-callback]
                       [true                                       :not-found]]])
 
@@ -43,5 +45,6 @@
   [view]
   (contains?
    #{:login :register :github-callback :not-verified
-     :register-confirm :email-sent :register-confirm-error :resend-confirmation}
+     :register-confirm :email-sent :register-confirm-error :resend-confirmation
+     :request-password-reset :submit-password-reset :password-reset-sent}
    view))

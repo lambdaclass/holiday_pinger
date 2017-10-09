@@ -30,6 +30,9 @@
             :not-verified           [auth/not-verified-view]
             :resend-confirmation    [auth/resend-confirmation-view]
             :email-sent             [auth/email-sent-view]
+            :request-password-reset [auth/request-password-reset-view]
+            :password-reset-sent    [auth/password-reset-sent-view]
+            :submit-password-reset  [auth/submit-password-reset-view]
             :github-callback        [common/loading-view]
             :holidays               [holidays/holidays-view]
             :not-found              [common/not-found-view]})

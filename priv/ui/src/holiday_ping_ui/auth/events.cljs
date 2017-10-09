@@ -134,3 +134,34 @@
                  :response-format (ajax/json-response-format {:keywords? true})
                  :on-success      [:navigate :email-sent]
                  :on-failure      [:error-message "Mail confirmation failed."]}}))
+
+(re-frame/reg-event-fx
+ :password-reset-request
+ (fn [{:keys [db]} [_ params]]
+   {:db         (assoc db :loading-view? true)
+    :http-xhrio {:method          :post
+                 :uri             "/api/users/password"
+                 :timeout         8000
+                 :format          (ajax/json-request-format)
+                 :params          params
+                 :response-format (ajax/json-response-format {:keywords? true})
+                 :on-success      [:navigate :password-reset-sent]
+                 :on-failure      [:error-message "Password reset failed."]}}))
+
+(re-frame/reg-event-fx
+ :password-reset-submit
+ [(re-frame/inject-cofx :location)]
+ (fn [{:keys [location db]} [_ form]]
+   (let [{code "code" email "email"} (:query location)
+         params                      {:email    email
+                                      :code     code
+                                      :password (:password form)}]
+     {:db         (assoc db :loading-view? true)
+      :http-xhrio {:method          :post
+                   :uri             "/api/users/password/code"
+                   :timeout         8000
+                   :format          (ajax/json-request-format)
+                   :params          params
+                   :response-format (ajax/json-response-format {:keywords? true})
+                   :on-success      [:auth-submit params]
+                   :on-failure      [:navigate :register-confirm-error]}})))
