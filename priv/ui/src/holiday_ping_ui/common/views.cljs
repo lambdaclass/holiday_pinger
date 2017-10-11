@@ -80,7 +80,11 @@
     [:div.columns.is-centered
      [:div.column.is-two-thirds
       [:figure.image.is-3by2
-       [:img.landing-image {:src "/img/calendar.png"}]]]]]])
+       [:img.landing-image {:src "/img/calendar.png"}]]]]
+    [:br]
+    [:br]
+    [:h3.subtitle.is-4 "Set up your communication channels, load your calendar and you're golden!"]]])
+
 
 (defn loading-view
   []

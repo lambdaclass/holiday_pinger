@@ -18,6 +18,10 @@ footer {
     max-height: 2.5rem;
 }
 
+.navbar-dropdown .navbar-item {
+    font-size: 1rem;
+}
+
 .dashboard-message {
     vertical-align: middle
 }
