@@ -1,7 +1,9 @@
 (ns holiday-ping-ui.holidays.views
   (:require
+   [reagent.core :as reagent]
    [re-frame.core :as re-frame]
    [holiday-ping-ui.common.views :as views]
+   [holiday-ping-ui.common.forms :as forms]
    [holiday-ping-ui.routes :as routes]
    [holiday-ping-ui.holidays.calendar :as calendar]))
 
@@ -61,44 +63,46 @@
          [:span "Save"]
          [:span.icon.is-small [:i.fa.fa-check]]]]]]]))
 
-;; This is a bit too complex, try to refactor
+(defn edit-holiday-modal-form
+  [{:keys [holiday-name date-string holiday?]}]
+  (let [form           (reagent/atom {:name holiday-name})
+        deselect-day   #(re-frame/dispatch [:calendar-deselect-day])
+        save-holiday   #(re-frame/dispatch [:holidays-modal-save (:name @form)])
+        remove-holiday #(re-frame/dispatch [:holidays-modal-remove])
+        form-fields    [{:key      :name
+                         :type     "text"
+                         :required true}]]
+    (fn [_]
+      (let [valid-form? @(re-frame/subscribe [:valid-form? @form form-fields])]
+        [:div.modal-card
+         [:header.modal-card-head
+          [:p.modal-card-title "Edit Holiday on " date-string]
+          [:button.delete {:aria-label "close"
+                           :on-click   deselect-day}]]
+         [:section.modal-card-body
+          [forms/detached-form-view form form-fields]]
+         [:footer.modal-card-foot
+          [:div.modal-button-group
+           [:button.button {:on-click deselect-day} "Cancel"]
+           (when holiday?
+             [:button.button.is-danger {:on-click remove-holiday}
+              [:span.icon.is-small [:i.fa.fa-times]]
+              [:span "Remove"]])
+           [:button.button.is-success
+            {:on-click save-holiday
+             :class    (when-not valid-form? "is-static")}
+            [:span.icon.is-small [:i.fa.fa-check]]
+            [:span "Save"]]]]]))))
+
 (defn edit-holiday-modal
   []
-  (let [date-info      @(re-frame/subscribe [:calendar-selected-day])
-        date           (:date date-info)
-        cancel-edit    #(re-frame/dispatch [:calendar-deselect-day])
-        name-sub       (re-frame/subscribe [:calendar-selected-day-name])
-        remove-holiday #(do (re-frame/dispatch [:holidays-remove date])
-                            (re-frame/dispatch [:calendar-deselect-day]))
-        save-holiday   #(do (re-frame/dispatch [:holidays-update date @name-sub])
-                            (re-frame/dispatch [:calendar-deselect-day]))
-        name-change    #(re-frame/dispatch [:calendar-selected-name-change (-> % .-target .-value)])]
+  (let [date-info @(re-frame/subscribe [:calendar-selected-day])]
     [:div.modal
-     (when date {:class "is-active"})
-     [:div.modal-background {:on-click cancel-edit}]
-     [:div.modal-card
-      [:header.modal-card-head
-       (when date [:p.modal-card-title "Edit Holiday on " (:date-string date-info)])
-       [:button.delete {:aria-label "close"
-                        :on-click   cancel-edit}]]
-      [:section.modal-card-body
-       [:div.field
-        [:div.control
-         [:input.input {:type        "text"
-                        :value       @name-sub
-                        :on-change   name-change
-                        :placeholder "Holiday name"}]]]]
-      [:footer.modal-card-foot
-       [:div.modal-button-group
-        [:button.button {:on-click cancel-edit}
-         "Cancel"]
-        (when (:holiday? date-info)
-          [:button.button.is-danger {:on-click remove-holiday}
-           [:span.icon.is-small [:i.fa.fa-times]]
-           [:span "Remove"]])
-        [:button.button.is-success {:on-click save-holiday}
-         [:span.icon.is-small [:i.fa.fa-check]]
-         [:span "Save"]]]]]]))
+     (when date-info {:class "is-active"})
+     [:div.modal-background
+      {:on-click #(re-frame/dispatch [:calendar-deselect-day])}]
+     (when date-info
+       [edit-holiday-modal-form date-info])]))
 
 (defn holidays-view
   [channel-name]
