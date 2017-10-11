@@ -20,7 +20,8 @@
 
             [holiday-ping-ui.config :as config]))
 
-(def views {:channel-list           [channels/list-view]
+(def views {:landing                [common/landing-view]
+            :channel-list           [channels/list-view]
             :channel-edit           [channels/edit-view]
             :channel-create         [channels/create-view]
             :login                  [auth/login-view]

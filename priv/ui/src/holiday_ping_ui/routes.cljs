@@ -4,7 +4,7 @@
             [re-frame.core :as re-frame]))
 
 ;; maybe slugify names instead of having to put a regex here?
-(def app-routes ["/" [[""                                         :channel-list]
+(def app-routes ["/" [[""                                         :landing]
                       ["channels/new/"                            :channel-create]
                       [["channels/" [#".+" :channel] "/edit"]     :channel-edit]
                       [["channels/" [#".+" :channel] "/holidays"] :holidays]
@@ -44,7 +44,7 @@
   (loging, register, etc.)."
   [view]
   (contains?
-   #{:login :register :github-callback :not-verified
+   #{:landing :login :register :github-callback :not-verified
      :register-confirm :email-sent :register-confirm-error :resend-confirmation
      :request-password-reset :submit-password-reset :password-reset-sent}
    view))

@@ -1,5 +1,6 @@
 (ns holiday-ping-ui.common.views
-  (:require [re-frame.core :as re-frame]))
+  (:require [re-frame.core :as re-frame]
+            [holiday-ping-ui.routes :as routes]))
 
 ;; HELPER VIEWS
 (defn message-view []
@@ -60,15 +61,26 @@
        "GitHub"]]
      [:div.navbar-end [user-info-view]]]]])
 
-(defn footer-view
+(defn landing-view
   []
-  [:footer.footer
-   [:div.container
-    [:div.content.has-text-centered
-     [:p [:strong "HolidayPing"] " by "
-      [:a {:href "https://github.com/lambdaclass/" :target "_blank"} "LambdaClass"] "."]
-     [:p [:a.icon {:href "https://github.com/lambdaclass/holiday_ping"}
-          [:i.fa.fa-github]]]]]])
+  [section
+   [:div.has-text-centered
+    [:br]
+    [:h1.title.is-1.has-text-primary.landing-title "Don't forget your time off ever again"]
+    [:h3.subtitle.is-4 "Let HolidayPing send your reminders and enjoy your daiquiri"]
+    [:br]
+    [:br]
+    [:a.button.is-success.is-large
+     {:href (routes/url-for :login)}
+     [:span.icon [:i.fa.fa-calendar-check-o]]
+     [:span "Sign in or register"]]
+    [:br]
+    [:br]
+    [:br]
+    [:div.columns.is-centered
+     [:div.column.is-two-thirds
+      [:figure.image.is-3by2
+       [:img.landing-image {:src "/img/calendar.png"}]]]]]])
 
 (defn loading-view
   []

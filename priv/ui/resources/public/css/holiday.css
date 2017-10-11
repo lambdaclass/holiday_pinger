@@ -36,6 +36,17 @@ footer {
     padding: 0 1rem;
 }
 
+h1.title.landing-title {
+    font-weight: normal;
+    margin-bottom: 2rem;
+    font-size: 3.5rem;
+}
+
+img.landing-image {
+    border: 3px solid rgba(157,157,157,.2);
+    border-radius: 4px;
+}
+
 .section {
     font-size: 1.2rem
 }
