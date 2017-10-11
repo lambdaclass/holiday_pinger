@@ -66,8 +66,8 @@
   [section
    [:div.has-text-centered
     [:br]
-    [:h1.title.is-1.has-text-primary.landing-title "Don't forget your time off ever again"]
-    [:h3.subtitle.is-4 "Let HolidayPing send your reminders and enjoy your daiquiri"]
+    [:h1.title.is-1.has-text-primary.landing-title "Don't ever forget to report your time off again"]
+    [:h3.subtitle.is-4 "HolidayPing notifies your clients, you enjoy a daiquiri"]
     [:br]
     [:br]
     [:a.button.is-success.is-large
