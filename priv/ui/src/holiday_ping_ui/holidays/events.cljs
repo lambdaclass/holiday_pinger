@@ -63,18 +63,12 @@
 (re-frame/reg-event-db
  :calendar-select-day
  (fn [db [_ day]]
-   (let [holidays (:holidays-edited db)
-         name     (:name (first (filter #(time/= day (:date %)) holidays)))]
-     (-> db
-         (assoc :calendar-selected-day day)
-         (assoc :calendar-selected-day-name name)))))
+   (assoc db :calendar-selected-day day)))
 
 (re-frame/reg-event-db
  :calendar-deselect-day
  (fn [db]
-   (-> db
-       (dissoc :calendar-selected-day)
-       (dissoc :calendar-selected-day-name))))
+   (dissoc db :calendar-selected-day)))
 
 (re-frame/reg-event-fx
  :holidays-modal-remove
@@ -84,16 +78,9 @@
 
 (re-frame/reg-event-fx
  :holidays-modal-save
- (fn [{:keys [db]}]
-   (let [selected-date (:calendar-selected-day db)
-         input-name    (:calendar-selected-day-name db)]
-     {:dispatch-n [[:holidays-update selected-date input-name]
-                   [:calendar-deselect-day]]})))
-
-(re-frame/reg-event-db
- :calendar-selected-name-change
- (fn [db [_ name]]
-   (assoc db :calendar-selected-day-name name)))
+ (fn [{:keys [db]} [_ holiday-name]]
+   {:dispatch-n [[:holidays-update (:calendar-selected-day db) holiday-name]
+                 [:calendar-deselect-day]]}))
 
 (re-frame/reg-event-db
  :holidays-update
