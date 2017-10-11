@@ -1,5 +1,6 @@
 (ns holiday-ping-ui.holidays.views
   (:require
+   [clojure.string :as string]
    [re-frame.core :as re-frame]
    [holiday-ping-ui.common.views :as views]
    [holiday-ping-ui.routes :as routes]
@@ -61,42 +62,41 @@
          [:span "Save"]
          [:span.icon.is-small [:i.fa.fa-check]]]]]]]))
 
-;; This is a bit too complex, try to refactor
 (defn edit-holiday-modal
   []
-  (let [date-info      @(re-frame/subscribe [:calendar-selected-day])
-        date           (:date date-info)
-        cancel-edit    #(re-frame/dispatch [:calendar-deselect-day])
-        name-sub       (re-frame/subscribe [:calendar-selected-day-name])
-        remove-holiday #(do (re-frame/dispatch [:holidays-remove date])
-                            (re-frame/dispatch [:calendar-deselect-day]))
-        save-holiday   #(do (re-frame/dispatch [:holidays-update date @name-sub])
-                            (re-frame/dispatch [:calendar-deselect-day]))
-        name-change    #(re-frame/dispatch [:calendar-selected-name-change (-> % .-target .-value)])]
+  (let [{:keys [date holiday? date-string]} @(re-frame/subscribe [:calendar-selected-day])
+        ;;FIXME try with a default-value here?
+        input-name                          @(re-frame/subscribe [:calendar-selected-day-name])
+        cancel-edit                         #(re-frame/dispatch [:calendar-deselect-day])
+        remove-holiday                      #(re-frame/dispatch [:holidays-modal-remove])
+        save-holiday                        #(re-frame/dispatch [:holidays-modal-save])
+        name-change                         #(re-frame/dispatch [:calendar-selected-name-change (-> % .-target .-value)])]
     [:div.modal
      (when date {:class "is-active"})
      [:div.modal-background {:on-click cancel-edit}]
      [:div.modal-card
       [:header.modal-card-head
-       (when date [:p.modal-card-title "Edit Holiday on " (:date-string date-info)])
+       (when date [:p.modal-card-title "Edit Holiday on " date-string])
        [:button.delete {:aria-label "close"
                         :on-click   cancel-edit}]]
       [:section.modal-card-body
        [:div.field
         [:div.control
          [:input.input {:type        "text"
-                        :value       @name-sub
+                        :value       input-name
                         :on-change   name-change
                         :placeholder "Holiday name"}]]]]
       [:footer.modal-card-foot
        [:div.modal-button-group
         [:button.button {:on-click cancel-edit}
          "Cancel"]
-        (when (:holiday? date-info)
+        (when holiday?
           [:button.button.is-danger {:on-click remove-holiday}
            [:span.icon.is-small [:i.fa.fa-times]]
            [:span "Remove"]])
-        [:button.button.is-success {:on-click save-holiday}
+        [:button.button.is-success
+         {:on-click save-holiday
+          :class    (when (string/blank? input-name) "is-static")}
          [:span.icon.is-small [:i.fa.fa-check]]
          [:span "Save"]]]]]]))
 

@@ -76,6 +76,20 @@
        (dissoc :calendar-selected-day)
        (dissoc :calendar-selected-day-name))))
 
+(re-frame/reg-event-fx
+ :holidays-modal-remove
+ (fn [{:keys [db]}]
+   {:dispatch-n [[:holidays-remove (:calendar-selected-day db)]
+                 [:calendar-deselect-day]]}))
+
+(re-frame/reg-event-fx
+ :holidays-modal-save
+ (fn [{:keys [db]}]
+   (let [selected-date (:calendar-selected-day db)
+         input-name    (:calendar-selected-day-name db)]
+     {:dispatch-n [[:holidays-update selected-date input-name]
+                   [:calendar-deselect-day]]})))
+
 (re-frame/reg-event-db
  :calendar-selected-name-change
  (fn [db [_ name]]
