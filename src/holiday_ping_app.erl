@@ -30,7 +30,8 @@ start(_StartType, _StartArgs) ->
                                            {'_', cowboy_static, {priv_file, holiday_ping, "/ui/resources/public/index.html"}}]}
                                    ]),
   cowboy:start_http(my_http_listener, 100, [{port, hp_config:get(port)}],
-                    [{env, [{dispatch, Dispatch}]}]
+                    [{env, [{dispatch, Dispatch}]},
+                     {middlewares, [cowboy_router, throttling_middleware, cowboy_handler]}]
                    ),
   hp_sup:start_link().
 

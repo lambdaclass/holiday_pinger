@@ -66,7 +66,7 @@
   [section
    [:div.has-text-centered
     [:br]
-    [:h1.title.is-1.has-text-primary.landing-title "Don't ever forget to report your time off again"]
+    [:h1.title.is-1.has-text-primary.landing-title "Don't forget to report your time off again"]
     [:h3.subtitle.is-4 "HolidayPing notifies your clients, you enjoy a daiquiri"]
     [:br]
     [:br]
