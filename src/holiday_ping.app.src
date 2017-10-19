@@ -10,6 +10,7 @@
     sasl,
     lager,
     pgapp,
+    throttle,
     hackney,
     erlpass,
     erlcloud
