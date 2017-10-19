@@ -2,9 +2,8 @@
 
 -export([handle/4]).
 
-handle(User, _Date, Config, Message) ->
-  UserName = maps:get(name, User),
-  FromEmail = <<UserName/binary, " <holidayping@lambdaclass.com>">>,
+handle(_User, _Date, Config, Message) ->
+  FromEmail = <<"HolidayPing <holidayping@lambdaclass.com>">>,
   Subject = <<"Holiday reminder">>,
   Targets = maps:get(emails, Config),
 
