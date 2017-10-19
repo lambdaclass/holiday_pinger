@@ -5,6 +5,8 @@
          get_recent/2,
          reminder_keys/0]).
 
+-behaviour(sumo_doc).
+
 %% needed so atoms exist.
 reminder_keys() -> [user, channel, channel_type, target, timestamp].
 

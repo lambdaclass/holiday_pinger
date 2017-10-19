@@ -9,6 +9,8 @@
          get_id/2,
          channel_keys/0]).
 
+-behaviour(sumo_doc).
+
 channel_keys () -> [user, name, type, configuration].
 
 create(User, Name, Type, Config, SameDay, DaysBefore) ->

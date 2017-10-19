@@ -6,6 +6,8 @@
          set_channel_holidays/3,
          holiday_keys/0]).
 
+-behaviour(sumo_doc).
+
 %% needed so atoms exist.
 holiday_keys () -> [country, date, name, user].
 

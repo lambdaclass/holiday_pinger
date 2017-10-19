@@ -13,6 +13,39 @@
          set_verified/1,
          user_keys/0]).
 
+-behaviour(sumo_doc).
+
+-export([sumo_schema/0, sumo_sleep/1, sumo_wakeup/1]).
+-export([new/3]).
+
+-spec sumo_wakeup(sumo:model()) -> post().
+sumo_wakeup(Data) ->
+  maps:to_list(Data).
+
+-spec sumo_sleep(post()) -> sumo:model().
+sumo_sleep(Post) ->
+  maps:from_list(Post).
+
+-spec sumo_schema() -> sumo:schema().
+sumo_schema() ->
+  sumo:new_schema(user, [
+    sumo:new_field(id, [id, auto_increment, not_null]),
+    sumo:new_field(email, string, [{string, 100}, not_null, unique]),
+    sumo:new_field(name, string, [not_null]),
+    sumo:new_field(password, string, []),
+    sumo:new_field(auth_type, string, []),
+    sumo:new_field(verified, boolean, []),
+    sumo:new_field(verification_code, string, [{string, 30}]),
+    sumo:new_field(verification_sent_at, []),
+    sumo:new_field(password_reset_code, string, [{string, 30}]),
+    sumo:new_field(password_reset_sent_at, []),
+    ]).
+
+new(Email, Name, Password) ->
+  #{email => Email,
+    name => Name,
+    password => Password}.
+
 %% needed so atoms exist.
 user_keys () -> [email, password, name].
 
