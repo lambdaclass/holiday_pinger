@@ -1,20 +1,29 @@
 -module(db_reminder).
 
 -export([save/4,
-         get_current_count/2,
+         get_monthly_count/2,
          get_recent/2,
-         reminder_keys/0]).
+         reminder_keys/0,
+         sent_count/3]).
 
 %% needed so atoms exist.
 reminder_keys() -> [user, channel, channel_type, target, timestamp].
 
-get_current_count(Email, ChannelType) ->
+get_monthly_count(Email, ChannelType) ->
   Q = <<"SELECT count(*) FROM sent_reminders "
         "WHERE \"user\" = (SELECT id from \"users\" WHERE email = $1) "
         "AND channel_type = $2 "
         "AND date_part('month', timestamp) = $3">>,
   {_, MM, _} = erlang:date(),
   {ok, [#{count := Count}]} = db:query(Q, [Email, ChannelType, MM]),
+  {ok, Count}.
+
+sent_count(Email, ChannelName, Date) ->
+  Q = <<"SELECT count(*) FROM sent_reminders "
+        "WHERE channel = (SELECT id from channels WHERE name = $1 AND \"user\" = (SELECT id from \"users\" where email = $2)) "
+        "AND timestamp::date = $3 "
+        "AND test = false">>,
+  {ok, [#{count := Count}]} = db:query(Q, [ChannelName, Email, Date]),
   {ok, Count}.
 
 get_recent(Email, ChannelName) ->
