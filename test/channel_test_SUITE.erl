@@ -31,8 +31,9 @@ test_channel(Config) ->
       email => Email,
       table_id => TableId
      },
-    same_day => true,
-    days_before => null
+    reminder_days_before => [3],
+    reminder_time => <<"9:00">>,
+    reminder_timezone => <<"+02">>
    },
   {ok, 201, _, _} = test_utils:api_request(put, Token, "/api/channels/my_channel", Body),
   {ok, 204, _, _} = test_utils:api_request(post, Token, "/api/channels/my_channel/test", #{}),

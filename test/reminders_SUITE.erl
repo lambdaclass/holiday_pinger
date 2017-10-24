@@ -33,7 +33,8 @@ send_custom_holiday_reminder(_Config) ->
   Updated = [#{date => CustomDay, name => <<"Custom day">>} | DefaultHolidays],
   {ok, 200, _, _} = test_utils:api_request(put, Token, "/api/channels/test_ets3/holidays/", Updated),
 
-  remind_checker:force_holidays({1998,3,3}),
+  %% FIXME
+  remind_checker:check_holidays(),
   timer:sleep(100),
   [{Email, Message}] = ets_channel:get_reminders(TableId, Email),
 
@@ -55,7 +56,8 @@ dont_send_days_before_when_disabled(_Config) ->
   {ok, 200, _, _} = test_utils:api_request(put, Token, "/api/channels/test_ets4/holidays/", DefaultHolidays),
 
   %% force a holiday three days before new years
-  remind_checker:force_holidays({test_utils:current_year() - 1, 12, 29}),
+  %% FIXME
+  remind_checker:check_holidays(),
   timer:sleep(100),
   [] = ets_channel:get_reminders(TableId, Email),
 
@@ -72,12 +74,14 @@ send_days_before_when_set(_Config) ->
   {ok, 200, _, _} = test_utils:api_request(put, Token, "/api/channels/test_ets5/holidays/", DefaultHolidays),
 
   %% no reminder on new years
-  remind_checker:force_holidays({test_utils:current_year(), 1, 1}),
+  %% FIXME
+  remind_checker:check_holidays(),
   timer:sleep(100),
   [] = ets_channel:get_reminders(TableId, Email),
 
   %% reminder three days before new years
-  remind_checker:force_holidays({test_utils:current_year() - 1, 12, 29}),
+  %% FIXME
+  remind_checker:check_holidays(),
   timer:sleep(100),
 
   [{Email, Message}] = ets_channel:get_reminders(TableId, Email),
@@ -101,7 +105,8 @@ reminder_limit_enforced(_Config) ->
   {ok, 200, _, _} = test_utils:api_request(put, Token, "/api/channels/test_ets6/holidays/", DefaultHolidays),
 
   %% get one reminder
-  remind_checker:force_holidays({test_utils:current_year(), 1, 1}),
+  %% FIXME
+  remind_checker:check_holidays(),
   timer:sleep(100),
   [{Email, _Message}] = ets_channel:get_reminders(TableId, Email),
 
@@ -111,7 +116,8 @@ reminder_limit_enforced(_Config) ->
   {ok, 200, _, _} = test_utils:api_request(put, Token, "/api/channels/test_ets7/holidays/", DefaultHolidays),
 
   %% holidays not sent on new channel
-  remind_checker:force_holidays({test_utils:current_year(), 1, 1}),
+  %% FIXME
+  remind_checker:check_holidays(),
   timer:sleep(100),
   [] = ets_channel:get_reminders(TableId2, Email),
 
@@ -122,6 +128,7 @@ reminder_limit_enforced(_Config) ->
 create_channel(Token, Email, Name, TableId) ->
   create_channel(Token, Email, Name, TableId, true, null).
 
+%% FIXME remove same day
 create_channel(Token, Email, Name, TableId, SameDay, DaysBefore) ->
   Body = #{
     type => ets,
@@ -129,8 +136,9 @@ create_channel(Token, Email, Name, TableId, SameDay, DaysBefore) ->
       email => Email,
       table_id => TableId
      },
-    same_day => SameDay,
-    days_before => DaysBefore
+    reminder_days_before => [3],
+    reminder_time => <<"9:00">>,
+    reminder_timezone => <<"+02">>
    },
   {ok, 201, _, _} = test_utils:api_request(put, Token, "/api/channels/" ++ Name, Body),
   ets_channel:init_table(TableId).

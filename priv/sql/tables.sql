@@ -19,8 +19,9 @@ CREATE TABLE channels (
   "name" character varying(50) NOT NULL,
   "type" character varying(20) NOT NULL,
   "configuration" jsonb NOT NULL,
-  "same_day" boolean NOT NULL DEFAULT FALSE,
-  "days_before" smallint CHECK ("days_before" > 0),
+  "reminder_time" time NOT NULL,
+  "reminder_timezone" text NOT NULL,
+  "reminder_days_before" integer[],
   UNIQUE ("user", "name")
 );
 
@@ -40,7 +41,13 @@ CREATE TABLE channel_holidays (
   UNIQUE ("channel", "date")
 );
 
-CREATE TABLE sent_reminders (
+CREATE TABLE scheduled_reminders (
+  "id" serial PRIMARY KEY,
+  "holiday" integer REFERENCES "channel_holidays" ON DELETE CASCADE,
+  "send_at" timestamp with time zone
+);
+
+CREATE TABLE sent_reminders_log (
   "id" serial PRIMARY KEY,
   "user" integer REFERENCES users ON DELETE CASCADE,
   "channel" integer REFERENCES channels ON DELETE SET NULL,

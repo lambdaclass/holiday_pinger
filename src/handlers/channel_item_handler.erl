@@ -52,12 +52,13 @@ from_json(Req, State = #{is_new := true,
   #{
      type := Type,
      configuration := Config,
-     same_day := SameDay,
-     days_before := DaysBefore
+     reminder_days_before := DaysBefore,
+     reminder_time := Time,
+     reminder_timezone := TimeZone
    } = hp_json:decode(Body),
 
   CleanConfig = maps:filter(fun not_empty_value/2, Config),
-  {ok, _} = db_channel:create(Email, Name, Type, CleanConfig, SameDay, DaysBefore),
+  {ok, _} = db_channel:create(Email, Name, Type, CleanConfig, DaysBefore, Time, TimeZone),
 
   Req3 = cowboy_req:set_resp_body(Body, Req2),
   {true, Req3, State};
@@ -72,17 +73,19 @@ from_json(Req, State = #{is_new := false,
   %% TODO validate input fields
   #{
      configuration := Config,
-     same_day := SameDay,
-     days_before := DaysBefore
+     reminder_days_before := DaysBefore,
+     reminder_time := Time,
+     reminder_timezone := TimeZone
    } = hp_json:decode(Body),
 
   CleanConfig = maps:filter(fun not_empty_value/2, Config),
-  ok = db_channel:update(Email, Name, CleanConfig, SameDay, DaysBefore),
+  ok = db_channel:update(Email, Name, CleanConfig, DaysBefore, Time, TimeZone),
+  reminder:regenerate(Email, Name),
 
   RespBody = Channel#{
                configuration := Config,
-               same_day := SameDay,
-               days_before := DaysBefore
+               reminder_days_before := DaysBefore,
+               reminder_time := Time
               },
   Encoded = hp_json:encode(RespBody),
   Req3 = cowboy_req:set_resp_body(Encoded, Req2),

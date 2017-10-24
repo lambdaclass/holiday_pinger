@@ -7,8 +7,7 @@
 
 -export([start_link/0,
 
-         force_holidays/0,
-         force_holidays/1,
+         check_holidays/0,
 
          init/1,
          handle_call/3,
@@ -30,24 +29,16 @@ handle_cast(_Request, State) ->
   {noreply, State}.
 
 handle_info(check_holidays, State) ->
-  HolidayDate = erlang:date(),
-  check_holidays(HolidayDate),
+  check_holidays(),
   {noreply, State};
 
 handle_info(_Msg, State) ->
   {noreply, State}.
 
-%% for testing, foce the checker to send reminders
-force_holidays() ->
-  force_holidays({2017, 1, 1}).
-force_holidays(Date) ->
-  check_holidays(Date),
-  ok.
-
-%%% internal
-check_holidays(HolidayDate) ->
+%%% exported only for tests
+check_holidays() ->
   lager:info("Running holiday checker."),
-  {ok, Results} = db_channel:get_reminders(HolidayDate),
+  {ok, Results} = db_reminder:get_scheduled(),
   lists:foreach(fun ({User, Channel, Holiday}) ->
                     remind_router:send(User, Channel, maps:get(date, Holiday))
                 end,

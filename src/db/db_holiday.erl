@@ -1,8 +1,10 @@
 -module(db_holiday).
 
+%% FIXME more consistent naming in these functions
 -export([holidays_of_country/1,
          create/3,
          get_channel_holidays/2,
+         get_channel_holidays/3,
          set_channel_holidays/3,
          holiday_keys/0]).
 
@@ -26,6 +28,15 @@ get_channel_holidays(Email, Channel) ->
   case db_channel:get_id(Email, Channel) of
     {ok, ChannelId} ->
       Q = <<"SELECT to_char(date, 'YYYY-MM-DD') as date, name FROM channel_holidays "
+            "WHERE channel = $1 ORDER BY date ">>,
+      db:query(Q, [ChannelId]);
+    Error -> Error
+  end.
+
+get_channel_holidays(Email, Channel, [date]) ->
+  case db_channel:get_id(Email, Channel) of
+    {ok, ChannelId} ->
+      Q = <<"SELECT date, name FROM channel_holidays "
             "WHERE channel = $1 ORDER BY date ">>,
       db:query(Q, [ChannelId]);
     Error -> Error

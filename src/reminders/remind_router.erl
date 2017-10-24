@@ -44,7 +44,7 @@ handle_cast({send_reminder, User, Channel, HolidayDate, Message, IsTest}, State)
     ok ->
       Handler = get_handler(Type),
       case Handler:handle(User, HolidayDate, Config, Message) of
-        {ok, SentReminders} -> save_reminders(User, Channel, SentReminders, IsTest);
+        {ok, SentReminders} -> log_reminders(User, Channel, SentReminders, IsTest);
         Error -> lager:warning(<<"Error sending reminders ~p">>, [Error])
       end;
     already_sent ->
@@ -73,9 +73,6 @@ get_handler(ets) -> ets_channel;
 get_handler(webhook) -> webhook_channel;
 get_handler(email) -> email_channel.
 
-save_reminders(#{email := Email}, #{name := ChannelName}, Targets, IsTest) ->
-  db_reminder:save(Email, ChannelName, Targets, IsTest).
-
 check_should_send(Email, #{name := ChannelName, type := ChannelType}) ->
   case is_already_sent(Email, ChannelName) of
     true -> already_sent;
@@ -100,3 +97,6 @@ check_limit(Email, Type) ->
       end;
     _ -> ok
   end.
+
+log_reminders(#{email := Email}, #{name := ChannelName}, Targets, IsTest) ->
+  db_reminder:log(Email, ChannelName, Targets, IsTest).

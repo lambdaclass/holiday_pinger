@@ -47,6 +47,7 @@ from_json(Req, State = #{email := Email, channel := Channel}) ->
 
   case db_holiday:set_channel_holidays(Email, Channel, NewHolidays) of
     {ok, _} ->
+      reminder:regenerate(Email, Channel),
       Req3 = cowboy_req:set_resp_body(Body, Req2),
       {true, Req3, State};
     {error, channel_not_found} ->

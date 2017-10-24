@@ -79,8 +79,9 @@ create_channel(Token, Name) ->
       url => <<"http://example.com">>,
       channels => [<<"#general">>]
      },
-    same_day => true,
-    days_before => null
+    reminder_days_before => [0],
+    reminder_time => <<"9:00">>,
+    reminder_timezone => <<"+02">>
    },
   {ok, 201, _, _} = test_utils:api_request(put, Token, "/api/channels/" ++ Name, Body),
   Body.
