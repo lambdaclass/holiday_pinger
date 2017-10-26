@@ -2,8 +2,10 @@
 
 -export([create/4,
          clear/2,
+         delete/4,
          log/4,
          get_monthly_count/2,
+         sent_count/3,
          get_recent/2,
          reminder_keys/0,
          get_scheduled/0]).
@@ -27,6 +29,14 @@ clear(Email, ChannelName) ->
         "DELETE FROM scheduled_reminders WHERE holiday IN (SELECT id FROM holiday_ids)">>,
   db:query(Q, [Email, ChannelName]).
 
+delete(Email, ChannelName, HolidayDate, SendAtDate) ->
+  Q = <<"WITH user_id AS (SELECT id FROM users WHERE email = $1), "
+        "channel_id AS (SELECT id FROM channels WHERE channels.user = (SELECT id FROM user_id) AND name = $2), "
+        "holiday_id AS (SELECT id FROM channel_holidays WHERE channel = (SELECT id FROM channel_id) AND date = $3) "
+        "DELETE FROM scheduled_reminders WHERE holiday = (SELECT id FROM holiday_id) "
+        "AND send_at::date = $4">>,
+  db:query(Q, [Email, ChannelName, HolidayDate, SendAtDate]).
+
 get_monthly_count(Email, ChannelType) ->
   Q = <<"SELECT count(*) FROM sent_reminders_log "
         "WHERE \"user\" = (SELECT id from \"users\" WHERE email = $1) "
@@ -37,7 +47,7 @@ get_monthly_count(Email, ChannelType) ->
   {ok, Count}.
 
 sent_count(Email, ChannelName, Date) ->
-  Q = <<"SELECT count(*) FROM sent_reminders "
+  Q = <<"SELECT count(*) FROM sent_reminders_log "
         "WHERE channel = (SELECT id from channels WHERE name = $1 AND \"user\" = (SELECT id from \"users\" where email = $2)) "
         "AND timestamp::date = $3 "
         "AND test = false">>,
@@ -70,11 +80,12 @@ log(Email, ChannelName, Targets, IsTest) ->
 
 get_scheduled() ->
   Q = <<"SELECT ch.name as channel_name, ch.type, ch.configuration, "
-        "u.name as user_name, u.email, h.name as holiday_name, h.date FROM scheduled_reminders r ",
+        "u.name as user_name, u.email, h.name as holiday_name, h.date "
+        "FROM scheduled_reminders r "
         "JOIN channel_holidays h ON h.id = r.holiday "
         "JOIN channels ch ON ch.id = h.channel "
         "JOIN users u ON u.id = ch.user "
-        "WHERE now() > r.send_at AND r.send_at > now() - interval '12 hours'">>,
+        "WHERE r.send_at::date = CURRENT_DATE AND r.send_at < now() - interval '10 minutes'">>,
   {ok, Results} = db:query(Q, []),
   {ok, [{extract_user(R), extract_channel(R), extract_holiday(R)}
         || R <- Results]}.
