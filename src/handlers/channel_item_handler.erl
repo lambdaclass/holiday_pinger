@@ -48,20 +48,23 @@ from_json(Req, State = #{is_new := true,
                          name := Name}) ->
   {ok, Body, Req2} = cowboy_req:body(Req),
 
-  %% TODO validate input fields
-  #{
-     type := Type,
-     configuration := Config,
-     reminder_days_before := DaysBefore,
-     reminder_time := Time,
-     reminder_timezone := TimeZone
-   } = hp_json:decode(Body),
+  case hp_json:decode(Body) of
+    #{
+       type := Type,
+       configuration := Config,
+       reminder_days_before := DaysBefore,
+       reminder_time := Time,
+       reminder_timezone := TimeZone
+     } when is_list(DaysBefore), length(DaysBefore) =< 5 ->
+      CleanConfig = maps:filter(fun not_empty_value/2, Config),
+      {ok, _} = db_channel:create(Email, Name, Type, CleanConfig, DaysBefore, Time, TimeZone),
 
-  CleanConfig = maps:filter(fun not_empty_value/2, Config),
-  {ok, _} = db_channel:create(Email, Name, Type, CleanConfig, DaysBefore, Time, TimeZone),
-
-  Req3 = cowboy_req:set_resp_body(Body, Req2),
-  {true, Req3, State};
+      Req3 = cowboy_req:set_resp_body(Body, Req2),
+      {true, Req3, State};
+    _ ->
+      %% TODO more sophisticated validations and error messages
+      req_utils:error_response(400, <<"Missing or invalid field">>, Req2)
+  end;
 
 %% PUT for update
 from_json(Req, State = #{is_new := false,
@@ -70,26 +73,30 @@ from_json(Req, State = #{is_new := false,
                          channel := Channel}) ->
 
   {ok, Body, Req2} = cowboy_req:body(Req),
-  %% TODO validate input fields
-  #{
-     configuration := Config,
-     reminder_days_before := DaysBefore,
-     reminder_time := Time,
-     reminder_timezone := TimeZone
-   } = hp_json:decode(Body),
 
-  CleanConfig = maps:filter(fun not_empty_value/2, Config),
-  ok = db_channel:update(Email, Name, CleanConfig, DaysBefore, Time, TimeZone),
-  reminder:regenerate(Email, Name),
+  case hp_json:decode(Body) of
+    #{
+       configuration := Config,
+       reminder_days_before := DaysBefore,
+       reminder_time := Time,
+       reminder_timezone := TimeZone
+     } when is_list(DaysBefore), length(DaysBefore) =< 5 ->
+      CleanConfig = maps:filter(fun not_empty_value/2, Config),
+      ok = db_channel:update(Email, Name, CleanConfig, DaysBefore, Time, TimeZone),
+      reminder:regenerate(Email, Name),
 
-  RespBody = Channel#{
-               configuration := Config,
-               reminder_days_before := DaysBefore,
-               reminder_time := Time
-              },
-  Encoded = hp_json:encode(RespBody),
-  Req3 = cowboy_req:set_resp_body(Encoded, Req2),
-  {true, Req3, State}.
+      RespBody = Channel#{
+                   configuration := Config,
+                   reminder_days_before := DaysBefore,
+                   reminder_time := Time
+                  },
+      Encoded = hp_json:encode(RespBody),
+      Req3 = cowboy_req:set_resp_body(Encoded, Req2),
+      {true, Req3, State};
+    _ ->
+      %% TODO more sophisticated validations and error messages
+      req_utils:error_response(400, <<"Missing or invalid field">>, Req2)
+  end.
 
 delete_resource(Req, State = #{email := Email, name := Name}) ->
   ok = db_channel:delete(Email, Name),
