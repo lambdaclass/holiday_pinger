@@ -4,7 +4,7 @@
    [re-frame.core :as re-frame]
    [cljs-time.core :as time]
    [clojure.contrib.humanize :as humanize]
-   [holiday-ping-ui.holidays.format :as format]
+   [holiday-ping-ui.common.time-format :as format]
    [holiday-ping-ui.common.subs :as subs]))
 
 (subs/db-subscription :channels)
