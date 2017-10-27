@@ -141,10 +141,15 @@
 
 (defn base-edit-defaults
   [channel]
-  (merge (select-keys channel [:type :name])
-         (:configuration channel)
-         {:same-day    (:same_day channel)
-          :days-before (or (:days_before channel) 0)}))
+  (let [days-before-array (:reminder_days_before channel)
+        same-day?         (boolean (some #{0} days-before-array))
+        days-before       (first (filter #(not= 0 %) days-before-array))]
+    (merge (select-keys channel [:type :name :reminder_time :reminder_timezone])
+           (:configuration channel)
+           {:time        (:reminder_time channel)
+            :timezone    (:reminder_timezone channel)
+            :same-day    same-day?
+            :days-before (or days-before 0)})))
 
 (defmulti edit-defaults :type)
 (defmethod edit-defaults :default
