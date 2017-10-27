@@ -85,7 +85,7 @@ get_scheduled() ->
         "JOIN channel_holidays h ON h.id = r.holiday "
         "JOIN channels ch ON ch.id = h.channel "
         "JOIN users u ON u.id = ch.user "
-        "WHERE r.send_at::date = CURRENT_DATE AND r.send_at < now() - interval '10 minutes'">>,
+        "WHERE r.send_at::date = CURRENT_DATE AND r.send_at - interval '10 minutes' < now() ">>,
   {ok, Results} = db:query(Q, []),
   {ok, [{extract_user(R), extract_channel(R), extract_holiday(R)}
         || R <- Results]}.

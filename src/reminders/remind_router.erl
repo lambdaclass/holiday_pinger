@@ -45,7 +45,7 @@ handle_cast({send_reminder, User, Channel, HolidayDate, Message, IsTest}, State)
       Handler = get_handler(Type),
       case Handler:handle(User, HolidayDate, Config, Message) of
         {ok, SentReminders} ->
-          db_reminder:delete(Email, Channel, HolidayDate, erlang:date()),
+          db_reminder:delete(Email, ChannelName, HolidayDate, erlang:date()),
           log_reminders(User, Channel, SentReminders, IsTest);
         Error ->
           lager:warning(<<"Error sending reminders ~p">>, [Error])

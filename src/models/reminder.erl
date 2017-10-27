@@ -24,12 +24,7 @@ create_holiday_reminders(Email, ChannelName, HolidayDate, DaysBeforeList, Time, 
                     ok = db_reminder:create(Email, ChannelName, HolidayDate, SendAt)
                 end, DaysBeforeList).
 
-%% TODO create date_utils
-build_timestamp(HolidayDate, DaysBefore, Time, TimeZone) ->
-  {YY, MM, DD} = add_days(HolidayDate, - DaysBefore),
-  list_to_binary(
-    io_lib:format(<<"~B-~2..0B-~2..0B ~s~s">>, [YY, MM, DD, Time, TimeZone])).
-
-add_days(Date, Days) ->
-  Greg = calendar:date_to_gregorian_days(Date),
-  calendar:gregorian_days_to_date(Greg + Days).
+build_timestamp(HolidayDate, DaysBefore, TimeBin, TimeZoneBin) ->
+  Date = hp_date:add_days(HolidayDate, - DaysBefore),
+  DateBin = hp_date:date_to_binary(Date),
+  <<DateBin/binary, " ", TimeBin/binary, TimeZoneBin/binary>>.

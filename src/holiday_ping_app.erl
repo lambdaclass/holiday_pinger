@@ -26,6 +26,7 @@ start(_StartType, _StartArgs) ->
                                            {"/api/channels_detail", channel_detail_list_handler, []},
                                            {"/api/channels/:name/test", channel_test_handler, []},
                                            {"/api/channels/:channel/holidays", holidays_handler, []},
+                                           {"/api/channels/:channel/reminders", sent_reminders_handler, []},
                                            {"/api/holidays/:country", country_holidays_handler, []},
                                            {'_', cowboy_static, {priv_file, holiday_ping, "/ui/resources/public/index.html"}}]}
                                    ]),
