@@ -169,11 +169,7 @@ channel_properly_called(_Config) ->
   timer:sleep(100),
   {ok, 200, _, [_Reminder]} = test_utils:api_request(get, Token, "/api/channels/test_ets/reminders/"),
   [{Email, Message}] = ets_channel:get_reminders(TableId, Email),
-
-  Expected = list_to_binary(
-               io_lib:format(<<"This is a holiday reminder: ~s will be out on ~2..0B/~2..0B/~B.">>,
-                             ["John Doe", DD, MM, YYYY])),
-  Message = Expected,
+  Message = <<"This is a holiday reminder: John Doe will be out today.">>,
 
   ok = test_utils:delete_user(Email).
 
@@ -206,55 +202,6 @@ monthly_limit_enforced(_Config) ->
 
   application:set_env(holiday_ping, monthly_limits, CurrentLimits),
   ok.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% TODO REMOVE
-
-%% dont_send_days_before_when_disabled(_Config) ->
-%%   #{email := Email, token := Token} = test_utils:create_user_with_token(),
-
-%%   TableId = ets_channel_table4,
-%%   create_channel(Token, Email, <<"test_ets4">>, TableId),
-
-%%   %% copy holidays from argentina
-%%   {ok, 200, _, DefaultHolidays} = test_utils:api_request(get, Token, "/api/holidays/argentina"),
-%%   {ok, 200, _, _} = test_utils:api_request(put, Token, "/api/channels/test_ets4/holidays/", DefaultHolidays),
-
-%%   %% force a holiday three days before new years
-%%   %% FIXME
-%%   remind_checker:check_holidays(),
-%%   timer:sleep(100),
-%%   [] = ets_channel:get_reminders(TableId, Email),
-
-%%   ok = test_utils:delete_user(Email).
-
-%% send_days_before_when_set(_Config) ->
-%%   #{email := Email, token := Token} = test_utils:create_user_with_token(),
-
-%%   TableId = ets_channel_table5,
-%%   create_channel(Token, Email, <<"test_ets5">>, TableId, false, 3),
-
-%%   %% copy holidays from argentina
-%%   {ok, 200, _, DefaultHolidays} = test_utils:api_request(get, Token, "/api/holidays/argentina"),
-%%   {ok, 200, _, _} = test_utils:api_request(put, Token, "/api/channels/test_ets5/holidays/", DefaultHolidays),
-
-%%   %% no reminder on new years
-%%   %% FIXME
-%%   remind_checker:check_holidays(),
-%%   timer:sleep(100),
-%%   [] = ets_channel:get_reminders(TableId, Email),
-
-%%   %% reminder three days before new years
-%%   %% FIXME
-%%   remind_checker:check_holidays(),
-%%   timer:sleep(100),
-
-%%   [{Email, Message}] = ets_channel:get_reminders(TableId, Email),
-%%   Expected = list_to_binary(
-%%                io_lib:format(<<"This is a holiday reminder: ~s will be out on ~2..0B/~2..0B/~B.">>,
-%%                              ["John Doe", 1, 1, 2017])),
-%%   Message = Expected,
-
-%%   ok = test_utils:delete_user(Email).
 
 %%% internal
 create_channel(Token, Name) ->

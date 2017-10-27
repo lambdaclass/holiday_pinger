@@ -62,11 +62,10 @@ handle_cast(Request, State) ->
   {noreply, State}.
 
 %%% internal
-%% at some point the reminder message will be part of the channel
-build_message(#{name := UserName}, {Y, M, D}) ->
-  list_to_binary(
-    io_lib:format(<<"This is a holiday reminder: ~s will be out on ~2..0B/~2..0B/~B.">>,
-                  [UserName, D, M, Y])).
+build_message(#{name := UserName}, Date) ->
+  HumanDate = hp_date:human_date(Date),
+  <<"This is a holiday reminder: ",
+    UserName/binary, " will be out ", HumanDate/binary, ".">>.
 
 get_handler(slack) -> slack_channel;
 get_handler(console) -> console_channel;
