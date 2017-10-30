@@ -107,3 +107,8 @@ SPA. Apps that don't inherently have a lot of dynamic components (e.g. google do
 and instead are more classic (navigation oriented) make you invest a ton of time
 just reproducing the native behavior of the browser and you get little of the benefits
 of using a js framework.
+
+# servers
+
+- AWS vs Kimsufi
+- travis
