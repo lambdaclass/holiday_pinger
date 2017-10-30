@@ -144,7 +144,7 @@
   (let [days-before-array (:reminder_days_before channel)
         same-day?         (boolean (some #{0} days-before-array))
         days-before       (first (filter #(not= 0 %) days-before-array))]
-    (merge (select-keys channel [:type :name :reminder_time :reminder_timezone])
+    (merge (select-keys channel [:type :name])
            (:configuration channel)
            {:time        (:reminder_time channel)
             :timezone    (:reminder_timezone channel)
