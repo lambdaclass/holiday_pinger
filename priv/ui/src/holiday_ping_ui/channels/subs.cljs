@@ -41,7 +41,7 @@
 (defn- next-holiday
   [holidays]
   (let [today     (format/date-to-string (time/today))
-        upcoming? #(> (:date %) today)]
+        upcoming? #(>= (:date %) today)]
     (first (filter upcoming? holidays))))
 
 (re-frame/reg-sub
