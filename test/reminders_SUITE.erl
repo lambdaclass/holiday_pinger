@@ -12,6 +12,8 @@ all() ->
    not_sent_before_scheduled_time,
    sent_before_holiday,
    not_sent_twice,
+   dont_resend_after_regeneration,
+   dont_resend_days_before_after_regeneration,
    timezone_honored,
    channel_properly_called,
    monthly_limit_enforced
@@ -112,6 +114,64 @@ not_sent_twice(_Config) ->
   remind_checker:check_holidays(),
   timer:sleep(100),
   {ok, 200, _, [Reminder]} = test_utils:api_request(get, Token, "/api/channels/test4/reminders/"),
+
+  ok = test_utils:delete_user(Email).
+
+dont_resend_after_regeneration(_Config) ->
+  #{email := Email, token := Token} = test_utils:create_user_with_token(),
+
+  create_channel(Token, <<"test4b">>),
+  Today =  hp_date:today_binary(),
+  Holidays = [#{name => <<"today holiday">>, date => Today}],
+  {ok, 200, _, _} = test_utils:api_request(put, Token, "/api/channels/test4b/holidays/", Holidays),
+
+  %% get sent reminders, should be empty
+  {ok, 200, _, []} = test_utils:api_request(get, Token, "/api/channels/test4b/reminders/"),
+
+  remind_checker:check_holidays(),
+  timer:sleep(100),
+
+  %% get sent reminders, should have one reminder
+  {ok, 200, _, [Reminder]} = test_utils:api_request(get, Token, "/api/channels/test4b/reminders/"),
+  #{date := Today} = Reminder,
+
+  %% update holidays again to force reminder regeneration
+  {ok, 200, _, _} = test_utils:api_request(put, Token, "/api/channels/test4b/holidays/", Holidays),
+
+  %% run checker again, should not send more reminders
+  remind_checker:check_holidays(),
+  timer:sleep(100),
+  {ok, 200, _, [Reminder]} = test_utils:api_request(get, Token, "/api/channels/test4b/reminders/"),
+
+  ok = test_utils:delete_user(Email).
+
+dont_resend_days_before_after_regeneration(_Config) ->
+  #{email := Email, token := Token} = test_utils:create_user_with_token(),
+
+  {Today, Now} = calendar:universal_time(),
+  create_channel(Token, <<"test">>, [1], Now, <<"+00">>),
+  HolidayDate = hp_date:add_days(Today, 1),
+  Holidays = [#{name => <<"tomorrow holiday">>, date => hp_date:date_to_binary(HolidayDate)}],
+  {ok, 200, _, _} = test_utils:api_request(put, Token, "/api/channels/test/holidays/", Holidays),
+
+  %% get sent reminders, should be empty
+  {ok, 200, _, []} = test_utils:api_request(get, Token, "/api/channels/test/reminders/"),
+
+  remind_checker:check_holidays(),
+  timer:sleep(100),
+
+  %% get sent reminders, should have one reminder
+  {ok, 200, _, [Reminder]} = test_utils:api_request(get, Token, "/api/channels/test/reminders/"),
+  TodayBin = hp_date:today_binary(),
+  #{date := TodayBin} = Reminder,
+
+  %% update holidays again to force reminder regeneration
+  {ok, 200, _, _} = test_utils:api_request(put, Token, "/api/channels/test/holidays/", Holidays),
+
+  %% run checker again, should not send more reminders
+  remind_checker:check_holidays(),
+  timer:sleep(100),
+  {ok, 200, _, [Reminder]} = test_utils:api_request(get, Token, "/api/channels/test/reminders/"),
 
   ok = test_utils:delete_user(Email).
 

@@ -4,7 +4,7 @@
 -export([holidays_of_country/1,
          create/3,
          get_channel_holidays/2,
-         get_channel_holidays/3,
+         get_upcoming_holidays/2,
          set_channel_holidays/3,
          holiday_keys/0]).
 
@@ -33,11 +33,11 @@ get_channel_holidays(Email, Channel) ->
     Error -> Error
   end.
 
-get_channel_holidays(Email, Channel, [date]) ->
+get_upcoming_holidays(Email, Channel) ->
   case db_channel:get_id(Email, Channel) of
     {ok, ChannelId} ->
       Q = <<"SELECT date, name FROM channel_holidays "
-            "WHERE channel = $1 ORDER BY date ">>,
+            "WHERE channel = $1 AND date >= CURRENT_DATE">>,
       db:query(Q, [ChannelId]);
     Error -> Error
   end.

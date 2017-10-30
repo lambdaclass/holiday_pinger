@@ -40,16 +40,18 @@ handle_cast({send_reminder, User, Channel, HolidayDate, Message, IsTest}, State)
   lager:debug("Sending reminders for user ~p and channel ~p",
               [UserName, ChannelName]),
 
-  case check_limit(Email, Type) of
+  case check_should_send(Email, Channel) of
     ok ->
       Handler = get_handler(Type),
       case Handler:handle(User, HolidayDate, Config, Message) of
         {ok, SentReminders} ->
           db_reminder:delete(Email, ChannelName, HolidayDate, erlang:date()),
-          log_reminders(User, Channel, SentReminders, IsTest);
+          reminder:log_reminders(Email, ChannelName, SentReminders, IsTest);
         Error ->
           lager:warning(<<"Error sending reminders ~p">>, [Error])
       end;
+    already_sent ->
+      db_reminder:delete(Email, ChannelName, HolidayDate, erlang:date());
     limit_exceeded ->
       lager:warning(<<"User ~p exceeded channel limit for type ~p">>,
                     [UserName, Type])
@@ -73,16 +75,8 @@ get_handler(ets) -> ets_channel;
 get_handler(webhook) -> webhook_channel;
 get_handler(email) -> email_channel.
 
-check_limit(Email, Type) ->
-  ChannelLimits = hp_config:get(monthly_limits),
-  case maps:get(Type, ChannelLimits, undefined) of
-    Limit when is_integer(Limit), Limit > 0 ->
-      case db_reminder:get_monthly_count(Email, Type) of
-        {ok, Count} when Count >= Limit -> limit_exceeded;
-        _ -> ok
-      end;
-    _ -> ok
+check_should_send(Email, #{name := ChannelName, type := ChannelType}) ->
+  case reminder:is_already_sent(Email, ChannelName) of
+    true -> already_sent;
+    false -> reminder:check_limit(Email, ChannelType)
   end.
-
-log_reminders(#{email := Email}, #{name := ChannelName}, Targets, IsTest) ->
-  db_reminder:log(Email, ChannelName, Targets, IsTest).
