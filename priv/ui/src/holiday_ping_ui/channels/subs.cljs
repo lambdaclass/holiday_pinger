@@ -4,7 +4,7 @@
    [re-frame.core :as re-frame]
    [cljs-time.core :as time]
    [clojure.contrib.humanize :as humanize]
-   [holiday-ping-ui.holidays.format :as format]
+   [holiday-ping-ui.common.time-format :as format]
    [holiday-ping-ui.common.subs :as subs]))
 
 (subs/db-subscription :channels)
@@ -41,7 +41,7 @@
 (defn- next-holiday
   [holidays]
   (let [today     (format/date-to-string (time/today))
-        upcoming? #(> (:date %) today)]
+        upcoming? #(>= (:date %) today)]
     (first (filter upcoming? holidays))))
 
 (re-frame/reg-sub

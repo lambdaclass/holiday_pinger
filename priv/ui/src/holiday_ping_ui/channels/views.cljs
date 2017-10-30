@@ -352,7 +352,9 @@
    :type            "slack"
    :channel-config  {}
    :reminder-config {:same-day    true
-                     :days-before 0}
+                     :days-before 0
+                     :time        "09:00"
+                     :timezone    channel-forms/default-timezone}
    :source-config   {:source  :country
                      :country "Argentina"}})
 

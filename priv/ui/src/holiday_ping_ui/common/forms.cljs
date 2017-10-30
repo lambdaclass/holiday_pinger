@@ -69,7 +69,7 @@
        [:p.help help-text])]))
 
 (defmethod input-view "code"
-  [form {:keys [value help-text]}]
+  [form {:keys [value]}]
   [:pre [:code value]])
 
 (defmethod input-view "select"
@@ -86,7 +86,7 @@
      [:p.help help-text])])
 
 (defmethod input-view "tags"
-  [form {:keys [key value help-text item-validate] :as field}]
+  [form {:keys [key help-text item-validate] :as field}]
   [tags/input (reagent/cursor form [key]) {:name      (field-name field)
                                            :label     (field-name field)
                                            :help-text help-text

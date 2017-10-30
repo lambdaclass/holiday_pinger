@@ -7,7 +7,8 @@ all() ->
     [create_a_channel,
      list_user_channels,
      get_single_channel,
-     delete_channel].
+     delete_channel,
+     limit_reminders_amount].
 
 init_per_suite(Config) ->
     {ok, _Apps} = application:ensure_all_started(holiday_ping),
@@ -28,11 +29,27 @@ create_a_channel(Config) ->
         url => <<"http://example.com">>,
         channels => [<<"#general">>]
        },
-      same_day => true,
-      days_before => 3
+      reminder_days_before => [0, 3],
+      reminder_time => <<"9:00">>,
+      reminder_timezone => <<"+02">>
      },
     {ok, 201, _, _} = test_utils:api_request(put, Token, "/api/channels/my_channel", Body),
     ok.
+
+limit_reminders_amount(Config) ->
+  Token = ?config(token, Config),
+  Body = #{
+    type => slack,
+    configuration => #{
+      url => <<"http://example.com">>,
+      channels => [<<"#general">>]
+     },
+    reminder_days_before => [1, 2, 3, 4, 5, 6],
+    reminder_time => <<"9:00">>,
+    reminder_timezone => <<"+02">>
+   },
+  {ok, 400, _, _} = test_utils:api_request(put, Token, "/api/channels/my_bad", Body),
+  ok.
 
 list_user_channels(Config) ->
     Token = ?config(token, Config),
@@ -42,8 +59,9 @@ list_user_channels(Config) ->
         url => <<"http://example.com">>,
         channels => [<<"#general">>]
        },
-      same_day => true,
-      days_before => 3
+      reminder_days_before => [3],
+      reminder_time => <<"9:00">>,
+      reminder_timezone => <<"+02">>
      },
     {ok, 201, _, _} = test_utils:api_request(put, Token, "/api/channels/my_list_channel", Body),
     {ok, 200, _, Channels} = test_utils:api_request(get, Token, "/api/channels/"),
@@ -58,8 +76,9 @@ get_single_channel(Config) ->
         url => <<"http://example.com">>,
         channels => [<<"#general">>]
        },
-      same_day => true,
-      days_before => 3
+      reminder_days_before => [3],
+      reminder_time => <<"9:00">>,
+      reminder_timezone => <<"+02">>
      },
     {ok, 201, _, _} = test_utils:api_request(put, Token, "/api/channels/my_detail_channel", Body),
     {ok, 200, _, #{name := <<"my_detail_channel">>}} =
@@ -74,8 +93,9 @@ delete_channel(Config) ->
         url => <<"http://example.com">>,
         channels => [<<"#general">>]
        },
-      same_day => true,
-      days_before => 3
+      reminder_days_before => [3],
+      reminder_time => <<"9:00">>,
+      reminder_timezone => <<"+02">>
      },
 
     {ok, 201, _, _} = test_utils:api_request(put, Token, "/api/channels/my_delete_channel", Body),

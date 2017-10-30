@@ -44,11 +44,14 @@ handle_cast({send_reminder, User, Channel, HolidayDate, Message, IsTest}, State)
     ok ->
       Handler = get_handler(Type),
       case Handler:handle(User, HolidayDate, Config, Message) of
-        {ok, SentReminders} -> save_reminders(User, Channel, SentReminders, IsTest);
-        Error -> lager:warning(<<"Error sending reminders ~p">>, [Error])
+        {ok, SentReminders} ->
+          db_reminder:delete(Email, ChannelName, HolidayDate, erlang:date()),
+          reminder:log_reminders(Email, ChannelName, SentReminders, IsTest);
+        Error ->
+          lager:warning(<<"Error sending reminders ~p">>, [Error])
       end;
     already_sent ->
-      ok;
+      db_reminder:delete(Email, ChannelName, HolidayDate, erlang:date());
     limit_exceeded ->
       lager:warning(<<"User ~p exceeded channel limit for type ~p">>,
                     [UserName, Type])
@@ -61,11 +64,10 @@ handle_cast(Request, State) ->
   {noreply, State}.
 
 %%% internal
-%% at some point the reminder message will be part of the channel
-build_message(#{name := UserName}, {Y, M, D}) ->
-  list_to_binary(
-    io_lib:format(<<"This is a holiday reminder: ~s will be out on ~2..0B/~2..0B/~B.">>,
-                  [UserName, D, M, Y])).
+build_message(#{name := UserName}, Date) ->
+  HumanDate = hp_date:human_date(Date),
+  <<"This is a holiday reminder: ",
+    UserName/binary, " will be out ", HumanDate/binary, ".">>.
 
 get_handler(slack) -> slack_channel;
 get_handler(console) -> console_channel;
@@ -73,30 +75,8 @@ get_handler(ets) -> ets_channel;
 get_handler(webhook) -> webhook_channel;
 get_handler(email) -> email_channel.
 
-save_reminders(#{email := Email}, #{name := ChannelName}, Targets, IsTest) ->
-  db_reminder:save(Email, ChannelName, Targets, IsTest).
-
 check_should_send(Email, #{name := ChannelName, type := ChannelType}) ->
-  case is_already_sent(Email, ChannelName) of
+  case reminder:is_already_sent(Email, ChannelName) of
     true -> already_sent;
-    false -> check_limit(Email, ChannelType)
-  end.
-
-is_already_sent(Email, ChannelName) ->
-  %% the channels currently return ok if all their reminders were sent, so if
-  %% one exists we can safely assume the entire pack was sent.
-  case db_reminder:sent_count(Email, ChannelName, erlang:date()) of
-    {ok, 0} -> false;
-    {ok, _} -> true
-  end.
-
-check_limit(Email, Type) ->
-  ChannelLimits = hp_config:get(monthly_limits),
-  case maps:get(Type, ChannelLimits, undefined) of
-    Limit when is_integer(Limit), Limit > 0 ->
-      case db_reminder:get_monthly_count(Email, Type) of
-        {ok, Count} when Count >= Limit -> limit_exceeded;
-        _ -> ok
-      end;
-    _ -> ok
+    false -> reminder:check_limit(Email, ChannelType)
   end.

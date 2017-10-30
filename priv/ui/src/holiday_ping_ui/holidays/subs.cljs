@@ -3,7 +3,7 @@
    [re-frame.core :as re-frame]
    [cljs-time.core :as time]
    [holiday-ping-ui.common.subs :as subs]
-   [holiday-ping-ui.holidays.format :as format]))
+   [holiday-ping-ui.common.time-format :as format]))
 
 (subs/db-subscription :calendar-selected-year)
 (subs/db-subscription :calendar-selected-day-name)

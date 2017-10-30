@@ -92,15 +92,23 @@
 (defmethod clean-config :default
   [_ config] config)
 
+(defn reminder-days-before
+  "Translate the current form fields into the daybs before array expected by the
+   backend."
+  [{:keys [same-day days-before]}]
+  (let [days-before (js/parseInt days-before)]
+    (concat (if same-day [0] [])
+            (if (zero? days-before) [] [days-before]))))
+
 (re-frame/reg-event-fx
  :channel-edit-submit
- (fn [{db :db} [_ {:keys [name type days-before same-day] :as data}]]
-   (let [days-before (js/parseInt days-before)
-         params      {:name          name
-                      :type          type
-                      :same_day      same-day
-                      :days_before   (if (zero? days-before) nil days-before)
-                      :configuration (clean-config type data)}]
+ (fn [{db :db} [_ {:keys [name type time timezone] :as data}]]
+   (let [params {:name                 name
+                 :type                 type
+                 :reminder_days_before (reminder-days-before data)
+                 :reminder_time        time
+                 :reminder_timezone    timezone
+                 :configuration        (clean-config type data)}]
      {:http-xhrio {:method          :put
                    :uri             (str "/api/channels/" name)
                    :headers         {:authorization (str "Bearer " (:access-token db))}
@@ -114,13 +122,13 @@
 (re-frame/reg-event-fx
  :wizard-submit
  (fn [{db :db} [_ {:keys [type channel-config reminder-config]}]]
-   (let [days-before  (js/parseInt (:days-before reminder-config))
-         channel-name (:name channel-config)
-         params       {:name          channel-name
-                       :type          type
-                       :same_day      (:same-day reminder-config)
-                       :days_before   (if (zero? days-before) nil days-before)
-                       :configuration (clean-config type channel-config)}]
+   (let [channel-name (:name channel-config)
+         params       {:name                 channel-name
+                       :type                 type
+                       :reminder_days_before (reminder-days-before reminder-config)
+                       :reminder_time        (:time reminder-config)
+                       :reminder_timezone    (:timezone reminder-config)
+                       :configuration        (clean-config type channel-config)}]
      {:db         (assoc db :loading-view? true)
       :http-xhrio {:method          :put
                    :uri             (str "/api/channels/" channel-name)

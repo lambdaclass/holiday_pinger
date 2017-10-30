@@ -4,7 +4,7 @@
    [ajax.core :as ajax]
    [cljs-time.core :as time]
    [holiday-ping-ui.common.events :as events]
-   [holiday-ping-ui.holidays.format :as format]))
+   [holiday-ping-ui.common.time-format :as format]))
 
 ;;; HOLIDAY EVENTS
 (defmethod events/load-view
