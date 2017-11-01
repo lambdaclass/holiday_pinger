@@ -243,7 +243,10 @@
           {:key      :country
            :type     "select"
            :disabled (not= source :country)
-           :options  ["Argentina" "Brazil" "United States"]}]]]
+           :options  ["Argentina" "Brazil" "Canada" "India" "Mexico" "Russia" "United States"]
+           :help-text [:span "Your country is not listed? "
+                       [:a {:href   "https://github.com/lambdaclass/holiday_ping/issues/new"
+                            :target "blank"} "File an issue."]]}]]]
        [:br]
 
        (when-not (empty? channels)
@@ -315,7 +318,11 @@
      [:div (when-not (= selected-year next-year) {:hidden true})
       [calendar/year-view next-year]]
      [:br]
-     [holiday-controls wizard-state]]))
+     [holiday-controls wizard-state]
+     [:br]
+     [:p.has-text-centered "Missing a national holiday? "
+      [:a {:href   "https://github.com/lambdaclass/holiday_ping/issues/new"
+           :target "blank"} "File an issue."]]]))
 
 (defn wizard-steps
   "Show the wizard steps and navigate on click."

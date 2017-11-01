@@ -74,14 +74,15 @@
 
 (defmethod input-view "select"
   [form {:keys [key disabled options help-text]}]
-  [:div.select
-   [:select {:on-change (field-handler form key)
-             :value     (get @form key "")
-             :disabled  disabled}
-    (for [option options
-          :let   [value (get option :value option)
-                  text  (get option :text option)]]
-      [:option {:key value :value value} text])]
+  [:div
+   [:div.select
+    [:select {:on-change (field-handler form key)
+              :value     (get @form key "")
+              :disabled  disabled}
+     (for [option options
+           :let   [value (get option :value option)
+                   text  (get option :text option)]]
+       [:option {:key value :value value} text])]]
    (when help-text
      [:p.help help-text])])
 

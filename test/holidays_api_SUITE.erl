@@ -28,12 +28,12 @@ get_country_holidays(Config) ->
 
   {ok, 200, _, ArgHolidays} = test_utils:api_request(get, Token1, "/api/holidays/argentina"),
   true = lists:any(fun (Holiday) ->
-                       test_utils:is_same_holiday(Holiday, 7, 9, <<"Independence day">>)
+                       test_utils:is_same_holiday(Holiday, 12, 25, <<"Navidad">>)
                    end, ArgHolidays),
 
   {ok, 200, _, UsHolidays} = test_utils:api_request(get, Token1, "/api/holidays/united states"),
   true = lists:any(fun (Holiday) ->
-                       test_utils:is_same_holiday(Holiday, 7, 4, <<"Independence day">>)
+                       test_utils:is_same_holiday(Holiday, 12, 25, <<"Christmas">>)
                    end, UsHolidays),
   ok.
 
@@ -53,7 +53,7 @@ update_holidays(Config) ->
 
   %% Remove a holiday and add another
   ArgHolidays2 = lists:filter(fun (Holiday) ->
-                                  not test_utils:is_same_holiday(Holiday, 7, 9, <<"Independence day">>)
+                                  not test_utils:is_same_holiday(Holiday, 12, 25, <<"Navidad">>)
                               end, ArgHolidays),
   ArgHolidays3 = [#{date => CustomDay, name => <<"Custom day">>} | ArgHolidays2],
   {ok, 200, _, _} = test_utils:api_request(put, Token1, "/api/channels/ch11/holidays/", ArgHolidays3),
@@ -61,7 +61,7 @@ update_holidays(Config) ->
   %% Check the changes were saved
   {ok, 200, _, StoredHolidays} = test_utils:api_request(get, Token1, "/api/channels/ch11/holidays/"),
   false = lists:any(fun (Holiday) ->
-                        test_utils:is_same_holiday(Holiday, 7, 9, <<"Independence day">>)
+                        test_utils:is_same_holiday(Holiday, 12, 25, <<"Navidad">>)
                     end, StoredHolidays),
   true = lists:any(fun (Holiday) ->
                        test_utils:is_same_holiday(Holiday, 3, 3, <<"Custom day">>)

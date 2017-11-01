@@ -115,9 +115,14 @@
       [views/breadcrumbs [["Channels" "/"]
                           [channel-name (routes/url-for :channel-edit :channel channel-name)]
                           ["Holidays"]]]
-      [:p.subtitle.has "Select the days of the year for which you want reminders."]
+      [:p.subtitle.has "Select the days of the year on which you want reminders."]
       [holiday-controls channel-name current-year next-year selected-year]
       [:div (when-not (= selected-year current-year) {:hidden true})
        [calendar/year-view current-year]]
       [:div (when-not (= selected-year next-year) {:hidden true})
-       [calendar/year-view next-year]]]]))
+       [calendar/year-view next-year]]
+      [:br]
+      [:br]
+      [:p.has-text-centered "Missing a national holiday? "
+       [:a {:href   "https://github.com/lambdaclass/holiday_ping/issues/new"
+            :target "blank"} "File an issue."]]]]))
