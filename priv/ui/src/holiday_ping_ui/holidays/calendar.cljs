@@ -22,6 +22,7 @@
   [year month]
   (let [first (first-of-calendar-month year month)
         last  (last-of-calendar-month year month)]
+    ;; TODO try to use periodic-seq here
     (->> first
          (iterate #(time/plus % (time/days 1)))
          (take-while #(<= % last)))))

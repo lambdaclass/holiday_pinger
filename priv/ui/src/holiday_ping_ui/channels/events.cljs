@@ -93,7 +93,7 @@
   [_ config] config)
 
 (defn reminder-days-before
-  "Translate the current form fields into the daybs before array expected by the
+  "Translate the current form fields into the days before array expected by the
    backend."
   [{:keys [same-day days-before]}]
   (let [days-before (js/parseInt days-before)]
