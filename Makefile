@@ -10,6 +10,10 @@ test:
 
 release:
 	cd priv/ui && lein do clean, cljsbuild once min && cd ../.. && \
+	./rebar3 as prod release
+
+release_tar:
+	cd priv/ui && lein do clean, cljsbuild once min && cd ../.. && \
 	./rebar3 as prod release tar
 
 ops:
