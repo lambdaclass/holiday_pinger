@@ -30,11 +30,18 @@ start(_StartType, _StartArgs) ->
                                            {"/api/holidays/:country", country_holidays_handler, []},
                                            {'_', cowboy_static, {priv_file, holiday_ping, "/ui/resources/public/index.html"}}]}
                                    ]),
-  cowboy:start_http(my_http_listener, 100, [{port, hp_config:get(port)}],
-                    [{env, [{dispatch, Dispatch}]},
-                     {middlewares, [cowboy_router, throttling_middleware, cowboy_handler]}]
-                   ),
+  start_cowboy(hp_config:get(protocol),
+               [{env, [{dispatch, Dispatch}]},
+                {middlewares, [cowboy_router, throttling_middleware, cowboy_handler]}]),
   hp_sup:start_link().
+
+start_cowboy(http, Options) ->
+  cowboy:start_http(my_http_listener, 100, [{port, hp_config:get(port)}], Options);
+start_cowboy(https, Options) ->
+  cowboy:start_https(my_http_listener, 100,
+                     [{port, hp_config:get(port)},
+                      {certfile, hp_config:get(certfile)},
+                      {keyfile, hp_config:get(keyfile)}], Options).
 
 stop(_State) ->
   ok.
