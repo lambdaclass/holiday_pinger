@@ -38,6 +38,10 @@ For UI development, run a dev shell and then:
 
 Which uses figwheel to provide a REPL and hot-reload of the code changes.
 
+## Production install
+
+Inside the devops folder you can find an install shell script for installing holiday_ping in a debian 9 serer.
+
 ### Credentials
 #### GitHub login configuration
 
