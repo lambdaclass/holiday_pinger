@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 apt-get update
 apt-get install -y wget curl git tmux postgresql build-essential libssl-dev make automake autoconf libncurses5-dev gcc default-jre certbot nginx ufw
 
