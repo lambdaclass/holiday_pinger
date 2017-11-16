@@ -67,21 +67,26 @@ get_primary_email(GithubToken) ->
                                   end, Emails),
   maps:get(email, Primary).
 
-register_user(Email, #{name := Name}) ->
+register_user(Email, Profile) ->
   %% only attempt to create it if it's not already registered
   case db_user:get(Email) of
     {error, not_found} ->
-      {ok, _} = db_user:create_github_user(Email, Name),
+      {ok, _} = db_user:create_github_user(Email, get_name(Email, Profile)),
       ok;
     {ok, _} ->
       ok
   end.
 
-build_holiday_access_token(Email, #{ avatar_url := Avatar, name := Name}) ->
+build_holiday_access_token(Email, Profile) ->
   Data = #{
     email => Email,
-    name => Name,
-    avatar => Avatar
+    name => get_name(Email, Profile),
+    avatar => maps:get(avatar_url, Profile)
    },
   {ok, Token} = hp_auth:token_encode(Data),
   Token.
+
+get_name(Email, #{name := null}) ->
+  Email;
+get_name(_Email, #{name := Name}) ->
+  Name.
