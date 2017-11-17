@@ -38,6 +38,9 @@ echo 'server {
        return         301 https://$server_name$request_uri;
 }' > /etc/nginx/sites-available/default
 
+service nginx start
+systemctl enable nginx
+
 #generate release
 make release
 
@@ -45,7 +48,7 @@ make release
 /root/holiday_ping/_build/prod/rel/holiday_ping/bin/holiday_ping start
 /root/holiday_ping/_build/prod/rel/holiday_ping/bin/holiday_ping attach
 
-# add ufw
+# DON'T ASK. Scaleway issue with ufw. Check https://community.online.net/t/how-to-configures-iptables-with-input-rules-with-dynamic-nbd/303/22
 sed -i -e "s/DEFAULT_INPUT_POLICY=\"DROP\"/DEFAULT_INPUT_POLICY=\"ACCEPT\"/" /etc/default/ufw
 awk '!found && /COMMIT/ { print "-A ufw-reject-input -j DROP"; found=1 } 1' /etc/ufw/after.rules > /tmp/after.rules && mv /tmp/after.rules /etc/ufw/after.rules
 
@@ -53,3 +56,5 @@ ufw allow ssh
 ufw allow https
 ufw allow http
 ufw enable
+
+systemctl enable ufw
