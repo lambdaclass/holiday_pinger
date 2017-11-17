@@ -13,7 +13,7 @@
                 :headers         {:authorization (str "Bearer " (:access-token db))}
                 :response-format (ajax/json-response-format {:keywords? true})
                 :on-success      [:channel-list-success]
-                :on-failure      [:error-message "Channel loading failed."]}})
+                :on-failure      [:channel-list-error]}})
 
 (defmethod events/load-view
   :channel-edit
@@ -25,6 +25,16 @@
                 :response-format (ajax/json-response-format {:keywords? true})
                 :on-success      [:channel-detail-success]
                 :on-failure      [:switch-view :not-found]}})
+
+;; FIXME handling 401 here because it's the landing, but it would make more
+;; sense to have a generic error handler that redirects to login from any
+;; point that gets a 401
+(re-frame/reg-event-fx
+ :channel-list-error
+ (fn [_ [_ {:keys [status]}]]
+   (if (= 401 status)
+     {:dispatch [:logout]}
+     {:dispatch [:error-message "Channel loading failed."]})))
 
 (re-frame/reg-event-db
  :channel-list-success
