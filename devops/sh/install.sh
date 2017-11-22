@@ -19,7 +19,7 @@ chmod +x lein
 mv lein /usr/local/bin/
 
 # generate postgres user
-sudo -u postgres createuser holiay_ping
+sudo -u postgres createuser holiday_ping
 sudo -u postgres createdb holiday_ping
 sudo -u postgres psql -c "ALTER ROLE holiday_ping WITH SUPERUSER;"
 sudo -u postgres psql -c "ALTER USER holiday_ping WITH PASSWORD 'holiday_ping';"
