@@ -65,10 +65,10 @@
    {:value "-11:00" :text "(GMT -11:00) Midway Island, Samoa"}
    {:value "-10:00" :text "(GMT -10:00) Hawaii"}
    {:value "-09:00" :text "(GMT -9:00) Alaska"}
-   {:value "-08:00" :text "(GMT -8:00) Pacific Time (US &amp; Canada)"}
-   {:value "-07:00" :text "(GMT -7:00) Mountain Time (US &amp; Canada)"}
-   {:value "-06:00" :text "(GMT -6:00) Central Time (US &amp; Canada), Mexico City"}
-   {:value "-05:00" :text "(GMT -5:00) Eastern Time (US &amp; Canada), Bogota, Lima"}
+   {:value "-08:00" :text "(GMT -8:00) Pacific Time (US & Canada)"}
+   {:value "-07:00" :text "(GMT -7:00) Mountain Time (US & Canada)"}
+   {:value "-06:00" :text "(GMT -6:00) Central Time (US & Canada), Mexico City"}
+   {:value "-05:00" :text "(GMT -5:00) Eastern Time (US & Canada), Bogota, Lima"}
    {:value "-04:00" :text "(GMT -4:00) Atlantic Time (Canada), Caracas, La Paz"}
    {:value "-03:30" :text "(GMT -3:30) Newfoundland"}
    {:value "-03:00" :text "(GMT -3:00) Brazil, Buenos Aires, Georgetown"}
