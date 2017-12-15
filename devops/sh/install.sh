@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 apt-get update
-apt-get install -y wget curl git tmux postgresql build-essential libssl-dev make automake autoconf libncurses5-dev gcc default-jre certbot nginx ufw
+apt-get install -y wget curl git tmux postgresql build-essential libssl-dev make automake autoconf libncurses5-dev gcc default-jre certbot nginx ufw python3-pip lzop pv
 
 # install erlang
 curl -O https://raw.githubusercontent.com/kerl/kerl/master/kerl
@@ -27,6 +27,29 @@ sudo -u postgres psql -c "ALTER USER holiday_ping WITH PASSWORD 'holiday_ping';"
 # run migrations
 cp /root/holiday_ping/priv/sql/tables.sql /tmp/
 sudo -u postgres psql -a -f /tmp/tables.sql
+
+# setup db backups
+echo '
+wal_level = replica
+' >> /etc/postgresql/9.6/main/postgresql.conf
+service postgresql restart
+
+sudo python3 -m pip install wal-e[aws]
+echo "cd /var/lib/postgresql/
+sudo -u postgres \
+  AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY AWS_REGION=us-east-1 wal-e \
+  -k $AWS_ACCESS_KEY_ID \
+  --s3-prefix=s3://lambdaclass.com/holiday_ping/backups \
+  backup-push /var/lib/postgresql/9.6/main
+
+sudo -u postgres \
+  AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY AWS_REGION=us-east-1 wal-e \
+  -k $AWS_ACCESS_KEY_ID \
+  --s3-prefix=s3://lambdaclass.com/holiday_ping/backups \
+  delete --confirm retain 5
+" > /usr/bin/holiday-backup
+chmod +x /usr/bin/holiday-backup
+echo '0 0 * * * /usr/bin/holiday-backup > /var/log/holiday-backup.log 2>&1' | crontab
 
 # get ssl certificates. issue with already running port
 certbot certonly --standalone -d holidayping.lambdaclass.com
