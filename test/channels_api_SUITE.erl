@@ -107,7 +107,7 @@ delete_channel(Config) ->
 create_delete_channel_notification(Config) ->
   Token = ?config(token, Config),
   Email = ?config(user, Config),
-  TableId = ets_channel_table_random,
+  TableId = ets_channel_table_create_delete_notification_test,
   ets_channel:init_table(TableId),
   {{YYYY, MM, DD}, Time} = calendar:universal_time(),
   Body = #{
