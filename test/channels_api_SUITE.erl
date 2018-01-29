@@ -8,7 +8,8 @@ all() ->
      list_user_channels,
      get_single_channel,
      delete_channel,
-     limit_reminders_amount].
+     limit_reminders_amount,
+     create_delete_channel_notification].
 
 init_per_suite(Config) ->
     {ok, _Apps} = application:ensure_all_started(holiday_ping),
@@ -102,3 +103,37 @@ delete_channel(Config) ->
     {ok, 204, _, _} = test_utils:api_request(delete, Token, "/api/channels/my_delete_channel"),
     {ok, 404, _, _} = test_utils:api_request(delete, Token, "/api/channels/my_delete_channel"),
     ok.
+
+create_delete_channel_notification(Config) ->
+  Token = ?config(token, Config),
+  Email = ?config(user, Config),
+  TableId = ets_channel_table_random,
+  ets_channel:init_table(TableId),
+  {{YYYY, MM, DD}, Time} = calendar:universal_time(),
+  Body = #{
+    type => ets,
+    configuration => #{
+      email => Email,
+      table_id => TableId,
+      channels => [<<"#general">>]
+     },
+    reminder_days_before => [0],
+    reminder_time => hp_date:time_to_binary(Time),
+    reminder_timezone => <<"+00">>
+   },
+  {ok, 201, _, _} = test_utils:api_request(put, Token,
+                                           "/api/channels/test_ets",
+                                           Body),
+  ok = ktn_task:wait_for_success(
+         fun() ->
+             [{Email, _}] = ets_channel:get_reminders(TableId, Email),
+             ok
+         end,10,500),
+  {ok, 204, _, _} = test_utils:api_request(delete, Token,
+                                           "/api/channels/test_ets"),
+  ok = ktn_task:wait_for_success(
+         fun() ->
+             [{Email, _}, {Email, _}] =
+               ets_channel:get_reminders(TableId, Email),
+             ok
+         end,10,500).
