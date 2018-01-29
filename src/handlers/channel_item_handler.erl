@@ -58,7 +58,8 @@ from_json(Req, State = #{is_new := true,
      } when is_list(DaysBefore), length(DaysBefore) =< 5 ->
       CleanConfig = maps:filter(fun not_empty_value/2, Config),
       {ok, _} = db_channel:create(Email, Name, Type, CleanConfig, DaysBefore, Time, TimeZone),
-
+      {ok, Channel} = db_channel:get(Email, Name),
+      send_creation_notification(Channel, State),
       Req3 = cowboy_req:set_resp_body(Body, Req2),
       {true, Req3, State};
     _ ->
@@ -104,10 +105,6 @@ delete_resource(Req, State = #{email := Email, name := Name}) ->
   ok = db_channel:delete(Email, Name),
   {true, Req, State}.
 
-send_delete_notification(Channel=#{name := Name}, #{user := User}) ->
-  Msg = <<"Removed remainder '", Name/binary, "'.">>,
-  remind_router:send_message(User, Channel, Msg).
-
 %%% internal
 not_empty_value(_K, null) ->
   false;
@@ -115,3 +112,11 @@ not_empty_value(_K, Value) when is_binary(Value) ->
   re:replace(Value, "\\s+", "", [global,{return,binary}]) /= <<"">>;
 not_empty_value(_K, _Value) ->
   true.
+
+send_delete_notification(Channel=#{name := Name}, #{user := User}) ->
+  Msg = <<"Removed a remainder '", Name/binary, "'.">>,
+  remind_router:send_message(User, Channel, Msg).
+
+send_creation_notification(Channel=#{name := Name}, #{user := User}) ->
+  Msg = <<"Crated a remainder '", Name/binary, "'.">>,
+  remind_router:send_message(User, Channel, Msg).
