@@ -8,6 +8,7 @@
 
          send/3,
          send_test/3,
+         send_message/3,
 
          init/1,
          handle_call/3,
@@ -23,6 +24,12 @@ send_test(User, Channel, HolidayDate) ->
   Message = <<"This is a Holiday Ping test: ", Username/binary, " will be out on holidays.">>,
   {ok, Pid} = supervisor:start_child(remind_router_sup, []),
   gen_server:cast(Pid, {send_reminder, User, Channel, HolidayDate, Message, true}).
+
+send_message(User, Channel, Message) ->
+  UserName = maps:get(name, User),
+  FinalMessage = <<UserName/binary, ": ", Message/binary>>,
+  {ok, Pid} = supervisor:start_child(remind_router_sup, []),
+  gen_server:cast(Pid, {send_reminder, User, Channel, erlang:date(), FinalMessage, true}).
 
 start_link() ->
   gen_server:start_link(?MODULE, [], []).

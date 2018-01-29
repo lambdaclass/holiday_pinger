@@ -99,8 +99,14 @@ from_json(Req, State = #{is_new := false,
   end.
 
 delete_resource(Req, State = #{email := Email, name := Name}) ->
+  {ok, Channel} = db_channel:get(Email, Name),
+  send_delete_notification(Channel, State),
   ok = db_channel:delete(Email, Name),
   {true, Req, State}.
+
+send_delete_notification(Channel=#{name := Name}, #{user := User}) ->
+  Msg = <<"Removed remainder '", Name/binary, "'.">>,
+  remind_router:send_message(User, Channel, Msg).
 
 %%% internal
 not_empty_value(_K, null) ->
