@@ -219,8 +219,8 @@ channel_properly_called(_Config) ->
     reminder_time => hp_date:time_to_binary(Time),
     reminder_timezone => <<"+00">>
    },
-  {ok, 201, _, _} = test_utils:api_request(put, Token, "/api/channels/test_ets", Body),
   ets_channel:init_table(TableId),
+  {ok, 201, _, _} = test_utils:api_request(put, Token, "/api/channels/test_ets", Body),
 
   Holidays = [#{name => <<"today holiday">>, date => hp_date:today_binary()}],
   {ok, 200, _, _} = test_utils:api_request(put, Token, "/api/channels/test_ets/holidays/", Holidays),
@@ -228,8 +228,13 @@ channel_properly_called(_Config) ->
   remind_checker:check_holidays(),
   timer:sleep(100),
   {ok, 200, _, [_Reminder]} = test_utils:api_request(get, Token, "/api/channels/test_ets/reminders/"),
-  [{Email, Message}] = ets_channel:get_reminders(TableId, Email),
   Message = <<"This is a holiday reminder: John Doe will be out today.">>,
+  Reminders = ets_channel:get_reminders(TableId, Email),
+  true =lists:any(
+          fun({ReminderEmail, ReminderMessage}) ->
+              Email =:= ReminderEmail andalso
+                Message =:= ReminderMessage
+              end, Reminders),
 
   ok = test_utils:delete_user(Email).
 
