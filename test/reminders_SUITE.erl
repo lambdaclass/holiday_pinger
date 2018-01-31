@@ -240,7 +240,7 @@ channel_properly_called(_Config) ->
 
 monthly_limit_enforced(_Config) ->
   {ok, CurrentLimits} = application:get_env(holiday_ping, monthly_limits),
-  application:set_env(holiday_ping, monthly_limits, CurrentLimits#{console => 1}),
+  application:set_env(holiday_ping, monthly_limits, CurrentLimits#{console => 2}),
 
   #{token := Token} = test_utils:create_user_with_token(),
 
