@@ -13,7 +13,7 @@
 
 (defn trim-separator
   [value]
-  (if last-separator?
+  (if (last-separator? value)
     (apply str (butlast value))
     value))
 
