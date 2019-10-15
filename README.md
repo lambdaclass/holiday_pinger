@@ -40,7 +40,20 @@ Which uses figwheel to provide a REPL and hot-reload of the code changes.
 
 ## Production install
 
-Inside the devops folder you can find an install shell script for installing holiday_ping in a debian 9 serer.
+Inside the devops folder you can find an [install shell script](devops/sh/install.sh) for installing holiday_ping in a debian 9 server. On the other hand, you can do `make app_image` to generate a Docker image of HolidayPing called `holiday-ping`.
+
+The release generated for `prod` expects some config values from the environment. If you prefer, you can modify [prod.config](conf/prod.config) to directly set the values and re-make the release or image. The expected environment variables are this:
+
+- `RELX_REPLACE_OS_VARS=true`
+- `SSL_CERTFILE=</dir/of/ssl/fullchain.pem>`
+- `SSL_KEYFILE=</dir/of/ssl/privkey.pem>`
+- `TOKEN_SECRET=<secret_token_hash>`
+- `POSTGRES_HOST=<holiday_ping_postgres_1>`
+- `POSTGRES_USER=<postgres user>`
+- `POSTGRES_PASSWORD=<postgres user password>`
+- `POSTGRES_DB=<postgres database>`
+
+**NOTE:** Remember to mount the folder where `SSL_CERTFILE` and `SSL_KEYFILE` are stored into the container.
 
 ### Credentials
 #### GitHub login configuration

@@ -27,3 +27,6 @@ ops_start:
 
 dev_ui:
 	cd priv/ui && ${shell command -v rlwrap} lein figwheel
+
+app_image:
+	docker build -f docker/Dockerfile -t holiday-ping .
