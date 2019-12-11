@@ -8,13 +8,14 @@
 send(ToEmails, FromEmail, Subject, Body) when not is_list(ToEmails)->
   send([ToEmails], FromEmail, Subject, Body);
 send(ToEmails, FromEmail, Subject, Body) ->
-  lager:debug(<<"Sending amazon SES emails: ~p ~p">>, [Subject, ToEmails]),
+  lager:debug(<<"Sending emails: ~p ~p">>, [Subject, ToEmails]),
   FullBody = add_footer(Body),
 
   case hp_config:get(email_enabled) of
     true ->
+      MailSender = email_sender(hp_config:get(email_provider)),
       lists:foreach(fun(Email) ->
-                        erlcloud_ses:send_email(Email, FullBody, Subject, FromEmail, [])
+                        MailSender:send_email(Email, FullBody, Subject, FromEmail, [])
                     end, ToEmails);
     _ ->
       ok
@@ -58,3 +59,6 @@ add_footer([{html, Body}]) ->
             " | ", AbuseLink/binary, "</small></p>">>}];
 add_footer(Body) ->
   add_footer([{html, <<"<p>", Body/binary, "</p>">>}]).
+
+email_sender(mailgun) -> mailgun;
+email_sender(aws) -> erlcloud_ses.
