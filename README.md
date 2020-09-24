@@ -62,11 +62,22 @@ For the GitHub login option to work, [OAuth cretentials](https://github.com/sett
 need to be generated and set as `GITHUB_CLIENTID` and `GITHUB_SECRET`
 environment variables.
 
+### Email providers
+Holiday ping supports two different providers for sending emails: Amazon SES and Mailgun. To choose one, set it in the config file (`prod.conf` for the production environment) as 
+```
+{email_provider, erlcloud_ses}
+```
+for Amazon SES and
+```
+{email_provider, mailgun}
+```
+for Mailgun. Afterwards, make sure `email_enabled` is set to true in the
+application environment (e.g. in conf/dev.config) and then supply the appropiate environment variables:
 #### Amazon SES
+To send emails with amazon, set `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`.
 
-To send emails with amazon, set `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`
-environment variables. Also, make sure `email_enabled` is set to true in the
-application environment (e.g. in conf/dev.config).
+#### Mailgun
+To send emails with Mailgun, set `MAILGUN_KEY` and `MAILGUN_DOMAIN`.
 
 ## Rest API Reference
 
