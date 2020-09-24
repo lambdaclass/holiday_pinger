@@ -39,7 +39,12 @@ test_channel(Config) ->
   {ok, 204, _, _} = test_utils:api_request(post, Token, "/api/channels/my_channel/test", #{}),
 
   timer:sleep(1000),
-  [{Email, Message}] = ets_channel:get_reminders(TableId, Email),
-  <<"This is a Holiday Ping test: John Doe will be out on holidays.">> = Message,
+  Message = <<"This is a Holiday Ping test: John Doe will be out on holidays.">>,
+  Reminders = ets_channel:get_reminders(TableId, Email),
+  true = lists:any(
+           fun({ReminderEmail,ReminderMessage}) ->
+               Email =:= ReminderEmail andalso
+                 Message =:= ReminderMessage
+           end, Reminders),
 
   ok = test_utils:delete_user(Email).

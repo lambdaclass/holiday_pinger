@@ -57,8 +57,8 @@ from_json(Req, State = #{is_new := true,
        reminder_timezone := TimeZone
      } when is_list(DaysBefore), length(DaysBefore) =< 5 ->
       CleanConfig = maps:filter(fun not_empty_value/2, Config),
-      {ok, _} = db_channel:create(Email, Name, Type, CleanConfig, DaysBefore, Time, TimeZone),
-
+      {ok, Channel} = db_channel:create(Email, Name, Type, CleanConfig, DaysBefore, Time, TimeZone),
+      send_creation_notification(Channel, State),
       Req3 = cowboy_req:set_resp_body(Body, Req2),
       {true, Req3, State};
     _ ->
@@ -98,7 +98,9 @@ from_json(Req, State = #{is_new := false,
       req_utils:error_response(400, <<"Missing or invalid field">>, Req2)
   end.
 
-delete_resource(Req, State = #{email := Email, name := Name}) ->
+delete_resource(Req, State = #{email := Email, name := Name,
+                               channel := Channel}) ->
+  send_delete_notification(Channel, State),
   ok = db_channel:delete(Email, Name),
   {true, Req, State}.
 
@@ -109,3 +111,11 @@ not_empty_value(_K, Value) when is_binary(Value) ->
   re:replace(Value, "\\s+", "", [global,{return,binary}]) /= <<"">>;
 not_empty_value(_K, _Value) ->
   true.
+
+send_delete_notification(Channel=#{name := Name}, #{user := User}) ->
+  Msg = <<"Removed a reminder '", Name/binary, "'.">>,
+  remind_router:send_message(User, Channel, Msg).
+
+send_creation_notification(Channel=#{name := Name}, #{user := User}) ->
+  Msg = <<"Created a reminder '", Name/binary, "'.">>,
+  remind_router:send_message(User, Channel, Msg).
