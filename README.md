@@ -1,6 +1,6 @@
-# Holiday Ping [![Build Status](https://travis-ci.org/lambdaclass/holiday_ping.svg?branch=master)](https://travis-ci.org/lambdaclass/holiday_ping)
+# Holiday Pinger [![Build Status](https://travis-ci.org/lambdaclass/holiday_ping.svg?branch=master)](https://travis-ci.org/lambdaclass/holiday_ping)
 
-Holiday ping is an Erlang/OTP application that allows users to send national
+Holiday Pinger is an Erlang/OTP application that allows users to send national
 holiday reminders through different channels (e.g. email, Slack).
 
 ## Project setup for development
@@ -40,7 +40,7 @@ Which uses figwheel to provide a REPL and hot-reload of the code changes.
 
 ## Production install
 
-Inside the devops folder you can find an [install shell script](devops/sh/install.sh) for installing holiday_ping in a debian 9 server. On the other hand, you can do `make app_image` to generate a Docker image of HolidayPing called `holiday-ping`.
+Inside the devops folder you can find an [install shell script](devops/sh/install.sh) for installing holiday_ping in a debian 9 server. On the other hand, you can do `make app_image` to generate a Docker image of HolidayPinger called `holiday-ping`.
 
 The release generated for `prod` expects some config values from the environment. If you prefer, you can modify [prod.config](conf/prod.config) to directly set the values and re-make the release or image. The expected environment variables are this:
 
@@ -63,7 +63,7 @@ need to be generated and set as `GITHUB_CLIENTID` and `GITHUB_SECRET`
 environment variables.
 
 ### Email providers
-Holiday ping supports two different providers for sending emails: Amazon SES and Mailgun. To choose one, set it in the config file (`prod.conf` for the production environment) as 
+Holiday Pinger supports two different providers for sending emails: Amazon SES and Mailgun. To choose one, set it in the config file (`prod.conf` for the production environment) as 
 ```
 {email_provider, erlcloud_ses}
 ```

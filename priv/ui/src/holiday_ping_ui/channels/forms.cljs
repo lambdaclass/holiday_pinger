@@ -24,7 +24,7 @@
               {:key       :username
                :type      "text"
                :label     "Bot username"
-               :help-text "Defaults to HolidayPing"}
+               :help-text "Defaults to HolidayPinger"}
               {:key       :emoji
                :type      "text"
                :label     "Bot emoji"
@@ -40,7 +40,7 @@
               {:key   :example-payload
                :type  "code"
                :label "Example payload"
-               :value "{\n  \"date\": \"2017-09-22\",\n  \"email\": \"john.doe@mail.com\",\n  \"message\" :\"This is a Holiday Ping test: John Doe will be out on holidays.\",\n  \"name\": \"Facundo Olano\"\n}"}]
+               :value "{\n  \"date\": \"2017-09-22\",\n  \"email\": \"john.doe@mail.com\",\n  \"message\" :\"This is a Holiday Pinger test: John Doe will be out on holidays.\",\n  \"name\": \"Facundo Olano\"\n}"}]
    "email"   [{:key           :emails
                :type          "tags"
                :label         "Emails"
