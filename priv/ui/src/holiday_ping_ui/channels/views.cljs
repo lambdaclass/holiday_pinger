@@ -245,7 +245,7 @@
            :disabled (not= source :country)
            :options  ["Argentina" "Brazil" "Canada" "India" "Mexico" "Russia" "United States"]
            :help-text [:span "Your country is not listed? "
-                       [:a {:href   "https://github.com/lambdaclass/holiday_ping/issues/new"
+                       [:a {:href   "https://github.com/lambdaclass/holiday_pinger/issues/new"
                             :target "blank"} "File an issue."]]}]]]
        [:br]
 
@@ -321,7 +321,7 @@
      [holiday-controls wizard-state]
      [:br]
      [:p.has-text-centered "Missing a national holiday? "
-      [:a {:href   "https://github.com/lambdaclass/holiday_ping/issues/new"
+      [:a {:href   "https://github.com/lambdaclass/holiday_pinger/issues/new"
            :target "blank"} "File an issue."]]]))
 
 (defn wizard-steps

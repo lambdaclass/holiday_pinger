@@ -45,7 +45,7 @@
    [:div.container
 
     [:div.navbar-brand
-     [:a.navbar-item.is-size-3.app-title {:href "/"} "HolidayPing"]
+     [:a.navbar-item.is-size-3.app-title {:href "/"} "Holiday Pinger"]
      [:a.navbar-item.is-hidden-desktop
       {:href "#" :on-click #(re-frame/dispatch [:logout])} "Logout"]]
 
@@ -56,7 +56,7 @@
         :target "_blank"}
        "Blog"]
       [:a.navbar-item
-       {:href   "https://github.com/lambdaclass/holiday_ping"
+       {:href   "https://github.com/lambdaclass/holiday_pinger"
         :target "_blank"}
        "GitHub"]]
      [:div.navbar-end [user-info-view]]]]])
@@ -67,7 +67,7 @@
    [:div.has-text-centered
     [:br]
     [:h1.title.is-1.has-text-primary.landing-title "Don't forget to report your time off again"]
-    [:h3.subtitle.is-4 "HolidayPing notifies your clients, you enjoy a daiquiri"]
+    [:h3.subtitle.is-4 "Holiday Pinger notifies your clients, you enjoy a daiquiri"]
     [:br]
     [:br]
     [:a.button.is-success.is-large

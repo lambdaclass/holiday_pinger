@@ -124,5 +124,5 @@
       [:br]
       [:br]
       [:p.has-text-centered "Missing a national holiday? "
-       [:a {:href   "https://github.com/lambdaclass/holiday_ping/issues/new"
+       [:a {:href   "https://github.com/lambdaclass/holiday_pinger/issues/new"
             :target "blank"} "File an issue."]]]]))
