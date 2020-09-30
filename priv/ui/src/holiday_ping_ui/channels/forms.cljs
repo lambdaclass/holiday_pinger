@@ -24,7 +24,7 @@
               {:key       :username
                :type      "text"
                :label     "Bot username"
-               :help-text "Defaults to HolidayPinger"}
+               :help-text "Defaults to Holiday Pinger"}
               {:key       :emoji
                :type      "text"
                :label     "Bot emoji"
