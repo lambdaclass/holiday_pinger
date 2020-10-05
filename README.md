@@ -1,4 +1,4 @@
-# Holiday Pinger [![Build Status](https://travis-ci.org/lambdaclass/holiday_ping.svg?branch=master)](https://travis-ci.org/lambdaclass/holiday_ping)
+# Holiday Pinger [![Build Status](https://travis-ci.org/lambdaclass/holiday_pinger.svg?branch=master)](https://travis-ci.org/lambdaclass/holiday_pinger)
 
 Holiday Pinger is an Erlang/OTP application that allows users to send national
 holiday reminders through different channels (e.g. email, Slack).
