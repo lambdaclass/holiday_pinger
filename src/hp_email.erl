@@ -25,7 +25,7 @@ send_html(ToEmails, FromEmail, Subject, Body) ->
   send(ToEmails, FromEmail, Subject, [{html, Body}]).
 
 send_email_verification(Email, Code) ->
-  From = <<"HolidayPinger <holidaypinger@lambdaclass.com>">>,
+  From = <<"HolidayPinger <reminder@holidaypinger.com>">>,
   Subject = <<"HolidayPinger email confirmation">>,
   Link = <<"https://holidaypinger.com/register/confirm/code?code=", Code/binary,
            "&email=", Email/binary>>,
@@ -38,7 +38,7 @@ send_email_verification(Email, Code) ->
   send_html(Email, From, Subject, Body).
 
 send_password_reset(Email, Code) ->
-  From = <<"HolidayPinger <holidaypinger@lambdaclass.com>">>,
+  From = <<"HolidayPinger <reminder@holidaypinger.com>">>,
   Subject = <<"HolidayPinger password reset">>,
   Link = <<"https://holidaypinger.com/password/code?code=", Code/binary,
            "&email=", Email/binary>>,
@@ -53,7 +53,7 @@ send_password_reset(Email, Code) ->
 
 add_footer([{html, Body}]) ->
   HolidayLink = <<"<a href=\"https://holidaypinger.com\">HolidayPinger</a>">>,
-  AbuseLink = <<"<a href=\"mailto:holidaypinger@lambdaclass.com\">Report abuse</a>">>,
+  AbuseLink = <<"<a href=\"mailto:reminder@holidaypinger.com\">Report abuse</a>">>,
   [{html, <<Body/binary,
             "<p><br/><small>Mail sent by ", HolidayLink/binary,
             " | ", AbuseLink/binary, "</small></p>">>}];
