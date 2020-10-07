@@ -20,7 +20,7 @@ error_response(Status, Message, Req) ->
   {halt, Req3, []}.
 
 is_authorized(bearer, Req, State) ->
-  Fail = {false, <<"Bearer realm=\"holidayping\"">>},
+  Fail = {false, <<"Bearer realm=\"holidaypinger\"">>},
   case cowboy_req:parse_header(<<"authorization">>, Req) of
     {ok, {<<"bearer">>, Token}, Req2} ->
       case hp_auth:token_decode(Token) of
@@ -35,7 +35,7 @@ is_authorized(bearer, Req, State) ->
 
 is_authorized(basic, Req, State) ->
   %% Using a custom auth challenge (API-Basic) so it doesn't force a browser popup on web API consumers
-  Fail = {false, <<"API-Basic realm=\"holidayping\"">>},
+  Fail = {false, <<"API-Basic realm=\"holidaypinger\"">>},
   case cowboy_req:parse_header(<<"authorization">>, Req) of
     {ok, {<<"basic">>, {Email, Password}}, Req2} ->
       case hp_auth:authenticate(Email, Password) of
