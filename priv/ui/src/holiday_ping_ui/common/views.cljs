@@ -93,9 +93,9 @@
     [:div.card
      [:div.card-content
       [:div.has-text-centered
-       [:div.subtitle "Mining bitcoins…"]
+       [:div.subtitle "Loading…"]
        [:a.button.is-medium.is-primary.is-loading
-        [:span "Mining bitcoins"]]]]]]])
+        [:span "Loading"]]]]]]])
 
 (defn not-found-view
   []
