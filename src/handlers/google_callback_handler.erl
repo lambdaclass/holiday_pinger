@@ -29,19 +29,17 @@ from_json(Req, State) ->
 
   GoogleToken = get_google_access_token(Code),
   Profile = get_public_profile(GoogleToken),
-  lager:debug(Profile),
-  Email = get_primary_email(Profile),
-  Name = get_primary_name(Profile),
-  Avatar = get_primary_avatar(Profile),
 
+  Email = get_primary_field(Profile, emailAddresses),
+  Name = get_primary_field(Profile, names),
+  AvatarUrl = get_primary_field(Profile, photos),
 
   ok = register_user(Email, Name),
-  Token = build_holiday_access_token(Email, Name, Avatar),
+  Token = hp_auth:build_holiday_access_token(Email, Name, AvatarUrl),
 
   Encoded = hp_json:encode(#{access_token => Token}),
   Req3 = cowboy_req:set_resp_body(Encoded, Req2),
   {true, Req3, State}.
-
 
 %% internal
 get_google_access_token(Code) ->
@@ -65,26 +63,17 @@ get_public_profile(GoogleToken) ->
                                               [{<<"Authorization">>, <<"Bearer ", GoogleToken/binary>>}]),
   Profile.
 
-get_primary_email(Profile) ->
-    Emails = maps:get(emailAddresses, Profile),
-    %[PrimaryEmail | _] = lists:dropwhile(fun(#{metadata := #{primary := IsPrimary}}) -> not IsPrimary end, Emails),
-    [PrimaryEmail | _] = Emails,
-    Email = maps:get(value, PrimaryEmail),
-    Email.
-
-get_primary_name(Profile) ->
-  Names = maps:get(names, Profile),
-  %[PrimaryName | _] = lists:dropwhile(fun(#{metadata := #{primary := IsPrimary}}) -> not IsPrimary end, Names),
-  [PrimaryName| _] = Names,
-  Name = maps:get(displayName, PrimaryName),
-  Name.
-
-get_primary_avatar(Profile) ->
-  Avatars = maps:get(photos, Profile),
-  %[PrimaryAvatar | _] = lists:dropwhile(fun(#{metadata := #{primary := IsPrimary}}) -> not IsPrimary end, Avatars),
-  [PrimaryAvatar | _] = Avatars,
-  Avatar = maps:get(url, PrimaryAvatar),
-  Avatar.
+get_primary_field(Profile, Field) ->
+  Fields = maps:get(Field, Profile),
+  [PrimaryField | _] = lists:dropwhile(fun(#{metadata := #{primary := IsPrimary}}) -> not IsPrimary end, Fields),
+  case Field of
+    emailAddresses ->
+      maps:get(value, PrimaryField);
+    names ->
+      maps:get(displayName, PrimaryField);
+    photos ->
+      maps:get(url, PrimaryField)
+  end.
 
 register_user(Email, Name) ->
   %% only attempt to create it if it's not already registered
@@ -95,12 +84,3 @@ register_user(Email, Name) ->
     {ok, _} ->
       ok
   end.
-
-build_holiday_access_token(Email, Name, Avatar) ->
-  Data = #{
-    email => Email,
-    name => Name,
-    avatar => Avatar
-   },
-  {ok, Token} = hp_auth:token_encode(Data),
-  Token.

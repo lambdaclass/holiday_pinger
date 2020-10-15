@@ -32,7 +32,9 @@ from_json(Req, State) ->
   Email = get_primary_email(GithubToken),
 
   ok = register_user(Email, Profile),
-  Token = build_holiday_access_token(Email, Profile),
+  Name = get_name(Email, Profile),
+  AvatarUrl = maps:get(avatar_url, Profile),
+  Token = hp_auth:build_holiday_access_token(Email, Name, AvatarUrl),
 
   Encoded = hp_json:encode(#{access_token => Token}),
   Req3 = cowboy_req:set_resp_body(Encoded, Req2),
@@ -76,15 +78,6 @@ register_user(Email, Profile) ->
     {ok, _} ->
       ok
   end.
-
-build_holiday_access_token(Email, Profile) ->
-  Data = #{
-    email => Email,
-    name => get_name(Email, Profile),
-    avatar => maps:get(avatar_url, Profile)
-   },
-  {ok, Token} = hp_auth:token_encode(Data),
-  Token.
 
 get_name(Email, #{name := null}) ->
   Email;
