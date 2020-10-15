@@ -2,6 +2,7 @@
 
 -export([create_holiday_user/3,
          create_github_user/2,
+         create_google_user/2,
          get/1,
          delete/1,
          get_with_password/1,
@@ -27,6 +28,14 @@ create_holiday_user(Email, Name, Password) ->
 create_github_user(Email, Name) ->
   Q = <<"INSERT INTO users(email, name, auth_type, verified)"
         "VALUES($1, $2, 'github', true) RETURNING email, name ">>,
+  case db:query(Q, [Email, Name]) of
+    {ok, [Result | []]} -> {ok, Result};
+    {error, unique_violation} -> {error, user_already_exists}
+  end.
+
+create_google_user(Email, Name) ->
+  Q = <<"INSERT INTO users(email, name, auth_type, verified)"
+        "VALUES($1, $2, 'google', true) RETURNING email, name ">>,
   case db:query(Q, [Email, Name]) of
     {ok, [Result | []]} -> {ok, Result};
     {error, unique_violation} -> {error, user_already_exists}

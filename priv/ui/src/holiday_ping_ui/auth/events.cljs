@@ -100,6 +100,24 @@
                    :on-failure      [:error-message "GitHub authentication failed"]}})))
 
 (defmethod events/load-view
+  :google-callback [_ _]
+  {:dispatch [:google-code-submit]})
+
+(re-frame/reg-event-fx
+ :google-code-submit
+ [(re-frame/inject-cofx :location)]
+ (fn [{:keys [location]} _]
+   (let [code (get-in location [:query "code"])]
+     {:http-xhrio {:method          :post
+                   :uri             "/api/auth/google/code"
+                   :timeout         8000
+                   :format          (ajax/json-request-format)
+                   :params          {:code code}
+                   :response-format (ajax/json-response-format {:keywords? true})
+                   :on-success      [:login-success]
+                   :on-failure      [:error-message "Google authentication failed"]}})))
+
+(defmethod events/load-view
   :register-confirm [_ _]
   {:dispatch [:register-code-submit]})
 

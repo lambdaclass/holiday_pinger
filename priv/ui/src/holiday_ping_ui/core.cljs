@@ -34,6 +34,7 @@
             :request-password-reset [auth/request-password-reset-view]
             :password-reset-sent    [auth/password-reset-sent-view]
             :submit-password-reset  [auth/submit-password-reset-view]
+            :google-callback        [common/loading-view]
             :github-callback        [common/loading-view]
             :holidays               [holidays/holidays-view]
             :not-found              [common/not-found-view]})

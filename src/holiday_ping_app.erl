@@ -13,6 +13,8 @@ start(_StartType, _StartArgs) ->
                                            {"/js/[...]", cowboy_static, {priv_dir, holiday_ping, "/ui/resources/public/js"}},
                                            {"/css/[...]", cowboy_static, {priv_dir, holiday_ping, "/ui/resources/public/css"}},
                                            {"/img/[...]", cowboy_static, {priv_dir, holiday_ping, "/ui/resources/public/img"}},
+                                           {"/oauth/google", google_redirect_handler, []},
+                                           {"/api/auth/google/code", google_callback_handler, []},
                                            {"/oauth/github", github_redirect_handler, []},
                                            {"/api/auth/github/code", github_callback_handler, []},
                                            {"/api/users", user_handler, []},
