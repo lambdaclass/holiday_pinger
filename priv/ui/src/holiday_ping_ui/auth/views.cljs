@@ -17,12 +17,12 @@
          :href              "/oauth/github"}
         [:span.icon.is-medium [:i.fa.fa-github]]
         [:span " Login with GitHub"]]]
-
+      [:br]
       [:div.has-text-centered
        [:a.button.is-medium.is-primary.is-fullwidth
         {:data-pushy-ignore true ;; don't try to hadle this uri in the frontend
          :href              "/oauth/google"}
-        [:span.icon.is-medium [:i.fa.fa-github]]
+        [:span.icon.is-medium [:i.fa.fa-google]]
         [:span " Login with Google"]]]
       [:hr]
       [views/message-view]
