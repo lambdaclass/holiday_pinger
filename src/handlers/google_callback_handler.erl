@@ -79,7 +79,7 @@ register_user(Email, Name) ->
   %% only attempt to create it if it's not already registered
   case db_user:get(Email) of
     {error, not_found} ->
-      {ok, _} = db_user:create_google_user(Email,  Name),
+      {ok, _} = db_user:create_user(Email, Name, null, "google"),
       ok;
     {ok, _} ->
       ok

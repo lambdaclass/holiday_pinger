@@ -33,7 +33,7 @@ from_json(Req, _State) ->
        password := Password
      } ->
       PasswordHash = hp_auth:password_hash(Password),
-      case db_user:create_holiday_user(Email, Name, PasswordHash) of
+      case db_user:create_user(Email, Name, PasswordHash, "holiday") of
         {ok, _User} ->
           hp_auth:reset_verification(Email),
           {{true, "/api/channels"}, Req2, []};

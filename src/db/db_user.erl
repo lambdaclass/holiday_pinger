@@ -1,8 +1,6 @@
 -module(db_user).
 
--export([create_holiday_user/3,
-         create_github_user/2,
-         create_google_user/2,
+-export([create_user/4,
          get/1,
          delete/1,
          get_with_password/1,
@@ -17,26 +15,18 @@
 %% needed so atoms exist.
 user_keys () -> [email, password, name].
 
-create_holiday_user(Email, Name, Password) ->
+create_user(Email, Name, null, AuthType) ->
+  Q = <<"INSERT INTO users(email, name, auth_type, verified) "
+        "VALUES($1, $2, $3, true) RETURNING email, name ">>,
+  case db:query(Q, [Email, Name, AuthType]) of
+    {ok, [Result | []]} -> {ok, Result};
+    {error, unique_violation} -> {error, user_already_exists}
+  end;
+
+create_user(Email, Name, Password, AuthType) ->
   Q = <<"INSERT INTO users(email, name, password, auth_type) "
-        "VALUES($1, $2, $3, 'holiday') RETURNING email, name ">>,
-  case db:query(Q, [Email, Name, Password]) of
-    {ok, [Result | []]} -> {ok, Result};
-    {error, unique_violation} -> {error, user_already_exists}
-  end.
-
-create_github_user(Email, Name) ->
-  Q = <<"INSERT INTO users(email, name, auth_type, verified)"
-        "VALUES($1, $2, 'github', true) RETURNING email, name ">>,
-  case db:query(Q, [Email, Name]) of
-    {ok, [Result | []]} -> {ok, Result};
-    {error, unique_violation} -> {error, user_already_exists}
-  end.
-
-create_google_user(Email, Name) ->
-  Q = <<"INSERT INTO users(email, name, auth_type, verified)"
-        "VALUES($1, $2, 'google', true) RETURNING email, name ">>,
-  case db:query(Q, [Email, Name]) of
+        "VALUES($1, $2, $3, $4) RETURNING email, name ">>,
+  case db:query(Q, [Email, Name, Password, AuthType]) of
     {ok, [Result | []]} -> {ok, Result};
     {error, unique_violation} -> {error, user_already_exists}
   end.
