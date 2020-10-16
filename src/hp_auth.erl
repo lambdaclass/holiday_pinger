@@ -64,5 +64,5 @@ build_holiday_access_token(Email, Name, AvatarUrl) ->
     name => Name,
     avatar => AvatarUrl
    },
-  {ok, Token} = hp_auth:token_encode(Data),
+  {ok, Token} = token_encode(Data),
   Token.
