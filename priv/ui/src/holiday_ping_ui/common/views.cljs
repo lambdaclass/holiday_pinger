@@ -1,7 +1,6 @@
 (ns holiday-ping-ui.common.views
   (:require [re-frame.core :as re-frame]
-            [holiday-ping-ui.routes :as routes]
-            [goog.string :as gstring]))
+            [holiday-ping-ui.routes :as routes]))
 
 ;; HELPER VIEWS
 (defn message-view []
@@ -32,9 +31,9 @@
   [:div.has-text-centered
     [:a.button.is-medium.is-primary.is-fullwidth
       {:data-pushy-ignore true ;; don't try to handle this uri in the frontend
-        :href              (gstring/format "/oauth/%s" (clojure.string/lower-case provider))}
+        :href              (str "/oauth/" (clojure.string/lower-case provider))}
       [:span.icon.is-medium icon]
-      [:span (gstring/format " Login with %s" provider)]]])
+      [:span (str " Login with " provider)]]])
 
 ;; APP VIEWS
 (defn user-info-view []
