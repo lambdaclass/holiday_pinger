@@ -6,7 +6,8 @@
          password_match/2,
          authenticate/2,
          reset_verification/1,
-         reset_password/1]).
+         reset_password/1,
+         build_holiday_access_token/3]).
 
 password_hash(Value) ->
   erlpass:hash(Value).
@@ -56,3 +57,12 @@ reset_password(Email) ->
   VerificationCode = base64url:encode(crypto:strong_rand_bytes(20)),
   db_user:reset_password(Email, VerificationCode),
   hp_email:send_password_reset(Email, VerificationCode).
+
+build_holiday_access_token(Email, Name, AvatarUrl) ->
+  Data = #{
+    email => Email,
+    name => Name,
+    avatar => AvatarUrl
+   },
+  {ok, Token} = token_encode(Data),
+  Token.

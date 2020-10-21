@@ -11,12 +11,9 @@
    [views/section-size "is-one-third-desktop is-half-tablet"
     [:div.card
      [:div.card-content
-      [:div.has-text-centered
-       [:a.button.is-medium.is-primary.is-fullwidth
-        {:data-pushy-ignore true ;; don't try to hadle this uri in the frontend
-         :href              "/oauth/github"}
-        [:span.icon.is-medium [:i.fa.fa-github]]
-        [:span " Login with GitHub"]]]
+      (views/provider-login-button "GitHub" [:i.fa.fa-github])
+      [:br]
+      (views/provider-login-button "Google" [:i.fa.fa-google])
       [:hr]
       [views/message-view]
       [forms/form-view {:submit-text  "Login"

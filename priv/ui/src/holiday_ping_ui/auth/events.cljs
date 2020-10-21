@@ -82,22 +82,22 @@
                  :on-failure      [:error-message "Registration failed"]}}))
 
 (defmethod events/load-view
-  :github-callback [_ _]
-  {:dispatch [:github-code-submit]})
+  :provider-callback [_ [_ provider]]
+  {:dispatch [:provider-code-submit provider]})
 
 (re-frame/reg-event-fx
- :github-code-submit
+ :provider-code-submit
  [(re-frame/inject-cofx :location)]
- (fn [{:keys [location]} _]
+ (fn [{:keys [location]} [_ provider]]
    (let [code (get-in location [:query "code"])]
      {:http-xhrio {:method          :post
-                   :uri             "/api/auth/github/code"
+                   :uri             (str "/api/auth/" provider "/code")
                    :timeout         8000
                    :format          (ajax/json-request-format)
                    :params          {:code code}
                    :response-format (ajax/json-response-format {:keywords? true})
                    :on-success      [:login-success]
-                   :on-failure      [:error-message "GitHub authentication failed"]}})))
+                   :on-failure      [:error-message (str provider " authentication failed")]}})))
 
 (defmethod events/load-view
   :register-confirm [_ _]

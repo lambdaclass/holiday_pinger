@@ -56,11 +56,13 @@ The release generated for `prod` expects some config values from the environment
 **NOTE:** Remember to mount the folder where `SSL_CERTFILE` and `SSL_KEYFILE` are stored into the container.
 
 ### Credentials
-#### GitHub login configuration
+#### GitHub and Google login configuration
 
 For the GitHub login option to work, [OAuth cretentials](https://github.com/settings/applications/new)
 need to be generated and set as `GITHUB_CLIENTID` and `GITHUB_SECRET`
 environment variables.
+
+Similarly, use the [Google developers console](https://console.developers.google.com/) to generate the Google credentials and set them as `GOOGLE_CLIENTID` and `GOOGLE_SECRET`.
 
 ### Email providers
 Holiday Pinger supports two different providers for sending emails: Amazon SES and Mailgun. To choose one, set it in the config file (`prod.conf` for the production environment) as 

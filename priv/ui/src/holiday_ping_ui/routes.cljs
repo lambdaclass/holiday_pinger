@@ -15,7 +15,7 @@
                       ["register/confirm"                         :resend-confirmation]
                       ["password"                                 :request-password-reset]
                       ["password/code"                            :submit-password-reset]
-                      ["oauth/github/callback"                    :github-callback]
+                      [["oauth/" [#".+" :provider] "/callback"]   :provider-callback]
                       [true                                       :not-found]]])
 
 (defn parse-url [url]
@@ -45,7 +45,7 @@
   (loging, register, etc.)."
   [view]
   (contains?
-   #{:landing :login :register :github-callback :not-verified
+   #{:landing :login :register :provider-callback :not-verified
      :register-confirm :email-sent :register-confirm-error :resend-confirmation
      :request-password-reset :submit-password-reset :password-reset-sent}
    view))

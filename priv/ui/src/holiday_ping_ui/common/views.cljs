@@ -26,6 +26,15 @@
     [:div.columns.is-centered
      (apply vector :div.column {:class (name size)} views)]]])
 
+(defn provider-login-button
+  [provider icon]
+  [:div.has-text-centered
+    [:a.button.is-medium.is-primary.is-fullwidth
+      {:data-pushy-ignore true ;; don't try to handle this uri in the frontend
+        :href              (str "/oauth/" (clojure.string/lower-case provider))}
+      [:span.icon.is-medium icon]
+      [:span (str " Login with " provider)]]])
+
 ;; APP VIEWS
 (defn user-info-view []
   (when @(re-frame/subscribe [:access-token])
