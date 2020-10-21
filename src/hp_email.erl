@@ -25,35 +25,35 @@ send_html(ToEmails, FromEmail, Subject, Body) ->
   send(ToEmails, FromEmail, Subject, [{html, Body}]).
 
 send_email_verification(Email, Code) ->
-  From = <<"HolidayPing <holidayping@lambdaclass.com>">>,
-  Subject = <<"HolidayPing email confirmation">>,
-  Link = <<"https://holidayping.lambdaclass.com/register/confirm/code?code=", Code/binary,
+  From = <<"HolidayPinger <reminder@holidaypinger.com>">>,
+  Subject = <<"HolidayPinger email confirmation">>,
+  Link = <<"https://holidaypinger.com/register/confirm/code?code=", Code/binary,
            "&email=", Email/binary>>,
   Body = <<"<p>Hey there!</p>"
-           "<p>Thanks for choosing HolidayPing, "
+           "<p>Thanks for choosing HolidayPinger, "
            "Please click on <a href=\"", Link/binary, "\">this link</a>"
            " to finish the registration process.</p>"
-           "<p>The HolidayPing team</p">>,
+           "<p>The HolidayPinger team</p">>,
 
   send_html(Email, From, Subject, Body).
 
 send_password_reset(Email, Code) ->
-  From = <<"HolidayPing <holidayping@lambdaclass.com>">>,
-  Subject = <<"HolidayPing password reset">>,
-  Link = <<"https://holidayping.lambdaclass.com/password/code?code=", Code/binary,
+  From = <<"HolidayPinger <reminder@holidaypinger.com>">>,
+  Subject = <<"HolidayPinger password reset">>,
+  Link = <<"https://holidaypinger.com/password/code?code=", Code/binary,
            "&email=", Email/binary>>,
   Body = <<"<p>Hey there!</p>"
            "Please click on <a href=\"", Link/binary, "\">this link</a>"
            " to reset your password.</p>"
-           "<p>The HolidayPing team</p">>,
+           "<p>The HolidayPinger team</p">>,
 
   send_html(Email, From, Subject, Body).
 
 %%% internal
 
 add_footer([{html, Body}]) ->
-  HolidayLink = <<"<a href=\"https://holidayping.lambdaclass.com\">HolidayPing</a>">>,
-  AbuseLink = <<"<a href=\"mailto:holidayping@lambdaclass.com\">Report abuse</a>">>,
+  HolidayLink = <<"<a href=\"https://holidaypinger.com\">HolidayPinger</a>">>,
+  AbuseLink = <<"<a href=\"mailto:reminder@holidaypinger.com\">Report abuse</a>">>,
   [{html, <<Body/binary,
             "<p><br/><small>Mail sent by ", HolidayLink/binary,
             " | ", AbuseLink/binary, "</small></p>">>}];
